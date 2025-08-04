@@ -1,0 +1,113 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: timeline-full-widget 1.0\n"
+"POT-Creation-Date: 2025-08-03 21:34+0300\n"
+"PO-Revision-Date: 2025-08-03 21:36+0300\n"
+"Last-Translator: \n"
+"Language-Team: za\n"
+"Language: en\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: Poedit 3.5\n"
+"X-Poedit-Basepath: ..\n"
+"X-Poedit-KeywordsList: __;_e;esc_html__;esc_html_e;esc_attr__;esc_attr_e;"
+"_x:1,2c;_n:1,2\n"
+"X-Poedit-SearchPath-0: .\n"
+"X-Domain: za\n"
+
+#: elementor-timeline-widget.php:37
+msgid "Timeline"
+msgstr ""
+
+#: elementor-timeline-widget.php:58
+msgid "Timeline Items"
+msgstr ""
+
+#: elementor-timeline-widget.php:65
+msgid "Image"
+msgstr ""
+
+#: elementor-timeline-widget.php:80
+msgid "Title"
+msgstr ""
+
+#: elementor-timeline-widget.php:82
+msgid "Timeline Title"
+msgstr ""
+
+#: elementor-timeline-widget.php:87
+msgid "Link"
+msgstr ""
+
+#: elementor-timeline-widget.php:94
+msgid "Content"
+msgstr ""
+
+#: elementor-timeline-widget.php:96
+msgid "Timeline content here..."
+msgstr ""
+
+#: elementor-timeline-widget.php:100
+msgid "Side Content"
+msgstr ""
+
+#: elementor-timeline-widget.php:111
+msgid "Timeline Item #1"
+msgstr ""
+
+#: elementor-timeline-widget.php:112
+msgid "Content for item #1"
+msgstr ""
+
+#: elementor-timeline-widget.php:115
+msgid "Timeline Item #2"
+msgstr ""
+
+#: elementor-timeline-widget.php:116
+msgid "Content for item #2"
+msgstr ""
+
+#: elementor-timeline-widget.php:125
+msgid "Style"
+msgstr ""
+
+#: elementor-timeline-widget.php:130
+msgid "Title HTML Tag"
+msgstr ""
+
+#: elementor-timeline-widget.php:138
+msgid "Timeline Accent Color"
+msgstr ""
+
+#: elementor-timeline-widget.php:148
+msgid "Direction"
+msgstr ""
+
+#: elementor-timeline-widget.php:150
+msgid "Left"
+msgstr ""
+
+#: elementor-timeline-widget.php:151
+msgid "Right"
+msgstr ""
+
+#: elementor-timeline-widget.php:157
+msgid "Single Side Layout"
+msgstr ""
+
+#: elementor-timeline-widget.php:159 elementor-timeline-widget.php:168
+msgid "Yes"
+msgstr ""
+
+#: elementor-timeline-widget.php:160 elementor-timeline-widget.php:169
+msgid "No"
+msgstr ""
+
+#: elementor-timeline-widget.php:166
+msgid "Enable Line Animation"
+msgstr ""
+
+#: elementor-timeline-widget.php:175
+msgid "Timeline Animation Color"
+msgstr ""
