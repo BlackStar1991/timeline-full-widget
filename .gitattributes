@@ -1,0 +1,9 @@
+# Set default behaviour to automatically normalize line endings.
+* text eol=lf
+*.png binary
+*.jpg binary
+
+# Items to ignore when downloading a zip
+/.* export-ignore
+.gitattributes export-ignore
+.distignore export-ignore

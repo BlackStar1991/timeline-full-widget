@@ -1,0 +1,15 @@
+# Ignore documentation and sources
+*.psd
+node_modules/
+src/
+
+# Ignore configs
+/.wordpress-org
+/.git
+/.github
+.distignore
+.gitattributes
+.gitignore
+composer.json
+package.json
+webpack.config.js
