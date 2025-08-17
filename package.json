@@ -1,0 +1,28 @@
+{
+  "name": "timeline-full-widget",
+  "version": "1.0.0",
+  "description": "A versatile Timeline plugin for Elementor, Gutenberg, and classic WordPress themes — add beautiful Timelines anywhere!",
+  "homepage": "https://github.com/BlackStar1991/timeline-full-widget#readme",
+  "bugs": {
+    "url": "https://github.com/BlackStar1991/timeline-full-widget/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/BlackStar1991/timeline-full-widget.git"
+  },
+  "license": "GPL-2.0-or-later",
+  "author": "Andry Zirka",
+  "main": "index.js",
+  "scripts": {
+    "start": "wp-scripts start",
+    "build": "wp-scripts build"
+  },
+  "devDependencies": {
+    "@wordpress/scripts": "^30.21.0"
+  },
+  "dependencies": {
+    "@wordpress/block-editor": "^15.1.0",
+    "@wordpress/blocks": "^15.1.0",
+    "@wordpress/element": "^6.28.0"
+  }
+}

@@ -33,6 +33,9 @@ class TimelinePlugin
     {
         add_action('elementor/widgets/widgets_registered', [$this, 'widgets_registered']);
         add_action('elementor/frontend/after_register_scripts', [$this, 'register_widget_assets']);
+
+        // Gutenberg Block
+        add_action('init', [$this, 'register_gutenberg_block']);
     }
 
     public function register_widget_assets()
@@ -65,6 +68,32 @@ class TimelinePlugin
             }
         }
     }
+
+    public function register_gutenberg_block() {
+        // path to the compiled js block
+        $asset_file = include TIMELINE_ELEMENTOR_PATH . 'build/index.asset.php';
+
+        wp_register_script(
+            'timeline-gutenberg-block',
+            TIMELINE_ELEMENTOR_URL . 'build/index.js',
+            $asset_file['dependencies'],
+            $asset_file['version']
+        );
+
+        wp_register_style(
+            'timeline-gutenberg-style',
+            TIMELINE_ELEMENTOR_URL . 'assets/gutenberg/style.css',
+            [],
+            filemtime(TIMELINE_ELEMENTOR_PATH . 'assets/gutenberg/style.css')
+        );
+
+        register_block_type('za/timeline-full-widget', [
+            'editor_script' => 'timeline-gutenberg-block',
+            'style'         => 'timeline-gutenberg-style',
+        ]);
+    }
+
+
 }
 
 TimelinePlugin::get_instance()->init();
