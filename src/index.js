@@ -1,18 +1,15 @@
-import { registerBlockType } from "@wordpress/blocks";
+import { registerBlockType } from '@wordpress/blocks';
 
-registerBlockType("za/timeline-full-widget", {
-    title: "Timeline Full Widget",
-    icon: "schedule",
-    category: "widgets",
+import './item';
+import Edit from './edit';
+import Save from './save';
+import './style.css';
 
-    edit() {
+registerBlockType( 'za/timeline-full-widget', {
+	title: 'Timeline',
+	icon: 'schedule',
+	category: 'widgets',
 
-        return <h2>Block Timeline Editor</h2>;
-    },
-
-    save() {
-
-        return <h2>Timeline output on the front</h2>;
-    },
-});
-
+	edit: Edit,
+	save: Save,
+} );

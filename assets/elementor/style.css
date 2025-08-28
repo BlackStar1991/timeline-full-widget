@@ -34,15 +34,6 @@
     margin-left: -2px;
 }
 
-
-.timeline li {
-    position: relative;
-}
-
-.timeline li:not(:first-child) {
-    margin-top: 40px;
-}
-
 .timeline-panel {
     width: 45%;
     background: #fff;
@@ -54,12 +45,19 @@
 }
 
 .timeline li {
+    position: relative;
     display: flex;
     flex-direction: row;
     align-items: flex-start;
     gap: 60px;
     justify-content: center;
 }
+
+.timeline li:not(:first-child) {
+    margin-top: 40px;
+}
+
+
 
 li.timeline-left {
     flex-direction: row-reverse;

@@ -1,22 +1,32 @@
 {
-  "apiVersion": 2,
-  "name": "za/timeline-full-widget",
-  "title": "Timeline Full Widget",
-  "category": "widgets",
-  "icon": "schedule",
-  "description": "A versatile Timeline block — add beautiful Timelines anywhere in Gutenberg.",
-  "keywords": ["timeline", "events", "history"],
-  "textdomain": "za",
-  "editorScript": "file:./build/index.js",
-  "editorStyle": "file:./assets/gutenberg/editor.css",
-  "style": "file:./assets/gutenberg/style.css",
-  "supports": {
-    "html": false,
-    "align": true
-  },
-  "example": {
-    "attributes": {},
-    "innerBlocks": [],
-    "viewportWidth": 600
-  }
+	"apiVersion": 3,
+	"name": "za/timeline-full-widget",
+	"title": "Timeline Full Widget",
+	"category": "widgets",
+	"icon": "schedule",
+	"description": "A versatile Timeline block — add beautiful Timelines anywhere in Gutenberg.",
+	"keywords": [ "timeline", "events", "history" ],
+	"textdomain": "za",
+	"style": "file:./build/style.css",
+	"editorStyle": "file:./build/editor.css",
+	"attributes": {
+		"text": {
+			"type": "string",
+			"source": "html",
+			"selector": "h2"
+		},
+		"align": {
+			"type": "string",
+			"default": "left"
+		}
+	},
+	"supports": {
+		"html": false,
+		"align": true
+	},
+	"example": {
+		"attributes": {},
+		"innerBlocks": [],
+		"viewportWidth": 600
+	}
 }

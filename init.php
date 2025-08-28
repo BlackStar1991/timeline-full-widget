@@ -87,10 +87,24 @@ class TimelinePlugin
             filemtime(TIMELINE_ELEMENTOR_PATH . 'assets/gutenberg/style.css')
         );
 
-        register_block_type('za/timeline-full-widget', [
-            'editor_script' => 'timeline-gutenberg-block',
-            'style'         => 'timeline-gutenberg-style',
-        ]);
+        wp_register_script(
+            'timeline-gutenberg-line',
+            TIMELINE_ELEMENTOR_URL . 'assets/gutenberg/script.js',
+            [],
+            filemtime( TIMELINE_ELEMENTOR_PATH . 'assets/gutenberg/script.js' ),
+            true
+        );
+
+        register_block_type(
+            'za/timeline-full-widget',
+            [
+                'editor_script' => 'timeline-gutenberg-block',
+                'style'         => 'timeline-gutenberg-style',
+                'view_script'   => 'timeline-gutenberg-line',
+            ]
+        );
+
+
     }
 
 
