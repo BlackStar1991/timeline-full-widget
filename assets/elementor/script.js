@@ -1,4 +1,6 @@
 ( function () {
+	console.log( 'Timeline work' );
+
 	function toElement( el ) {
 		return el instanceof jQuery ? el[ 0 ] : el;
 	}
@@ -31,6 +33,7 @@
 			} );
 		} );
 
+        
 		const triggers = el.querySelectorAll( '.tl-trigger' );
 		triggers.forEach( ( trigger ) => observer.observe( trigger ) );
 

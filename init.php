@@ -70,41 +70,7 @@ class TimelinePlugin
     }
 
     public function register_gutenberg_block() {
-        // path to the compiled js block
-        $asset_file = include TIMELINE_ELEMENTOR_PATH . 'build/index.asset.php';
-
-        wp_register_script(
-            'timeline-gutenberg-block',
-            TIMELINE_ELEMENTOR_URL . 'build/index.js',
-            $asset_file['dependencies'],
-            $asset_file['version']
-        );
-
-        wp_register_style(
-            'timeline-gutenberg-style',
-            TIMELINE_ELEMENTOR_URL . 'assets/gutenberg/style.css',
-            [],
-            filemtime(TIMELINE_ELEMENTOR_PATH . 'assets/gutenberg/style.css')
-        );
-
-        wp_register_script(
-            'timeline-gutenberg-line',
-            TIMELINE_ELEMENTOR_URL . 'assets/gutenberg/script.js',
-            [],
-            filemtime( TIMELINE_ELEMENTOR_PATH . 'assets/gutenberg/script.js' ),
-            true
-        );
-
-        register_block_type(
-            'za/timeline-full-widget',
-            [
-                'editor_script' => 'timeline-gutenberg-block',
-                'style'         => 'timeline-gutenberg-style',
-                'view_script'   => 'timeline-gutenberg-line',
-            ]
-        );
-
-
+        register_block_type( TIMELINE_ELEMENTOR_PATH . '/block.json' );
     }
 
 

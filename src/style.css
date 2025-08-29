@@ -8,47 +8,4 @@
     text-align: right;
 }
 
-
-.timeline-wrapper {
-    position: relative;
-}
-
-.timeline-line-animation {
-    position: absolute;
-    top: 0;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 4px;
-    height: 0;
-    z-index: 1;
-}
-
-
-.timeline {
-    list-style: none;
-    position: relative;
-    padding: 0;
-}
-
-.timeline:before {
-    position: absolute;
-    content: "";
-    top: 0;
-    bottom: 0;
-    width: 4px;
-    left: 50%;
-    margin-left: -2px;
-}
-
-.timeline li {
-    position: relative;
-    display: flex;
-    flex-direction: row;
-    align-items: flex-start;
-    gap: 60px;
-    justify-content: center;
-}
-
-.timeline li:not(:first-child) {
-    margin-top: 40px;
-}
+/*  */

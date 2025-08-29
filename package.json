@@ -27,6 +27,7 @@
 	},
 	"devDependencies": {
 		"@wordpress/components": "^30.2.0",
+		"@wordpress/data": "^10.29.0",
 		"@wordpress/eslint-plugin": "^22.0.0",
 		"@wordpress/scripts": "^30.21.0",
 		"@wordpress/stylelint-config": "^23.20.0"
