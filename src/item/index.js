@@ -16,15 +16,15 @@ registerBlockType( 'za/timeline-item', {
 		title: {
 			type: 'string',
 			source: 'html',
-            selector: '.tl-title',
+			selector: '.tl-title',
 		},
 		titleTag: {
 			type: 'string',
 			default: 'h3',
 		},
-        linkUrl: { type: 'string', default: '' },
-        linkTarget: { type: 'string', default: '' },
-        rel: { type: 'string', default: '' },
+		linkUrl: { type: 'string', default: '' },
+		linkTarget: { type: 'string', default: '' },
+		rel: { type: 'string', default: '' },
 		description: {
 			type: 'string',
 			source: 'html',

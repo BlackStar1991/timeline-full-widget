@@ -33,7 +33,6 @@
 			} );
 		} );
 
-        
 		const triggers = el.querySelectorAll( '.tl-trigger' );
 		triggers.forEach( ( trigger ) => observer.observe( trigger ) );
 

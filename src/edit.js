@@ -1,18 +1,31 @@
 import {
-	InspectorControls,
 	useBlockProps,
 	InnerBlocks,
+	InspectorControls,
 } from '@wordpress/block-editor';
-import { PanelBody, TextControl } from '@wordpress/components';
+import { PanelBody, ToggleControl } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
 
 export default function Edit( { attributes, setAttributes } ) {
-	const blockProps = useBlockProps( { className: 'timeline-wrapper' } );
+	const { direction } = attributes;
+
+	const handleDirectionChange = ( newValue ) => {
+		setAttributes( { direction: newValue } );
+	};
+
 	return (
-		<div { ...blockProps }>
+		<div { ...useBlockProps() }>
 			<InspectorControls>
-				<PanelBody title="Style" initialOpen>
-					<TextControl />
+				<PanelBody title={ __( 'Timeline Direction', 'za' ) }>
+					<ToggleControl
+						label={ __( 'Direction', 'za' ) }
+						help={
+							direction ? __( 'Right', 'za' ) : __( 'Left', 'za' )
+						}
+						checked={ direction }
+						onChange={ handleDirectionChange }
+                        __nextHasNoMarginBottom={true}
+					/>
 				</PanelBody>
 			</InspectorControls>
 
