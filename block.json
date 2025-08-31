@@ -11,6 +11,10 @@
 	"style": "file:./build/style-index.css",
 	"editorStyle": "file:./build/editor.css",
 	"attributes": {
+        "showImages": {
+          "type": "boolean",
+           "default": false
+        },
 		"direction": {
 			"type": "boolean",
 			"default": false

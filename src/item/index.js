@@ -25,18 +25,30 @@ registerBlockType( 'za/timeline-item', {
 		linkUrl: { type: 'string', default: '' },
 		linkTarget: { type: 'string', default: '' },
 		rel: { type: 'string', default: '' },
-		description: {
-			type: 'string',
-			source: 'html',
-			selector: '.tl-desc-short',
-		},
 		position: {
 			type: 'string',
 			default: 'timeline-left',
 		},
 		align: {
 			type: 'string',
+			source: 'attribute',
 			default: 'left',
+		},
+		image_url: {
+			type: 'string',
+			source: 'attribute',
+			selector: 'img',
+			attribute: 'src',
+		},
+		image_alt: {
+			type: 'string',
+			source: 'attribute',
+			selector: 'img',
+			attribute: 'alt',
+			default: '',
+		},
+		image_id: {
+			type: 'number',
 		},
 	},
 	edit: Edit,

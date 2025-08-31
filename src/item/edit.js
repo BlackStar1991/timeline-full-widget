@@ -1,8 +1,13 @@
 import {
+	AlignmentToolbar,
 	useBlockProps,
 	RichText,
 	InspectorControls,
 	BlockControls,
+	MediaPlaceholder,
+	MediaReplaceFlow,
+	InnerBlocks,
+	LinkControl,
 } from '@wordpress/block-editor';
 import { __ } from '@wordpress/i18n';
 import { useSelect } from '@wordpress/data';
@@ -12,15 +17,27 @@ import {
 	ToolbarGroup,
 	ToolbarButton,
 	Popover,
+	Spinner,
+	TextControl,
 } from '@wordpress/components';
+import { isBlobURL } from '@wordpress/blob';
 import { useState, useEffect } from '@wordpress/element';
 import { link as linkIcon } from '@wordpress/icons';
-import { LinkControl } from '@wordpress/block-editor';
+
 // import { getComputedRel } from './utils'; TODO rel doesn't work / add true to rel
 
 export default function Edit( { clientId, attributes, setAttributes } ) {
-	const { title, titleTag, linkUrl, linkTarget, rel, description } =
-		attributes;
+	const {
+		align,
+		title,
+		titleTag,
+		linkUrl,
+		linkTarget,
+		rel,
+		image_url,
+		image_alt,
+		image_id,
+	} = attributes;
 	const [ isLinkPickerOpen, setIsLinkPickerOpen ] = useState( false );
 
 	const blockIndex = useSelect(
@@ -35,22 +52,20 @@ export default function Edit( { clientId, attributes, setAttributes } ) {
 		[ clientId ]
 	);
 
-	const parentDirection = useSelect(
+	const parentAttrs = useSelect(
 		( select ) => {
 			const parentId =
 				select( 'core/block-editor' ).getBlockRootClientId( clientId );
-			if ( ! parentId ) return false;
-			const parentBlock =
-				select( 'core/block-editor' ).getBlock( parentId );
-			return parentBlock?.attributes?.direction ?? false;
+			if ( ! parentId ) return {};
+			const parent = select( 'core/block-editor' ).getBlock( parentId );
+			return parent?.attributes || {};
 		},
 		[ clientId ]
 	);
 
+	const showImagesFromParent = parentAttrs?.showImages ?? false;
 	const direction =
-		typeof parentDirection !== 'undefined'
-			? parentDirection
-			: attributes.direction;
+		typeof parentAttrs !== 'undefined' ? parentAttrs : attributes.direction;
 
 	const liClass = direction
 		? blockIndex % 2 === 0
@@ -66,7 +81,18 @@ export default function Edit( { clientId, attributes, setAttributes } ) {
 		}
 	}, [ liClass ] );
 
-	const blockProps = useBlockProps( { tagName: 'li', className: liClass } );
+	const blockProps = useBlockProps( {
+		tagName: 'li',
+		className: `${ liClass } ${ align ? `has-text-align-${ align }` : '' }`,
+	} );
+
+	const onSelect = ( media ) => {
+		setAttributes( {
+			image_url: media.url,
+			image_alt: media.alt,
+			image_id: media.id,
+		} );
+	};
 
 	return (
 		<>
@@ -101,11 +127,57 @@ export default function Edit( { clientId, attributes, setAttributes } ) {
 						}
 					/>
 				</PanelBody>
+
+				{ showImagesFromParent &&
+					image_url &&
+					! isBlobURL( image_url ) && (
+						<PanelBody title={ __( 'Image Settings', 'za' ) }>
+							<TextControl
+								label={ __( 'Image Alt', 'za' ) }
+								value={ image_alt }
+								help={ __(
+									'Add alt text for the image.',
+									'za'
+								) }
+								onChange={ ( val ) =>
+									setAttributes( { image_alt: val } )
+								}
+							/>
+						</PanelBody>
+					) }
 			</InspectorControls>
 
-			{ titleTag === 'a' && (
+			{ showImagesFromParent && image_url && (
 				<BlockControls>
-					<ToolbarGroup>
+					<MediaReplaceFlow
+						name={ __( 'Replace Image', 'za' ) }
+						onSelect={ onSelect }
+						accept="image/*"
+						allowedTypes={ [ 'image' ] }
+						mediaId={ image_id }
+						mediaUrl={ image_url }
+						mediaAlt={ image_alt }
+					/>
+					<ToolbarButton
+						onClick={ () => {
+							setAttributes( {
+								image_id: undefined,
+								image_url: undefined,
+								image_alt: '',
+							} );
+						} }
+						isDisabled={ ! image_url }
+						icon="trash"
+						title={ __( 'Remove Image', 'za' ) }
+					>
+						{ __( 'Remove Image', 'za' ) }
+					</ToolbarButton>
+				</BlockControls>
+			) }
+
+			<BlockControls>
+				<ToolbarGroup>
+					{ titleTag === 'a' && (
 						<ToolbarButton
 							icon={ linkIcon }
 							label={ __( 'Edit link', 'za' ) }
@@ -114,9 +186,14 @@ export default function Edit( { clientId, attributes, setAttributes } ) {
 							}
 							isPressed={ isLinkPickerOpen }
 						/>
-					</ToolbarGroup>
-				</BlockControls>
-			) }
+					) }
+
+					<AlignmentToolbar
+						onChange={ ( val ) => setAttributes( { align: val } ) }
+						value={ align }
+					/>
+				</ToolbarGroup>
+			</BlockControls>
 
 			{ isLinkPickerOpen && (
 				<Popover
@@ -145,10 +222,7 @@ export default function Edit( { clientId, attributes, setAttributes } ) {
 								linkTarget: newVal.opensInNewTab
 									? '_blank'
 									: '',
-								rel:
-									newVal.rel && newVal.rel !== 'true'
-										? newVal.rel
-										: '',
+								rel: newVal.rel || '',
 							} );
 						} }
 					/>
@@ -162,6 +236,30 @@ export default function Edit( { clientId, attributes, setAttributes } ) {
 				<div className="timeline-panel">
 					<div className="tl-content">
 						<div className="tl-desc">
+							{ showImagesFromParent && image_url && (
+								<div
+									className={ `timeline_pic ${
+										isBlobURL( image_url )
+											? 'image-loading'
+											: 'loaded'
+									}` }
+								>
+									<img
+										id={ `img_${ image_id }` }
+										src={ image_url }
+										alt={ image_alt }
+									/>
+									{ isBlobURL( image_url ) && <Spinner /> }
+								</div>
+							) }
+							{ showImagesFromParent && (
+								<MediaPlaceholder
+									onSelect={ onSelect }
+									accept="image/*"
+									allowedTypes={ [ 'image' ] }
+									disableMediaButtons={ !! image_url }
+								/>
+							) }
 							{ titleTag === 'a' ? (
 								<RichText
 									tagName="a"
@@ -187,16 +285,13 @@ export default function Edit( { clientId, attributes, setAttributes } ) {
 								/>
 							) }
 
-							<RichText
-								tagName="div"
-								className="tl-desc-short"
-								allowedFormats={ [] }
-								value={ description }
-								placeholder={ __( 'Your Description', 'za' ) }
-								onChange={ ( val ) =>
-									setAttributes( { description: val } )
-								}
-							/>
+							<div className="tl-desc-short">
+								<InnerBlocks
+									allowedBlocks={ [ 'core/freeform' ] }
+									template={ [ [ 'core/freeform' ] ] }
+									templateLock={ false }
+								/>
+							</div>
 						</div>
 					</div>
 				</div>
@@ -204,4 +299,3 @@ export default function Edit( { clientId, attributes, setAttributes } ) {
 		</>
 	);
 }
-

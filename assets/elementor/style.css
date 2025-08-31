@@ -128,8 +128,11 @@ li.timeline-left .timeline-side p {
 
 
 .timeline .timeline_pic {
-    padding: 0 15px 0 0;
+    position: relative;
+    padding: 0;
 }
+
+
 
 .tl-content p {
     margin-bottom: 5px

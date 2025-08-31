@@ -26,6 +26,7 @@
 		]
 	},
 	"devDependencies": {
+		"@wordpress/blob": "^4.29.0",
 		"@wordpress/components": "^28.9.0",
 		"@wordpress/data": "^10.9.0",
 		"@wordpress/eslint-plugin": "^22.0.0",
