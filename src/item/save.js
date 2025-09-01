@@ -7,14 +7,16 @@ export default function Save( { attributes } ) {
 		align,
 		title,
 		titleTag,
+		titleColor,
+		descriptionColor,
 		linkUrl,
 		linkTarget,
 		rel,
 		position,
 		showImages,
-		image_id,
-		image_url,
-		image_alt,
+		imageId,
+		imageUrl,
+		imageAlt,
 	} = attributes;
 
 	const blockProps = useBlockProps.save( {
@@ -31,18 +33,18 @@ export default function Save( { attributes } ) {
 			<div className="timeline-panel">
 				<div className="tl-content">
 					<div className="tl-desc">
-						{ showImages && image_url && (
+						{ showImages && imageUrl && (
 							<div
 								className={ `timeline_pic ${
-									isBlobURL( image_url )
+									isBlobURL( imageUrl )
 										? 'image-loading'
 										: 'loaded'
 								}` }
 							>
 								<img
-									id={ `img_${ image_id }` }
-									src={ image_url }
-									alt={ image_alt }
+									id={ `img_${ imageId }` }
+									src={ imageUrl }
+									alt={ imageAlt }
 								/>
 							</div>
 						) }
@@ -61,9 +63,17 @@ export default function Save( { attributes } ) {
 								tagName={ titleTag }
 								className="tl-title"
 								value={ title }
+								{ ...( titleColor
+									? { style: { color: titleColor } }
+									: {} ) }
 							/>
 						) }
-						<div className="tl-desc-short">
+						<div
+							className="tl-desc-short"
+							{ ...( descriptionColor
+								? { style: { color: descriptionColor } }
+								: {} ) }
+						>
 							<InnerBlocks.Content />
 						</div>
 					</div>

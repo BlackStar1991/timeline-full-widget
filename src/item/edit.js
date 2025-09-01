@@ -8,6 +8,7 @@ import {
 	MediaReplaceFlow,
 	InnerBlocks,
 	LinkControl,
+	PanelColorSettings,
 } from '@wordpress/block-editor';
 import { __ } from '@wordpress/i18n';
 import { useSelect } from '@wordpress/data';
@@ -31,12 +32,15 @@ export default function Edit( { clientId, attributes, setAttributes } ) {
 		align,
 		title,
 		titleTag,
+		titleColor,
+		descriptionColor,
 		linkUrl,
 		linkTarget,
 		rel,
-		image_url,
-		image_alt,
-		image_id,
+		showImages,
+		imageUrl,
+		imageAlt,
+		imageId,
 	} = attributes;
 	const [ isLinkPickerOpen, setIsLinkPickerOpen ] = useState( false );
 
@@ -63,9 +67,10 @@ export default function Edit( { clientId, attributes, setAttributes } ) {
 		[ clientId ]
 	);
 
-	const showImagesFromParent = parentAttrs?.showImages ?? false;
 	const direction =
-		typeof parentAttrs !== 'undefined' ? parentAttrs : attributes.direction;
+		typeof parentAttrs?.direction !== 'undefined'
+			? parentAttrs.direction
+			: attributes.direction;
 
 	const liClass = direction
 		? blockIndex % 2 === 0
@@ -88,9 +93,9 @@ export default function Edit( { clientId, attributes, setAttributes } ) {
 
 	const onSelect = ( media ) => {
 		setAttributes( {
-			image_url: media.url,
-			image_alt: media.alt,
-			image_id: media.id,
+			imageUrl: media.url,
+			imageAlt: media.alt,
+			imageId: media.id,
 		} );
 	};
 
@@ -104,69 +109,75 @@ export default function Edit( { clientId, attributes, setAttributes } ) {
 						options={ [
 							{ label: 'H1', value: 'h1' },
 							{ label: 'H2', value: 'h2' },
-							{
-								label: 'H3',
-								value: 'h3',
-							},
+							{ label: 'H3', value: 'h3' },
 							{ label: 'H4', value: 'h4' },
 							{ label: 'H5', value: 'h5' },
-							{
-								label: 'H6',
-								value: 'h6',
-							},
+							{ label: 'H6', value: 'h6' },
 							{ label: 'Paragraph', value: 'p' },
 							{ label: 'Div', value: 'div' },
-							{
-								label: 'Span',
-								value: 'span',
-							},
+							{ label: 'Span', value: 'span' },
 							{ label: 'Link (a)', value: 'a' },
 						] }
 						onChange={ ( val ) =>
 							setAttributes( { titleTag: val } )
 						}
 					/>
+
+					<PanelColorSettings
+						title={ __( 'Color settings', 'za' ) }
+						colorSettings={ [
+							{
+								value: attributes.titleColor,
+								onChange: ( color ) =>
+									setAttributes( { titleColor: color } ),
+								label: __( 'Title color', 'za' ),
+							},
+							{
+								value: attributes.descriptionColor,
+								onChange: ( color ) =>
+									setAttributes( {
+										descriptionColor: color,
+									} ),
+								label: __( 'Description color', 'za' ),
+							},
+						] }
+					/>
 				</PanelBody>
 
-				{ showImagesFromParent &&
-					image_url &&
-					! isBlobURL( image_url ) && (
-						<PanelBody title={ __( 'Image Settings', 'za' ) }>
-							<TextControl
-								label={ __( 'Image Alt', 'za' ) }
-								value={ image_alt }
-								help={ __(
-									'Add alt text for the image.',
-									'za'
-								) }
-								onChange={ ( val ) =>
-									setAttributes( { image_alt: val } )
-								}
-							/>
-						</PanelBody>
-					) }
+				{ showImages && imageUrl && ! isBlobURL( imageUrl ) && (
+					<PanelBody title={ __( 'Image Settings', 'za' ) }>
+						<TextControl
+							label={ __( 'Image Alt', 'za' ) }
+							value={ imageAlt }
+							help={ __( 'Add alt text for the image.', 'za' ) }
+							onChange={ ( val ) =>
+								setAttributes( { imageAlt: val } )
+							}
+						/>
+					</PanelBody>
+				) }
 			</InspectorControls>
 
-			{ showImagesFromParent && image_url && (
+			{ showImages && imageUrl && (
 				<BlockControls>
 					<MediaReplaceFlow
 						name={ __( 'Replace Image', 'za' ) }
 						onSelect={ onSelect }
 						accept="image/*"
 						allowedTypes={ [ 'image' ] }
-						mediaId={ image_id }
-						mediaUrl={ image_url }
-						mediaAlt={ image_alt }
+						mediaId={ imageId }
+						mediaUrl={ imageUrl }
+						mediaAlt={ imageAlt }
 					/>
 					<ToolbarButton
 						onClick={ () => {
 							setAttributes( {
-								image_id: undefined,
-								image_url: undefined,
-								image_alt: '',
+								imageId: undefined,
+								imageUrl: undefined,
+								imageAlt: '',
 							} );
 						} }
-						isDisabled={ ! image_url }
+						isDisabled={ ! imageUrl }
 						icon="trash"
 						title={ __( 'Remove Image', 'za' ) }
 					>
@@ -236,28 +247,28 @@ export default function Edit( { clientId, attributes, setAttributes } ) {
 				<div className="timeline-panel">
 					<div className="tl-content">
 						<div className="tl-desc">
-							{ showImagesFromParent && image_url && (
+							{ showImages && imageUrl && (
 								<div
 									className={ `timeline_pic ${
-										isBlobURL( image_url )
+										isBlobURL( imageUrl )
 											? 'image-loading'
 											: 'loaded'
 									}` }
 								>
 									<img
-										id={ `img_${ image_id }` }
-										src={ image_url }
-										alt={ image_alt }
+										id={ `img_${ imageId }` }
+										src={ imageUrl }
+										alt={ imageAlt }
 									/>
-									{ isBlobURL( image_url ) && <Spinner /> }
+									{ isBlobURL( imageUrl ) && <Spinner /> }
 								</div>
 							) }
-							{ showImagesFromParent && (
+							{ showImages && (
 								<MediaPlaceholder
 									onSelect={ onSelect }
 									accept="image/*"
 									allowedTypes={ [ 'image' ] }
-									disableMediaButtons={ !! image_url }
+									disableMediaButtons={ !! imageUrl }
 								/>
 							) }
 							{ titleTag === 'a' ? (
@@ -272,6 +283,9 @@ export default function Edit( { clientId, attributes, setAttributes } ) {
 									placeholder={ __( 'Add link text…', 'za' ) }
 									href={ linkUrl || undefined }
 									target={ linkTarget || undefined }
+									{ ...( titleColor
+										? { style: { color: titleColor } }
+										: {} ) }
 								/>
 							) : (
 								<RichText
@@ -282,10 +296,18 @@ export default function Edit( { clientId, attributes, setAttributes } ) {
 									onChange={ ( val ) =>
 										setAttributes( { title: val } )
 									}
+									{ ...( titleColor
+										? { style: { color: titleColor } }
+										: {} ) }
 								/>
 							) }
 
-							<div className="tl-desc-short">
+							<div
+								className="tl-desc-short"
+								{ ...( descriptionColor
+									? { style: { color: descriptionColor } }
+									: {} ) }
+							>
 								<InnerBlocks
 									allowedBlocks={ [ 'core/freeform' ] }
 									template={ [ [ 'core/freeform' ] ] }

@@ -22,6 +22,14 @@ registerBlockType( 'za/timeline-item', {
 			type: 'string',
 			default: 'h3',
 		},
+		titleColor: {
+			type: 'string',
+			default: '',
+		},
+		descriptionColor: {
+			type: 'string',
+			default: '',
+		},
 		linkUrl: { type: 'string', default: '' },
 		linkTarget: { type: 'string', default: '' },
 		rel: { type: 'string', default: '' },
@@ -34,20 +42,24 @@ registerBlockType( 'za/timeline-item', {
 			source: 'attribute',
 			default: 'left',
 		},
-		image_url: {
+		showImages: {
+			type: 'boolean',
+			default: true,
+		},
+		imageUrl: {
 			type: 'string',
 			source: 'attribute',
-			selector: 'img',
+			selector: '.timeline_pic img',
 			attribute: 'src',
 		},
-		image_alt: {
+		imageAlt: {
 			type: 'string',
 			source: 'attribute',
-			selector: 'img',
+			selector: '.timeline_pic img',
 			attribute: 'alt',
 			default: '',
 		},
-		image_id: {
+		imageId: {
 			type: 'number',
 		},
 	},
