@@ -1,0 +1,19 @@
+.t-text-align-left {
+    text-align: left;
+}
+.t-text-align-center {
+    text-align: center;
+}
+.t-text-align-right {
+    text-align: right;
+}
+
+.timeline_pic .components-spinner{
+    position: absolute;
+    top:50%;
+    left:50%;
+    transform: translate(-50%, -50%);
+}
+.timeline_pic.image-loading{
+    opacity: 0.3;
+}

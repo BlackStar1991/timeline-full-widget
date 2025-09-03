@@ -8,7 +8,9 @@ export default function Save( { attributes } ) {
 		title,
 		titleTag,
 		titleColor,
+		titleFontSize,
 		descriptionColor,
+		itemBackgroundColor,
 		linkUrl,
 		linkTarget,
 		rel,
@@ -23,13 +25,25 @@ export default function Save( { attributes } ) {
 	if ( textAlignClass ) classes.push( `t-text-align-${ textAlignClass }` );
 	const className = Array.from( new Set( classes ) ).join( ' ' );
 	const linkProps = getSafeLinkAttributes( linkUrl, rel, linkTarget );
-
+	const titleStyle = {
+		color: titleColor || undefined,
+		fontSize: titleFontSize
+			? String( titleFontSize ).match( /px|rem|em|%/ )
+				? titleFontSize
+				: `${ titleFontSize }px`
+			: undefined,
+	};
 	return (
 		<li className={ className }>
 			<div className="timeline-side"></div>
 			<div className="tl-trigger"></div>
 			<div className="tl-circ"></div>
-			<div className="timeline-panel">
+			<div
+				className="timeline-panel"
+				{ ...( itemBackgroundColor
+					? { style: { color: itemBackgroundColor } }
+					: {} ) }
+			>
 				<div className="tl-content">
 					<div className="tl-desc">
 						{ showImages && imageUrl && (
@@ -54,25 +68,25 @@ export default function Save( { attributes } ) {
 								className="tl-title"
 								value={ title }
 								{ ...linkProps }
-								{ ...( titleColor
-									? { style: { color: titleColor } }
-									: {} ) }
+								style={ titleStyle }
 							/>
 						) : (
 							<RichText.Content
 								tagName={ titleTag }
 								className="tl-title"
 								value={ title }
-								{ ...( titleColor
-									? { style: { color: titleColor } }
-									: {} ) }
+								style={ titleStyle }
 							/>
 						) }
 
 						<div
 							className="tl-desc-short"
 							{ ...( descriptionColor
-								? { style: { color: descriptionColor } }
+								? {
+										style: {
+											backgroundColor: descriptionColor,
+										},
+								  }
 								: {} ) }
 						>
 							<InnerBlocks.Content />

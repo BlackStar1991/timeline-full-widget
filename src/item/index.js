@@ -13,6 +13,10 @@ registerBlockType( 'za/timeline-item', {
 		reusable: false,
 		align: true,
 	},
+	spacing: {
+		margin: { top: '0', bottom: '0' },
+		units: [ 'px', 'em', 'rem', 'vh', 'vw', '%' ],
+	},
 	attributes: {
 		title: {
 			type: 'string',
@@ -27,7 +31,15 @@ registerBlockType( 'za/timeline-item', {
 			type: 'string',
 			default: '',
 		},
+		titleFontSize: { type: 'string', default: '' },
+		titleMarginTop: { type: 'string', default: '' },
+		titleMarginBottom: { type: 'string', default: '' },
+
 		descriptionColor: {
+			type: 'string',
+			default: '',
+		},
+		itemBackgroundColor: {
 			type: 'string',
 			default: '',
 		},

@@ -8,6 +8,7 @@ import {
 	InnerBlocks,
 	LinkControl,
 	PanelColorSettings,
+	FontSizePicker,
 } from '@wordpress/block-editor';
 import { getSafeLinkAttributes } from './utils';
 import { __ } from '@wordpress/i18n';
@@ -21,6 +22,7 @@ import {
 	Spinner,
 	TextControl,
 } from '@wordpress/components';
+import { __experimentalUnitControl as UnitControl } from '@wordpress/components';
 import { isBlobURL } from '@wordpress/blob';
 import { useState, useEffect } from '@wordpress/element';
 import { link as linkIcon } from '@wordpress/icons';
@@ -32,7 +34,9 @@ export default function Edit( { clientId, attributes, setAttributes } ) {
 		title,
 		titleTag,
 		titleColor,
+		titleFontSize,
 		descriptionColor,
+		itemBackgroundColor,
 		linkUrl,
 		linkTarget,
 		rel,
@@ -110,6 +114,15 @@ export default function Edit( { clientId, attributes, setAttributes } ) {
 	};
 	const linkProps = getSafeLinkAttributes( linkUrl, rel, linkTarget );
 
+	const titleStyle = {
+		color: titleColor || undefined,
+		fontSize: titleFontSize
+			? String( titleFontSize ).match( /px|rem|em|%/ )
+				? titleFontSize
+				: `${ titleFontSize }px`
+			: undefined,
+	};
+
 	return (
 		<>
 			<InspectorControls>
@@ -151,6 +164,14 @@ export default function Edit( { clientId, attributes, setAttributes } ) {
 									} ),
 								label: __( 'Description color', 'za' ),
 							},
+							{
+								value: attributes.itemBackgroundColor,
+								onChange: ( color ) =>
+									setAttributes( {
+										itemBackgroundColor: color,
+									} ),
+								label: __( 'Item background color', 'za' ),
+							},
 						] }
 					/>
 				</PanelBody>
@@ -167,6 +188,33 @@ export default function Edit( { clientId, attributes, setAttributes } ) {
 						/>
 					</PanelBody>
 				) }
+
+				<PanelBody
+					title={ __( 'Typography', 'za' ) }
+					initialOpen={ true }
+				>
+					<FontSizePicker
+						value={
+							titleFontSize
+								? parseFloat( titleFontSize )
+								: undefined
+						}
+						onChange={ ( newSize ) => {
+							if ( newSize === undefined ) {
+								setAttributes( {
+									titleFontSize: '',
+									titleFontUnit: 'px',
+								} );
+								return;
+							}
+							setAttributes( {
+								titleFontSize: String( newSize ),
+								titleFontUnit: 'px',
+							} );
+						} }
+						withSlider
+					/>
+				</PanelBody>
 			</InspectorControls>
 
 			{ showImages && imageUrl && (
@@ -254,7 +302,16 @@ export default function Edit( { clientId, attributes, setAttributes } ) {
 				<div className="tl-trigger" />
 				<div className="tl-circ" />
 				<div className="timeline-panel">
-					<div className="tl-content">
+					<div
+						className="tl-content"
+						{ ...( itemBackgroundColor
+							? {
+									style: {
+										backgroundColor: itemBackgroundColor,
+									},
+							  }
+							: {} ) }
+					>
 						<div className="tl-desc">
 							{ showImages && imageUrl && (
 								<div
@@ -291,9 +348,7 @@ export default function Edit( { clientId, attributes, setAttributes } ) {
 									}
 									placeholder={ __( 'Add link text…', 'za' ) }
 									{ ...linkProps }
-									{ ...( titleColor
-										? { style: { color: titleColor } }
-										: {} ) }
+									style={ titleStyle }
 								/>
 							) : (
 								<RichText
@@ -304,9 +359,7 @@ export default function Edit( { clientId, attributes, setAttributes } ) {
 									onChange={ ( val ) =>
 										setAttributes( { title: val } )
 									}
-									{ ...( titleColor
-										? { style: { color: titleColor } }
-										: {} ) }
+									style={ titleStyle }
 								/>
 							) }
 

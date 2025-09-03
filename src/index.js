@@ -5,7 +5,8 @@ import Edit from './edit';
 import Save from './save';
 
 import './../assets/elementor/style.css';
-import './style.css';
+import './style.scss';
+import './editor.scss';
 
 // import './../assets/elementor/script.js';
 
