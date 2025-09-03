@@ -11,22 +11,17 @@
 	"style": "file:./build/style-index.css",
 	"editorStyle": "file:./build/editor.css",
 	"attributes": {
-        "showImages": {
-          "type": "boolean",
-          "default": true
-        },
+		"showImages": {
+			"type": "boolean",
+			"default": true
+		},
 		"direction": {
 			"type": "boolean",
 			"default": false
-		},
-		"align": {
-			"type": "string",
-			"default": "left"
 		}
 	},
 	"supports": {
-		"html": false,
-		"align": true
+		"html": false
 	},
 	"example": {
 		"attributes": {},

@@ -26,11 +26,11 @@
 		]
 	},
 	"devDependencies": {
-		"@wordpress/blob": "^4.29.0",
+		"@wordpress/blob": "^4.9.0",
 		"@wordpress/components": "^28.9.0",
 		"@wordpress/data": "^10.9.0",
 		"@wordpress/eslint-plugin": "^22.0.0",
-		"@wordpress/scripts": "^19.2.4",
+		"@wordpress/scripts": "^30.22.0",
 		"@wordpress/stylelint-config": "^23.21.0"
 	},
 	"dependencies": {

@@ -1,10 +1,10 @@
-import { useBlockProps, RichText, InnerBlocks } from '@wordpress/block-editor';
+import { RichText, InnerBlocks } from '@wordpress/block-editor';
 import { isBlobURL } from '@wordpress/blob';
-import { getComputedRel } from './utils';
+import { getSafeLinkAttributes } from './utils';
 
 export default function Save( { attributes } ) {
 	const {
-		align,
+		textAlignClass,
 		title,
 		titleTag,
 		titleColor,
@@ -19,14 +19,13 @@ export default function Save( { attributes } ) {
 		imageAlt,
 	} = attributes;
 
-	const blockProps = useBlockProps.save( {
-		className: `${ position } ${
-			align ? `has-text-align-${ align }` : ''
-		}`,
-	} );
+	const classes = [ 'wp-block-za-timeline-item', position ];
+	if ( textAlignClass ) classes.push( `t-text-align-${ textAlignClass }` );
+	const className = Array.from( new Set( classes ) ).join( ' ' );
+	const linkProps = getSafeLinkAttributes( linkUrl, rel, linkTarget );
 
 	return (
-		<li { ...blockProps }>
+		<li className={ className }>
 			<div className="timeline-side"></div>
 			<div className="tl-trigger"></div>
 			<div className="tl-circ"></div>
@@ -54,9 +53,10 @@ export default function Save( { attributes } ) {
 								tagName="a"
 								className="tl-title"
 								value={ title }
-								href={ linkUrl || undefined }
-								target={ linkTarget || undefined }
-								rel={ rel || undefined }
+								{ ...linkProps }
+								{ ...( titleColor
+									? { style: { color: titleColor } }
+									: {} ) }
 							/>
 						) : (
 							<RichText.Content
@@ -68,6 +68,7 @@ export default function Save( { attributes } ) {
 									: {} ) }
 							/>
 						) }
+
 						<div
 							className="tl-desc-short"
 							{ ...( descriptionColor

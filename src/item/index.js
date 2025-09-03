@@ -11,6 +11,7 @@ registerBlockType( 'za/timeline-item', {
 	supports: {
 		html: false,
 		reusable: false,
+		align: true,
 	},
 	attributes: {
 		title: {
@@ -39,8 +40,11 @@ registerBlockType( 'za/timeline-item', {
 		},
 		align: {
 			type: 'string',
-			source: 'attribute',
-			default: 'left',
+			default: '',
+		},
+		textAlignClass: {
+			type: 'string',
+			default: '',
 		},
 		showImages: {
 			type: 'boolean',

@@ -1,14 +1,36 @@
-.has-text-align-left {
+.t-text-align-left {
     text-align: left;
 }
-.has-text-align-center {
+.t-text-align-center {
     text-align: center;
 }
-.has-text-align-right {
+.t-text-align-right {
     text-align: right;
 }
+.editor-styles-wrapper .wp-block-za-timeline-item.alignleft,
+.editor-styles-wrapper .wp-block-za-timeline-item.alignright,
+.editor-styles-wrapper .wp-block-za-timeline-item.aligncenter {
+    float: none !important;      /* отменяем float, если тема его ставит */
+    display: block !important;
+}
+
+/* или более точно - отменяем на внутренних элементах */
+.editor-styles-wrapper .wp-block-za-timeline-item.alignright .tl-title,
+.editor-styles-wrapper .wp-block-za-timeline-item.alignleft .tl-title {
+    float: none !important;
+    text-align: inherit !important;
+}
+
+.timeline .block-editor-block-list__block{
+    width: 100%;
+}
+
 
 /*  */
+
+.timeline li {
+    clear: both;
+}
 
 .timeline_pic .components-spinner{
     position: absolute;

@@ -1,5 +1,4 @@
 import {
-	AlignmentToolbar,
 	useBlockProps,
 	RichText,
 	InspectorControls,
@@ -10,6 +9,7 @@ import {
 	LinkControl,
 	PanelColorSettings,
 } from '@wordpress/block-editor';
+import { getSafeLinkAttributes } from './utils';
 import { __ } from '@wordpress/i18n';
 import { useSelect } from '@wordpress/data';
 import {
@@ -25,11 +25,10 @@ import { isBlobURL } from '@wordpress/blob';
 import { useState, useEffect } from '@wordpress/element';
 import { link as linkIcon } from '@wordpress/icons';
 
-// import { getComputedRel } from './utils'; TODO rel doesn't work / add true to rel
-
 export default function Edit( { clientId, attributes, setAttributes } ) {
 	const {
 		align,
+		textAlignClass,
 		title,
 		titleTag,
 		titleColor,
@@ -56,20 +55,20 @@ export default function Edit( { clientId, attributes, setAttributes } ) {
 		[ clientId ]
 	);
 
-	const parentAttrs = useSelect(
+	const parentDirection = useSelect(
 		( select ) => {
 			const parentId =
 				select( 'core/block-editor' ).getBlockRootClientId( clientId );
-			if ( ! parentId ) return {};
+			if ( ! parentId ) return undefined; // нет родителя
 			const parent = select( 'core/block-editor' ).getBlock( parentId );
-			return parent?.attributes || {};
+			return parent?.attributes?.direction;
 		},
 		[ clientId ]
 	);
 
 	const direction =
-		typeof parentAttrs?.direction !== 'undefined'
-			? parentAttrs.direction
+		typeof parentDirection !== 'undefined'
+			? parentDirection
 			: attributes.direction;
 
 	const liClass = direction
@@ -81,14 +80,25 @@ export default function Edit( { clientId, attributes, setAttributes } ) {
 		: 'timeline-inverted';
 
 	useEffect( () => {
-		if ( attributes.position !== liClass ) {
-			setAttributes( { position: liClass } );
+		const updates = {};
+		if ( attributes.position !== liClass ) updates.position = liClass;
+		const newVal = align ? String( align ).trim() : '';
+		if ( textAlignClass !== newVal ) updates.textAlignClass = newVal;
+
+		if ( Object.keys( updates ).length > 0 ) {
+			setAttributes( updates );
 		}
-	}, [ liClass ] );
+	}, [ liClass, align, attributes.position, textAlignClass, setAttributes ] );
+
+	const editorClasses = [ liClass ];
+	if ( textAlignClass )
+		editorClasses.push( `t-text-align-${ textAlignClass }` );
+
+	const editorClassName = Array.from( new Set( editorClasses ) ).join( ' ' );
 
 	const blockProps = useBlockProps( {
 		tagName: 'li',
-		className: `${ liClass } ${ align ? `has-text-align-${ align }` : '' }`,
+		className: editorClassName,
 	} );
 
 	const onSelect = ( media ) => {
@@ -98,6 +108,7 @@ export default function Edit( { clientId, attributes, setAttributes } ) {
 			imageId: media.id,
 		} );
 	};
+	const linkProps = getSafeLinkAttributes( linkUrl, rel, linkTarget );
 
 	return (
 		<>
@@ -198,11 +209,6 @@ export default function Edit( { clientId, attributes, setAttributes } ) {
 							isPressed={ isLinkPickerOpen }
 						/>
 					) }
-
-					<AlignmentToolbar
-						onChange={ ( val ) => setAttributes( { align: val } ) }
-						value={ align }
-					/>
 				</ToolbarGroup>
 			</BlockControls>
 
@@ -228,12 +234,15 @@ export default function Edit( { clientId, attributes, setAttributes } ) {
 							},
 						] }
 						onChange={ ( newVal ) => {
+							const linkAttrs = getSafeLinkAttributes(
+								newVal.url,
+								newVal.rel,
+								newVal.opensInNewTab ? '_blank' : ''
+							);
 							setAttributes( {
-								linkUrl: newVal.url,
-								linkTarget: newVal.opensInNewTab
-									? '_blank'
-									: '',
-								rel: newVal.rel || '',
+								linkUrl: linkAttrs.href,
+								linkTarget: linkAttrs.target,
+								rel: linkAttrs.rel,
 							} );
 						} }
 					/>
@@ -281,8 +290,7 @@ export default function Edit( { clientId, attributes, setAttributes } ) {
 										setAttributes( { title: val } )
 									}
 									placeholder={ __( 'Add link text…', 'za' ) }
-									href={ linkUrl || undefined }
-									target={ linkTarget || undefined }
+									{ ...linkProps }
 									{ ...( titleColor
 										? { style: { color: titleColor } }
 										: {} ) }
@@ -309,9 +317,7 @@ export default function Edit( { clientId, attributes, setAttributes } ) {
 									: {} ) }
 							>
 								<InnerBlocks
-									allowedBlocks={ [ 'core/freeform' ] }
 									template={ [ [ 'core/freeform' ] ] }
-									templateLock={ false }
 								/>
 							</div>
 						</div>
