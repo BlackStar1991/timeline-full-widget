@@ -12,16 +12,22 @@ registerBlockType( 'za/timeline-item', {
 		html: false,
 		reusable: false,
 		align: true,
-	},
-	spacing: {
-		margin: { top: '0', bottom: '0' },
-		units: [ 'px', 'em', 'rem', 'vh', 'vw', '%' ],
+		spacing: {
+			margin: true,
+		},
 	},
 	attributes: {
 		title: {
 			type: 'string',
 			source: 'html',
 			selector: '.tl-title',
+		},
+		titleInlineStyle: {
+			type: 'string',
+			source: 'attribute',
+			selector: '.tl-title',
+			attribute: 'style',
+			default: '',
 		},
 		titleTag: {
 			type: 'string',
@@ -32,8 +38,14 @@ registerBlockType( 'za/timeline-item', {
 			default: '',
 		},
 		titleFontSize: { type: 'string', default: '' },
-		titleMarginTop: { type: 'string', default: '' },
-		titleMarginBottom: { type: 'string', default: '' },
+		titleMarginTop: {
+			type: 'number',
+			default: 0,
+		},
+		titleMarginBottom: {
+			type: 'number',
+			default: 0,
+		},
 
 		descriptionColor: {
 			type: 'string',

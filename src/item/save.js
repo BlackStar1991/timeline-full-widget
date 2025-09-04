@@ -1,14 +1,17 @@
 import { RichText, InnerBlocks } from '@wordpress/block-editor';
 import { isBlobURL } from '@wordpress/blob';
-import { getSafeLinkAttributes } from './utils';
+import { getSafeLinkAttributes, buildStyleObject } from './utils';
 
 export default function Save( { attributes } ) {
 	const {
 		textAlignClass,
 		title,
 		titleTag,
+		titleInlineStyle,
 		titleColor,
 		titleFontSize,
+		titleMarginTop,
+		titleMarginBottom,
 		descriptionColor,
 		itemBackgroundColor,
 		linkUrl,
@@ -25,14 +28,14 @@ export default function Save( { attributes } ) {
 	if ( textAlignClass ) classes.push( `t-text-align-${ textAlignClass }` );
 	const className = Array.from( new Set( classes ) ).join( ' ' );
 	const linkProps = getSafeLinkAttributes( linkUrl, rel, linkTarget );
-	const titleStyle = {
-		color: titleColor || undefined,
-		fontSize: titleFontSize
-			? String( titleFontSize ).match( /px|rem|em|%/ )
-				? titleFontSize
-				: `${ titleFontSize }px`
-			: undefined,
-	};
+	const styleObj = buildStyleObject( {
+		titleInlineStyle: titleInlineStyle,
+		titleFontSize: titleFontSize,
+		titleMarginTop: titleMarginTop,
+		titleMarginBottom: titleMarginBottom,
+		titleColor: titleColor,
+	} );
+
 	return (
 		<li className={ className }>
 			<div className="timeline-side"></div>
@@ -68,14 +71,14 @@ export default function Save( { attributes } ) {
 								className="tl-title"
 								value={ title }
 								{ ...linkProps }
-								style={ titleStyle }
+								style={ styleObj }
 							/>
 						) : (
 							<RichText.Content
 								tagName={ titleTag }
 								className="tl-title"
 								value={ title }
-								style={ titleStyle }
+								style={ styleObj }
 							/>
 						) }
 

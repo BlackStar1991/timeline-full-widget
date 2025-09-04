@@ -10,7 +10,11 @@ import {
 	PanelColorSettings,
 	FontSizePicker,
 } from '@wordpress/block-editor';
-import { getSafeLinkAttributes } from './utils';
+import {
+	getSafeLinkAttributes,
+	parseStyleString,
+	buildStyleObject,
+} from './utils';
 import { __ } from '@wordpress/i18n';
 import { useSelect } from '@wordpress/data';
 import {
@@ -21,8 +25,8 @@ import {
 	Popover,
 	Spinner,
 	TextControl,
+	RangeControl,
 } from '@wordpress/components';
-import { __experimentalUnitControl as UnitControl } from '@wordpress/components';
 import { isBlobURL } from '@wordpress/blob';
 import { useState, useEffect } from '@wordpress/element';
 import { link as linkIcon } from '@wordpress/icons';
@@ -35,6 +39,8 @@ export default function Edit( { clientId, attributes, setAttributes } ) {
 		titleTag,
 		titleColor,
 		titleFontSize,
+		titleMarginTop,
+		titleMarginBottom,
 		descriptionColor,
 		itemBackgroundColor,
 		linkUrl,
@@ -89,6 +95,25 @@ export default function Edit( { clientId, attributes, setAttributes } ) {
 		const newVal = align ? String( align ).trim() : '';
 		if ( textAlignClass !== newVal ) updates.textAlignClass = newVal;
 
+		const parsed = parseStyleString( attributes.titleInlineStyle );
+		if ( parsed.fontSize && ! attributes.titleFontSize ) {
+			// убрать единицу, если хотите хранить только число:
+			const m = parsed.fontSize.match( /^([\d.]+)(px|rem|em|%)?$/ );
+			updates.titleFontSize = m ? m[ 1 ] : parsed.fontSize;
+		}
+		if ( parsed.marginTop && ! attributes.titleMarginTop ) {
+			updates.titleMarginTop = parsed.marginTop.replace( /px$/, '' );
+		}
+		if ( parsed.marginBottom && ! attributes.titleMarginBottom ) {
+			updates.titleMarginBottom = parsed.marginBottom.replace(
+				/px$/,
+				''
+			);
+		}
+		if ( parsed.color && ! attributes.titleColor ) {
+			updates.titleColor = parsed.color;
+		}
+
 		if ( Object.keys( updates ).length > 0 ) {
 			setAttributes( updates );
 		}
@@ -114,14 +139,13 @@ export default function Edit( { clientId, attributes, setAttributes } ) {
 	};
 	const linkProps = getSafeLinkAttributes( linkUrl, rel, linkTarget );
 
-	const titleStyle = {
-		color: titleColor || undefined,
-		fontSize: titleFontSize
-			? String( titleFontSize ).match( /px|rem|em|%/ )
-				? titleFontSize
-				: `${ titleFontSize }px`
-			: undefined,
-	};
+	const titleStyle = buildStyleObject( {
+		titleInlineStyle: attributes.titleInlineStyle,
+		titleFontSize: attributes.titleFontSize,
+		titleMarginTop: attributes.titleMarginTop,
+		titleMarginBottom: attributes.titleMarginBottom,
+		titleColor: attributes.titleColor,
+	} );
 
 	return (
 		<>
@@ -194,6 +218,24 @@ export default function Edit( { clientId, attributes, setAttributes } ) {
 					initialOpen={ true }
 				>
 					<FontSizePicker
+						__next40pxDefaultSize
+						fontSizes={ [
+							{
+								name: 'Small',
+								size: 12,
+								slug: 'small',
+							},
+							{
+								name: 'Normal',
+								size: 16,
+								slug: 'normal',
+							},
+							{
+								name: 'Big',
+								size: 26,
+								slug: 'big',
+							},
+						] }
 						value={
 							titleFontSize
 								? parseFloat( titleFontSize )
@@ -202,7 +244,7 @@ export default function Edit( { clientId, attributes, setAttributes } ) {
 						onChange={ ( newSize ) => {
 							if ( newSize === undefined ) {
 								setAttributes( {
-									titleFontSize: '',
+									titleFontSize: '22',
 									titleFontUnit: 'px',
 								} );
 								return;
@@ -213,6 +255,31 @@ export default function Edit( { clientId, attributes, setAttributes } ) {
 							} );
 						} }
 						withSlider
+					/>
+				</PanelBody>
+				<PanelBody
+					title={ __( 'Title Spacing', 'za' ) }
+					initialOpen={ false }
+				>
+					<RangeControl
+						label={ __( 'Margin Top (px)', 'za' ) }
+						value={ Number( attributes.titleMarginTop ) || 0 }
+						onChange={ ( value ) =>
+							setAttributes( { titleMarginTop: String( value ) } )
+						}
+						min={ 0 }
+						max={ 100 }
+					/>
+					<RangeControl
+						label={ __( 'Margin Bottom (px)', 'za' ) }
+						value={ Number( attributes.titleMarginBottom ) || 0 }
+						onChange={ ( value ) =>
+							setAttributes( {
+								titleMarginBottom: String( value ),
+							} )
+						}
+						min={ 0 }
+						max={ 100 }
 					/>
 				</PanelBody>
 			</InspectorControls>
