@@ -169,7 +169,10 @@ export default function Edit( { clientId, attributes, setAttributes } ) {
 						onChange={ ( val ) =>
 							setAttributes( { titleTag: val } )
 						}
+                        __nextHasNoMarginBottom={ true }
+                        __next40pxDefaultSize={true}
 					/>
+
 
 					<PanelColorSettings
 						title={ __( 'Color settings', 'za' ) }
@@ -269,6 +272,7 @@ export default function Edit( { clientId, attributes, setAttributes } ) {
 						}
 						min={ 0 }
 						max={ 100 }
+                        __next40pxDefaultSize={ true }
 					/>
 					<RangeControl
 						label={ __( 'Margin Bottom (px)', 'za' ) }
@@ -280,6 +284,7 @@ export default function Edit( { clientId, attributes, setAttributes } ) {
 						}
 						min={ 0 }
 						max={ 100 }
+                        __next40pxDefaultSize={ true }
 					/>
 				</PanelBody>
 			</InspectorControls>
@@ -368,17 +373,14 @@ export default function Edit( { clientId, attributes, setAttributes } ) {
 				<div className="timeline-side" />
 				<div className="tl-trigger" />
 				<div className="tl-circ" />
-				<div className="timeline-panel">
-					<div
-						className="tl-content"
-						{ ...( itemBackgroundColor
-							? {
-									style: {
-										backgroundColor: itemBackgroundColor,
-									},
-							  }
-							: {} ) }
-					>
+				<div className="timeline-panel" { ...( itemBackgroundColor
+                    ? {
+                        style: {
+                            backgroundColor: itemBackgroundColor,
+                        },
+                    }
+                    : {} ) }>
+					<div className="tl-content">
 						<div className="tl-desc">
 							{ showImages && imageUrl && (
 								<div
@@ -430,12 +432,10 @@ export default function Edit( { clientId, attributes, setAttributes } ) {
 								/>
 							) }
 
-							<div
-								className="tl-desc-short"
+							<div className="tl-desc-short"
 								{ ...( descriptionColor
 									? { style: { color: descriptionColor } }
-									: {} ) }
-							>
+									: {} ) } >
 								<InnerBlocks
 									template={ [ [ 'core/freeform' ] ] }
 								/>

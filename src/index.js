@@ -14,10 +14,6 @@ registerBlockType( 'za/timeline-full-widget', {
 	title: 'Timeline',
 	icon: 'schedule',
 	category: 'widgets',
-	supports: {
-		html: false,
-		reusable: false,
-	},
 	edit: Edit,
 	save: Save,
 } );
