@@ -28,7 +28,7 @@ import {
 	RangeControl,
 } from '@wordpress/components';
 import { isBlobURL } from '@wordpress/blob';
-import { useState, useEffect } from '@wordpress/element';
+import { useState, useEffect, useMemo, useCallback } from '@wordpress/element';
 import { link as linkIcon } from '@wordpress/icons';
 
 export default function Edit( { clientId, attributes, setAttributes } ) {
@@ -37,10 +37,6 @@ export default function Edit( { clientId, attributes, setAttributes } ) {
 		textAlignClass,
 		title,
 		titleTag,
-		titleColor,
-		titleFontSize,
-		titleMarginTop,
-		titleMarginBottom,
 		descriptionColor,
 		itemBackgroundColor,
 		linkUrl,
@@ -50,102 +46,157 @@ export default function Edit( { clientId, attributes, setAttributes } ) {
 		imageUrl,
 		imageAlt,
 		imageId,
+		onTheOneSide,
+		titleInlineStyle,
+		titleFontSize,
+		titleMarginTop,
+		titleMarginBottom,
+		titleColor,
 	} = attributes;
+
 	const [ isLinkPickerOpen, setIsLinkPickerOpen ] = useState( false );
 
-	const blockIndex = useSelect(
+	// Combine selects into one to avoid multiple selectors and reduce re-renders
+	const { blockIndex, parentDirection } = useSelect(
 		( select ) => {
-			const parentId =
-				select( 'core/block-editor' ).getBlockRootClientId( clientId );
-			if ( ! parentId ) return 0;
-			const innerBlocks =
-				select( 'core/block-editor' ).getBlocks( parentId );
-			return innerBlocks.findIndex( ( b ) => b.clientId === clientId );
+			const editor = select( 'core/block-editor' );
+			const parentId = editor.getBlockRootClientId( clientId );
+			if ( ! parentId )
+				return { blockIndex: 0, parentDirection: undefined };
+
+			const innerBlocks = editor.getBlocks( parentId );
+			const idx = innerBlocks.findIndex(
+				( b ) => b.clientId === clientId
+			);
+			const parent = editor.getBlock( parentId );
+			return {
+				blockIndex: idx,
+				parentDirection: parent?.attributes?.direction,
+			};
 		},
 		[ clientId ]
 	);
 
-	const parentDirection = useSelect(
-		( select ) => {
-			const parentId =
-				select( 'core/block-editor' ).getBlockRootClientId( clientId );
-			if ( ! parentId ) return undefined; // нет родителя
-			const parent = select( 'core/block-editor' ).getBlock( parentId );
-			return parent?.attributes?.direction;
-		},
-		[ clientId ]
-	);
-
+	// Use parent's direction if available, otherwise local attribute (backwards compatible)
 	const direction =
 		typeof parentDirection !== 'undefined'
 			? parentDirection
 			: attributes.direction;
 
-	const liClass = direction
-		? blockIndex % 2 === 0
-			? 'timeline-inverted'
-			: 'timeline-left'
-		: blockIndex % 2 === 0
-		? 'timeline-left'
-		: 'timeline-inverted';
+	// Fallback position computed from direction + index
+	const computedFallbackPosition = useMemo( () => {
+		return direction
+			? blockIndex % 2 === 0
+				? 'timeline-inverted'
+				: 'timeline-left'
+			: blockIndex % 2 === 0
+			? 'timeline-left'
+			: 'timeline-inverted';
+	}, [ direction, blockIndex ] );
 
+	// final li class (prefer stored attribute position if present)
+	const liClass = attributes.position || computedFallbackPosition;
+
+	// ensure attributes.position (and parsed inline style) get set once when needed
 	useEffect( () => {
 		const updates = {};
-		if ( attributes.position !== liClass ) updates.position = liClass;
-		const newVal = align ? String( align ).trim() : '';
-		if ( textAlignClass !== newVal ) updates.textAlignClass = newVal;
 
-		const parsed = parseStyleString( attributes.titleInlineStyle );
-		if ( parsed.fontSize && ! attributes.titleFontSize ) {
-			// убрать единицу, если хотите хранить только число:
+		// determine what position *should* be according to parent-level flags
+		const computedPosition = onTheOneSide
+			? direction
+				? 'timeline-inverted'
+				: 'timeline-left'
+			: computedFallbackPosition;
+
+		if ( attributes.position !== computedPosition ) {
+			updates.position = computedPosition;
+		}
+
+		// parse inline style once and map to separate attributes (if they aren't present)
+		const parsed = parseStyleString( titleInlineStyle || '' );
+
+		if ( parsed.fontSize && ! titleFontSize ) {
 			const m = parsed.fontSize.match( /^([\d.]+)(px|rem|em|%)?$/ );
 			updates.titleFontSize = m ? m[ 1 ] : parsed.fontSize;
 		}
-		if ( parsed.marginTop && ! attributes.titleMarginTop ) {
+		if ( parsed.marginTop && ! titleMarginTop ) {
 			updates.titleMarginTop = parsed.marginTop.replace( /px$/, '' );
 		}
-		if ( parsed.marginBottom && ! attributes.titleMarginBottom ) {
+		if ( parsed.marginBottom && ! titleMarginBottom ) {
 			updates.titleMarginBottom = parsed.marginBottom.replace(
 				/px$/,
 				''
 			);
 		}
-		if ( parsed.color && ! attributes.titleColor ) {
+		if ( parsed.color && ! titleColor ) {
 			updates.titleColor = parsed.color;
 		}
 
-		if ( Object.keys( updates ).length > 0 ) {
+		if ( Object.keys( updates ).length ) {
 			setAttributes( updates );
 		}
-	}, [ liClass, align, attributes.position, textAlignClass, setAttributes ] );
+		// Only run when important inputs change
+	}, [
+		blockIndex,
+		direction,
+		onTheOneSide,
+		attributes.position,
+		titleInlineStyle,
+		titleFontSize,
+		titleMarginTop,
+		titleMarginBottom,
+		titleColor,
+		setAttributes,
+	] );
 
-	const editorClasses = [ liClass ];
-	if ( textAlignClass )
-		editorClasses.push( `t-text-align-${ textAlignClass }` );
-
-	const editorClassName = Array.from( new Set( editorClasses ) ).join( ' ' );
+	// Memoize computed editor class name
+	const editorClassName = useMemo( () => {
+		const classes = [ liClass ];
+		if ( textAlignClass )
+			classes.push( `t-text-align-${ textAlignClass }` );
+		return Array.from( new Set( classes ) ).join( ' ' );
+	}, [ liClass, textAlignClass ] );
 
 	const blockProps = useBlockProps( {
 		tagName: 'li',
 		className: editorClassName,
 	} );
 
-	const onSelect = ( media ) => {
-		setAttributes( {
-			imageUrl: media.url,
-			imageAlt: media.alt,
-			imageId: media.id,
-		} );
-	};
-	const linkProps = getSafeLinkAttributes( linkUrl, rel, linkTarget );
+	// memoized callbacks
+	const onSelect = useCallback(
+		( media ) => {
+			setAttributes( {
+				imageUrl: media.url,
+				imageAlt: media.alt,
+				imageId: media.id,
+			} );
+		},
+		[ setAttributes ]
+	);
 
-	const titleStyle = buildStyleObject( {
-		titleInlineStyle: attributes.titleInlineStyle,
-		titleFontSize: attributes.titleFontSize,
-		titleMarginTop: attributes.titleMarginTop,
-		titleMarginBottom: attributes.titleMarginBottom,
-		titleColor: attributes.titleColor,
-	} );
+	const linkProps = useMemo(
+		() => getSafeLinkAttributes( linkUrl, rel, linkTarget ),
+		[ linkUrl, rel, linkTarget ]
+	);
+
+	// title style object (memoized)
+	const titleStyle = useMemo(
+		() =>
+			buildStyleObject( {
+				titleInlineStyle,
+				titleFontSize,
+				titleMarginTop,
+				titleMarginBottom,
+				titleColor,
+			} ),
+		[
+			titleInlineStyle,
+			titleFontSize,
+			titleMarginTop,
+			titleMarginBottom,
+			titleColor,
+		]
+	);
 
 	return (
 		<>
@@ -169,22 +220,21 @@ export default function Edit( { clientId, attributes, setAttributes } ) {
 						onChange={ ( val ) =>
 							setAttributes( { titleTag: val } )
 						}
-                        __nextHasNoMarginBottom={ true }
-                        __next40pxDefaultSize={true}
+						__nextHasNoMarginBottom={ true }
+						__next40pxDefaultSize={ true }
 					/>
-
 
 					<PanelColorSettings
 						title={ __( 'Color settings', 'za' ) }
 						colorSettings={ [
 							{
-								value: attributes.titleColor,
+								value: titleColor,
 								onChange: ( color ) =>
 									setAttributes( { titleColor: color } ),
 								label: __( 'Title color', 'za' ),
 							},
 							{
-								value: attributes.descriptionColor,
+								value: descriptionColor,
 								onChange: ( color ) =>
 									setAttributes( {
 										descriptionColor: color,
@@ -192,7 +242,7 @@ export default function Edit( { clientId, attributes, setAttributes } ) {
 								label: __( 'Description color', 'za' ),
 							},
 							{
-								value: attributes.itemBackgroundColor,
+								value: itemBackgroundColor,
 								onChange: ( color ) =>
 									setAttributes( {
 										itemBackgroundColor: color,
@@ -212,6 +262,8 @@ export default function Edit( { clientId, attributes, setAttributes } ) {
 							onChange={ ( val ) =>
 								setAttributes( { imageAlt: val } )
 							}
+							__next40pxDefaultSize={ true }
+							__nextHasNoMarginBottom={ true }
 						/>
 					</PanelBody>
 				) }
@@ -223,21 +275,9 @@ export default function Edit( { clientId, attributes, setAttributes } ) {
 					<FontSizePicker
 						__next40pxDefaultSize
 						fontSizes={ [
-							{
-								name: 'Small',
-								size: 12,
-								slug: 'small',
-							},
-							{
-								name: 'Normal',
-								size: 16,
-								slug: 'normal',
-							},
-							{
-								name: 'Big',
-								size: 26,
-								slug: 'big',
-							},
+							{ name: 'Small', size: 12, slug: 'small' },
+							{ name: 'Normal', size: 16, slug: 'normal' },
+							{ name: 'Big', size: 26, slug: 'big' },
 						] }
 						value={
 							titleFontSize
@@ -260,23 +300,24 @@ export default function Edit( { clientId, attributes, setAttributes } ) {
 						withSlider
 					/>
 				</PanelBody>
+
 				<PanelBody
 					title={ __( 'Title Spacing', 'za' ) }
 					initialOpen={ false }
 				>
 					<RangeControl
 						label={ __( 'Margin Top (px)', 'za' ) }
-						value={ Number( attributes.titleMarginTop ) || 0 }
+						value={ Number( titleMarginTop ) || 0 }
 						onChange={ ( value ) =>
 							setAttributes( { titleMarginTop: String( value ) } )
 						}
 						min={ 0 }
 						max={ 100 }
-                        __next40pxDefaultSize={ true }
+						__next40pxDefaultSize={ true }
 					/>
 					<RangeControl
 						label={ __( 'Margin Bottom (px)', 'za' ) }
-						value={ Number( attributes.titleMarginBottom ) || 0 }
+						value={ Number( titleMarginBottom ) || 0 }
 						onChange={ ( value ) =>
 							setAttributes( {
 								titleMarginBottom: String( value ),
@@ -284,7 +325,7 @@ export default function Edit( { clientId, attributes, setAttributes } ) {
 						}
 						min={ 0 }
 						max={ 100 }
-                        __next40pxDefaultSize={ true }
+						__next40pxDefaultSize={ true }
 					/>
 				</PanelBody>
 			</InspectorControls>
@@ -301,13 +342,13 @@ export default function Edit( { clientId, attributes, setAttributes } ) {
 						mediaAlt={ imageAlt }
 					/>
 					<ToolbarButton
-						onClick={ () => {
+						onClick={ () =>
 							setAttributes( {
 								imageId: undefined,
 								imageUrl: undefined,
 								imageAlt: '',
-							} );
-						} }
+							} )
+						}
 						isDisabled={ ! imageUrl }
 						icon="trash"
 						title={ __( 'Remove Image', 'za' ) }
@@ -370,16 +411,27 @@ export default function Edit( { clientId, attributes, setAttributes } ) {
 			) }
 
 			<li { ...blockProps }>
-				<div className="timeline-side" />
+				<div className="timeline-side">
+					{ attributes.showOtherSide && (
+						<RichText
+							tagName="p"
+							value={ attributes.otherSiteTitle }
+							onChange={ ( val ) =>
+								setAttributes( { otherSiteTitle: val } )
+							}
+							placeholder={ __( 'Add other side text', 'za' ) }
+						/>
+					) }
+				</div>
+
 				<div className="tl-trigger" />
 				<div className="tl-circ" />
-				<div className="timeline-panel" { ...( itemBackgroundColor
-                    ? {
-                        style: {
-                            backgroundColor: itemBackgroundColor,
-                        },
-                    }
-                    : {} ) }>
+				<div
+					className="timeline-panel"
+					{ ...( itemBackgroundColor
+						? { style: { backgroundColor: itemBackgroundColor } }
+						: {} ) }
+				>
 					<div className="tl-content">
 						<div className="tl-desc">
 							{ showImages && imageUrl && (
@@ -398,14 +450,15 @@ export default function Edit( { clientId, attributes, setAttributes } ) {
 									{ isBlobURL( imageUrl ) && <Spinner /> }
 								</div>
 							) }
-							{ showImages && (
+
+							{ showImages && ! imageUrl && (
 								<MediaPlaceholder
 									onSelect={ onSelect }
 									accept="image/*"
 									allowedTypes={ [ 'image' ] }
-									disableMediaButtons={ !! imageUrl }
 								/>
 							) }
+
 							{ titleTag === 'a' ? (
 								<RichText
 									tagName="a"
@@ -432,10 +485,12 @@ export default function Edit( { clientId, attributes, setAttributes } ) {
 								/>
 							) }
 
-							<div className="tl-desc-short"
+							<div
+								className="tl-desc-short"
 								{ ...( descriptionColor
 									? { style: { color: descriptionColor } }
-									: {} ) } >
+									: {} ) }
+							>
 								<InnerBlocks
 									template={ [ [ 'core/freeform' ] ] }
 								/>

@@ -22,6 +22,8 @@ export default function Save( { attributes } ) {
 		imageId,
 		imageUrl,
 		imageAlt,
+		otherSiteTitle,
+		showOtherSide,
 	} = attributes;
 
 	const classes = [ 'wp-block-za-timeline-item', position ];
@@ -38,16 +40,27 @@ export default function Save( { attributes } ) {
 
 	return (
 		<li className={ className }>
-			<div className="timeline-side"></div>
+			<div className="timeline-side">
+				{ showOtherSide && (
+					<RichText.Content
+						tagName="p"
+						value={ otherSiteTitle }
+						style={ styleObj }
+					/>
+				) }
+			</div>
 			<div className="tl-trigger"></div>
 			<div className="tl-circ"></div>
-            <div className="timeline-panel" { ...( itemBackgroundColor
-                ? {
-                    style: {
-                        backgroundColor: itemBackgroundColor,
-                    },
-                }
-                : {} ) }>
+			<div
+				className="timeline-panel"
+				{ ...( itemBackgroundColor
+					? {
+							style: {
+								backgroundColor: itemBackgroundColor,
+							},
+					  }
+					: {} ) }
+			>
 				<div className="tl-content">
 					<div className="tl-desc">
 						{ showImages && imageUrl && (
@@ -83,10 +96,12 @@ export default function Save( { attributes } ) {
 							/>
 						) }
 
-                        <div className="tl-desc-short"
-                             { ...( descriptionColor
-                                 ? { style: { color: descriptionColor } }
-                                 : {} ) } >
+						<div
+							className="tl-desc-short"
+							{ ...( descriptionColor
+								? { style: { color: descriptionColor } }
+								: {} ) }
+						>
 							<InnerBlocks.Content />
 						</div>
 					</div>

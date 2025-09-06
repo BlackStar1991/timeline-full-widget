@@ -62,6 +62,10 @@ registerBlockType( 'za/timeline-item', {
 			type: 'string',
 			default: 'timeline-left',
 		},
+		onTheOneSide: {
+			type: 'boolean',
+			default: false,
+		},
 		align: {
 			type: 'string',
 			default: '',
@@ -89,6 +93,15 @@ registerBlockType( 'za/timeline-item', {
 		},
 		imageId: {
 			type: 'number',
+		},
+		showOtherSide: {
+			type: 'boolean',
+			default: true,
+		},
+		otherSiteTitle: {
+			type: 'string',
+			selector: '.timeline-side p',
+			default: '',
 		},
 	},
 	edit: Edit,

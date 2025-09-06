@@ -71,6 +71,10 @@ li.timeline-left .timeline-side p {
     margin: 0;
 }
 
+.timeline-side strong{
+    font-weight: 600;
+}
+
 .timeline-side p:not(:last-child) {
     margin-bottom: 10px;
 }
@@ -163,6 +167,8 @@ li.timeline-left .timeline-side p {
         transform: none;
         left: -2px;
     }
+
+
     .timeline-line-animation{
         transform: none;
         left: 10px;
