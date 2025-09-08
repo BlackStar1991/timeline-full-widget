@@ -7,7 +7,12 @@ import {
 import { PanelBody, ToggleControl } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
 import { useSelect, useDispatch } from '@wordpress/data';
-import { useEffect, useCallback } from '@wordpress/element';
+import {
+	useEffect,
+	useCallback,
+	useRef,
+	useLayoutEffect,
+} from '@wordpress/element';
 
 export default function Edit( { attributes, setAttributes, clientId } ) {
 	const {
@@ -16,8 +21,11 @@ export default function Edit( { attributes, setAttributes, clientId } ) {
 		onTheOneSide,
 		lineColor,
 		showOtherSide,
+		animationTimeline,
+		animationTimelineColor,
 	} = attributes;
 
+	const wrapperRef = useRef( null );
 	const { updateBlockAttributes } = useDispatch( 'core/block-editor' );
 
 	const innerBlocks = useSelect(
@@ -27,17 +35,10 @@ export default function Edit( { attributes, setAttributes, clientId } ) {
 
 	const syncToChildren = useCallback(
 		( attrs = {} ) => {
-			if ( ! Array.isArray( innerBlocks ) || innerBlocks.length === 0 )
-				return;
+			if ( ! innerBlocks.length ) return;
 
-			const parentDirection =
-				typeof attrs.direction !== 'undefined'
-					? attrs.direction
-					: direction;
-			const parentOneSide =
-				typeof attrs.onTheOneSide !== 'undefined'
-					? attrs.onTheOneSide
-					: onTheOneSide;
+			const parentDirection = attrs.direction ?? direction;
+			const parentOneSide = attrs.onTheOneSide ?? onTheOneSide;
 
 			innerBlocks.forEach( ( block, index ) => {
 				const updates = { ...attrs };
@@ -47,132 +48,208 @@ export default function Edit( { attributes, setAttributes, clientId } ) {
 						? 'timeline-inverted'
 						: 'timeline-left';
 				} else {
+					const isEven = index % 2 === 0;
 					updates.position = parentDirection
-						? index % 2 === 0
+						? isEven
 							? 'timeline-inverted'
 							: 'timeline-left'
-						: index % 2 === 0
+						: isEven
 						? 'timeline-left'
 						: 'timeline-inverted';
 				}
 
-				updateBlockAttributes( block.clientId, updates );
+				const needsUpdate = Object.keys( updates ).some(
+					( key ) => block.attributes?.[ key ] !== updates[ key ]
+				);
+
+				if ( needsUpdate ) {
+					updateBlockAttributes( block.clientId, updates );
+				}
 			} );
 		},
 		[ innerBlocks, updateBlockAttributes, direction, onTheOneSide ]
 	);
-	useEffect( () => {
-		syncToChildren( { showOtherSide } );
-	}, [ showOtherSide, syncToChildren ] );
+
+	useLayoutEffect( () => {
+		syncToChildren( {
+			showOtherSide,
+			showImages,
+			lineColor,
+			direction,
+			onTheOneSide,
+			animationTimeline,
+			animationTimelineColor,
+		} );
+	}, [
+		showOtherSide,
+		showImages,
+		lineColor,
+		direction,
+		onTheOneSide,
+		animationTimeline,
+		animationTimelineColor,
+		syncToChildren,
+	] );
 
 	useEffect( () => {
-		syncToChildren( { showImages, lineColor } );
-	}, [ showImages, lineColor, syncToChildren ] );
+		if ( ! animationTimeline || ! wrapperRef.current ) return;
 
-	useEffect( () => {
-		syncToChildren( { direction, onTheOneSide } );
-	}, [ direction, onTheOneSide, syncToChildren ] );
+		let destroyFn;
+		let active = true;
+		const el = wrapperRef.current;
 
-	const handleDirectionChange = ( val ) => {
-		setAttributes( { direction: val } );
-		syncToChildren( { direction: val } );
-	};
+		import( '../assets/gutenberg/gutenberg-script.js' )
+			.then( ( mod ) => {
+				if ( ! active ) return;
+				if ( typeof mod.initTimelineAnimation === 'function' ) {
+					destroyFn = mod.initTimelineAnimation( el );
+				} else if ( typeof mod.initAllWidgets === 'function' ) {
+					destroyFn = mod.initAllWidgets( el );
+				}
+			} )
+			.catch( ( err ) => {
+				console.error(
+					'Failed to load timeline animation script',
+					err
+				);
+			} );
 
-	const handlePositionChange = ( val ) => {
-		setAttributes( { onTheOneSide: val } );
-		syncToChildren( { onTheOneSide: val } );
-	};
+		return () => {
+			active = false;
+			if ( typeof destroyFn === 'function' ) destroyFn();
+		};
+	}, [ animationTimeline, innerBlocks.length ] );
+
+	const outerProps = useBlockProps();
 
 	return (
-		<div { ...useBlockProps() }>
-			<InspectorControls>
-				<PanelBody title={ __( 'Timeline Settings', 'za' ) }>
-					<ToggleControl
-						label={ __( 'Show Images', 'za' ) }
-						help={
-							showImages ? __( 'On', 'za' ) : __( 'Off', 'za' )
-						}
-						checked={ showImages }
-						onChange={ ( val ) =>
-							setAttributes( { showImages: val } )
-						}
-						__nextHasNoMarginBottom={ true }
-					/>
-					<ToggleControl
-						label={ __( 'Direction', 'za' ) }
-						help={
-							direction ? __( 'Right', 'za' ) : __( 'Left', 'za' )
-						}
-						checked={ direction }
-						onChange={ handleDirectionChange }
-						__nextHasNoMarginBottom={ true }
-					/>
-					<ToggleControl
-						label={ __( 'Single Side Layout', 'za' ) }
-						help={
-							onTheOneSide ? __( 'Yes', 'za' ) : __( 'No', 'za' )
-						}
-						checked={ onTheOneSide }
-						onChange={ handlePositionChange }
-						__nextHasNoMarginBottom={ true }
-					/>
-
-					<ToggleControl
-						label={ __( 'Show other side', 'za' ) }
-						help={
-							showOtherSide ? __( 'Yes', 'za' ) : __( 'No', 'za' )
-						}
-						checked={ showOtherSide }
-						onChange={ ( val ) =>
-							setAttributes( { showOtherSide: val } )
-						}
-						__nextHasNoMarginBottom={ true }
-					/>
-					<PanelColorSettings
-						title="Timeline colors"
-						colorSettings={ [
-							{
-								value: lineColor,
-								onChange: ( color ) =>
-									setAttributes( { lineColor: color } ),
-								label: 'Line & circle color',
-							},
-						] }
-					/>
-				</PanelBody>
-			</InspectorControls>
-
-			<div className="timeline-line-animation" />
-			<ul
-				className="timeline"
-				style={ { '--timeline-color': lineColor || '#F6F6F8' } }
+		<div { ...outerProps }>
+			<div
+				className="timeline-wrapper"
+				ref={ wrapperRef }
+				style={ {
+					'--timeline-color': lineColor || '#F6F6F8',
+					'--timeline-color-animation':
+						animationTimelineColor || '#F37321',
+				} }
 			>
-				<InnerBlocks
-					allowedBlocks={ [ 'za/timeline-item' ] }
-					template={ [
-						[
-							'za/timeline-item',
+				<InspectorControls>
+					<PanelBody title={ __( 'Timeline Settings', 'za' ) }>
+						{ [
 							{
-								title: __( 'Timeline Item #1', 'za' ),
-								showImages,
-								direction,
-								showOtherSide,
+								label: __( 'Show Images', 'za' ),
+								help: showImages
+									? __( 'On', 'za' )
+									: __( 'Off', 'za' ),
+								checked: showImages,
+								onChange: ( val ) =>
+									setAttributes( { showImages: val } ),
 							},
-						],
-						[
-							'za/timeline-item',
 							{
-								title: __( 'Timeline Item #2', 'za' ),
-								showImages,
-								direction,
-								showOtherSide,
+								label: __( 'Direction', 'za' ),
+								help: direction
+									? __( 'Right', 'za' )
+									: __( 'Left', 'za' ),
+								checked: direction,
+								onChange: ( val ) =>
+									setAttributes( { direction: val } ),
 							},
-						],
-					] }
-					templateLock={ false }
-					renderAppender={ InnerBlocks.ButtonBlockAppender }
-				/>
-			</ul>
+							{
+								label: __( 'Single Side Layout', 'za' ),
+								help: onTheOneSide
+									? __( 'Yes', 'za' )
+									: __( 'No', 'za' ),
+								checked: onTheOneSide,
+								onChange: ( val ) =>
+									setAttributes( { onTheOneSide: val } ),
+							},
+							{
+								label: __( 'Show other side', 'za' ),
+								help: showOtherSide
+									? __( 'Yes', 'za' )
+									: __( 'No', 'za' ),
+								checked: showOtherSide,
+								onChange: ( val ) =>
+									setAttributes( { showOtherSide: val } ),
+							},
+							{
+								label: __( 'Enable Line Animation', 'za' ),
+								help: animationTimeline
+									? __( 'Yes', 'za' )
+									: __( 'No', 'za' ),
+								checked: animationTimeline,
+								onChange: ( val ) =>
+									setAttributes( { animationTimeline: val } ),
+							},
+						].map( ( ctrl, i ) => (
+							<ToggleControl
+								key={ i }
+								{ ...ctrl }
+								__nextHasNoMarginBottom
+							/>
+						) ) }
+
+						<PanelColorSettings
+							title={ __( 'Timeline color', 'za' ) }
+							colorSettings={ [
+								{
+									value: lineColor,
+									onChange: ( color ) =>
+										setAttributes( { lineColor: color } ),
+									label: __( 'Line & circle color', 'za' ),
+								},
+							] }
+						/>
+						{ animationTimeline && (
+							<PanelColorSettings
+								title={ __( 'Timeline Animation Color', 'za' ) }
+								colorSettings={ [
+									{
+										value: animationTimelineColor,
+										onChange: ( color ) =>
+											setAttributes( {
+												animationTimelineColor: color,
+											} ),
+										label: __( 'Animation Color', 'za' ),
+									},
+								] }
+							/>
+						) }
+					</PanelBody>
+				</InspectorControls>
+
+				{ animationTimeline && (
+					<div className="timeline-line-animation" />
+				) }
+
+				<ul className="timeline">
+					<InnerBlocks
+						allowedBlocks={ [ 'za/timeline-item' ] }
+						template={ [
+							[
+								'za/timeline-item',
+								{
+									title: __( 'Timeline Item #1', 'za' ),
+									showImages,
+									direction,
+									showOtherSide,
+								},
+							],
+							[
+								'za/timeline-item',
+								{
+									title: __( 'Timeline Item #2', 'za' ),
+									showImages,
+									direction,
+									showOtherSide,
+								},
+							],
+						] }
+						templateLock={ false }
+						renderAppender={ InnerBlocks.ButtonBlockAppender }
+					/>
+				</ul>
+			</div>
 		</div>
 	);
 }

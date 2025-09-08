@@ -34,6 +34,14 @@
 		"showOtherSide": {
 			"type": "boolean",
 			"default": true
+		},
+		"animationTimeline": {
+			"type": "boolean",
+			"default": true
+		},
+		"animationTimelineColor": {
+			"type": "string",
+			"default": "#F37321"
 		}
 	},
 	"supports": {

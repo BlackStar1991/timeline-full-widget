@@ -4,7 +4,7 @@ import Edit from './edit';
 import Save from './save';
 
 registerBlockType( 'za/timeline-item', {
-	title: __( 'Timeline Item Title', 'za' ),
+	title: __( 'Timeline Item', 'za' ),
 	description: __( 'Timeline Item Description', 'za' ),
 	icon: 'universal-access',
 	parent: [ 'za/timeline-full-widget' ],

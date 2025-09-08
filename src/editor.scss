@@ -28,10 +28,11 @@
     clear: both;
 }
 
-.timeline .block-editor-block-list__layout > .block-editor-block-list__block:not(:first-of-type) .tl-circ {
+.timeline .block-editor-block-list__layout > .block-editor-block-list__block:first-of-type .tl-circ {
   transform: translateX(calc(-50% - 3px));
 }
 
 .timeline .block-editor-block-list__block:not(:first-child) {
   margin-top: 40px;
 }
+

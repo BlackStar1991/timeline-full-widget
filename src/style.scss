@@ -14,18 +14,28 @@
     left:50%;
     transform: translate(-50%, -50%);
 }
+
 .timeline_pic.image-loading{
     opacity: 0.3;
 }
-
-
 
 .timeline::before{
   background-color: var(--timeline-color, #F6F6F8)!important;
 }
 .tl-circ {
     background-color: var(--timeline-color, #F6F6F8);
+}
+
+.timeline-line-animation {
+  background-color: var(--timeline-color-animation, #F37321);
+}
+
+li.is-stuck .tl-circ{
+  background-color: var(--timeline-color-animation, #F37321);
+}
+
+@media (min-width:701px) {
+  .wp-block-za-timeline-item:first-child .tl-circ{
+    transform: translateX( calc(-50% - 3px));
   }
-.wp-block-za-timeline-item:not(:first-child) .tl-circ{
-  transform: translateX( calc(-50% - 3px));
 }

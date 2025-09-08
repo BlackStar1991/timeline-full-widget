@@ -162,7 +162,6 @@ export default function Edit( { clientId, attributes, setAttributes } ) {
 		className: editorClassName,
 	} );
 
-	// memoized callbacks
 	const onSelect = useCallback(
 		( media ) => {
 			setAttributes( {

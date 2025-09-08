@@ -8,8 +8,6 @@ import './../assets/elementor/style.css';
 import './style.scss';
 import './editor.scss';
 
-// import './../assets/elementor/script.js';
-
 registerBlockType( 'za/timeline-full-widget', {
 	title: 'Timeline',
 	icon: 'schedule',
