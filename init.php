@@ -175,7 +175,15 @@ final class TimelinePlugin {
                 filemtime( $script_path ),
                 true
             );
-            wp_script_add_data( $handle, 'type', 'module' );
+            add_filter("script_loader_tag", "add_module_to_my_script", 10, 3);
+            function add_module_to_my_script($tag, $handle, $src)
+            {
+                if ("za-timeline-frontend" === $handle) {
+                    $tag = '<script type="module" src="' . esc_url($src) . '"></script>';
+                }
+                return $tag;
+            }
+
             wp_enqueue_script( $handle );
         }
 

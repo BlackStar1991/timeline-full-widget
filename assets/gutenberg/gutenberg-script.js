@@ -79,7 +79,7 @@ export function initTimelineAnimation( scopeEl ) {
 			const trigger = entry.target;
 			const parentBlock =
 				trigger.closest( 'li' ) ||
-				trigger.closest( '.wp-block-za-timeline-item' ) ||
+				trigger.closest( '.timeline-item' ) ||
 				trigger.closest( '.wp-block' );
 			if ( ! parentBlock ) return;
 			parentBlock.classList.toggle( 'is-stuck', entry.isIntersecting );

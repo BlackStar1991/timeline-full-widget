@@ -221,7 +221,7 @@ class Za_Pack_Widget_Timeline extends Widget_Base
                 $image_html = '<div class="timeline_pic pull-left">' . $image_html . '</div>';
             }
 
-            echo '<li class="' . esc_attr($li_class) . '">';
+            echo '<li class="' . esc_attr($li_class) . ' timeline-item">';
             echo '<div class="timeline-side">' . wp_kses_post($item['side_content']) . '</div>';
             echo '<div class="tl-trigger"></div><div class="tl-circ"></div>';
             echo '<div class="timeline-panel"><div class="tl-content">';
@@ -270,7 +270,7 @@ class Za_Pack_Widget_Timeline extends Widget_Base
                 li_class = (count % 2 === 0) ? 'timeline-inverted' : 'timeline-left';
                 }
                 #>
-                <li class="{{ li_class }}">
+                <li class="{{ li_class }} timeline-item">
                     <div class="timeline-side">
                         {{{ item.side_content }}}
                     </div>

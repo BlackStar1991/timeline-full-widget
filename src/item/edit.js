@@ -151,7 +151,7 @@ export default function Edit( { clientId, attributes, setAttributes } ) {
 
 	// Memoize computed editor class name
 	const editorClassName = useMemo( () => {
-		const classes = [ liClass ];
+		const classes = [ liClass, 'timeline-item' ];
 		if ( textAlignClass )
 			classes.push( `t-text-align-${ textAlignClass }` );
 		return Array.from( new Set( classes ) ).join( ' ' );

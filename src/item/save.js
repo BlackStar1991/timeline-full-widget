@@ -26,7 +26,7 @@ export default function Save( { attributes } ) {
 		showOtherSide,
 	} = attributes;
 
-	const classes = [ 'wp-block-za-timeline-item', position ];
+	const classes = [ 'timeline-item', position ];
 	if ( textAlignClass ) classes.push( `t-text-align-${ textAlignClass }` );
 	const className = Array.from( new Set( classes ) ).join( ' ' );
 	const linkProps = getSafeLinkAttributes( linkUrl, rel, linkTarget );

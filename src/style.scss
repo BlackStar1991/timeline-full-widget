@@ -20,7 +20,7 @@
 }
 
 .timeline::before{
-  background-color: var(--timeline-color, #F6F6F8)!important;
+  background-color: var(--timeline-color, #F6F6F8);
 }
 .tl-circ {
     background-color: var(--timeline-color, #F6F6F8);
@@ -35,7 +35,7 @@ li.is-stuck .tl-circ{
 }
 
 @media (min-width:701px) {
-  .wp-block-za-timeline-item:first-child .tl-circ{
+  .timeline-item:first-child .tl-circ{
     transform: translateX( calc(-50% - 3px));
   }
 }
