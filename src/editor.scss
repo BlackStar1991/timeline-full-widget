@@ -2,29 +2,29 @@
 .editor-styles-wrapper .timeline-item.alignleft,
 .editor-styles-wrapper .timeline-item.alignright,
 .editor-styles-wrapper .timeline-item.aligncenter {
-    float: none !important;
-    display: block !important;
+	float: none !important;
+	display: block !important;
 }
 
 .editor-styles-wrapper .timeline-item.alignright .tl-title,
 .editor-styles-wrapper .timeline-item.alignleft .tl-title {
-    float: none !important;
-    text-align: inherit !important;
+	float: none !important;
+	text-align: inherit !important;
 }
 
 
-.timeline .block-editor-button-block-appender{
-  transform: translateY(40px);
+.timeline .block-editor-button-block-appender {
+	transform: translateY(40px);
 }
 
-.timeline .block-editor-block-list__block{
-    width: 100%;
+.timeline .block-editor-block-list__block {
+	width: 100%;
 }
 
 .timeline .block-editor-block-list__block:not(:first-child) {
-  margin-top: 40px;
+	margin-top: 40px;
 }
 
-.tl-title{
-  margin-bottom: 20px;
+.tl-title {
+	margin-bottom: 20px;
 }

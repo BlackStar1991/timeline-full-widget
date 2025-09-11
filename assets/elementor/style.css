@@ -133,6 +133,7 @@ li.timeline-left {
 }
 
 
+
 .tl-content p {
     margin-bottom: 5px
 }
@@ -150,7 +151,6 @@ li.timeline-left {
         top: 0;
     }
 }
-
 
 @media (max-width: 700px) {
     .timeline-item {
