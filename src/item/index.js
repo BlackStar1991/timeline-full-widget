@@ -11,7 +11,6 @@ registerBlockType( 'za/timeline-item', {
 	supports: {
 		html: false,
 		reusable: false,
-		align: true,
 		spacing: {
 			margin: true,
 		},
@@ -37,7 +36,18 @@ registerBlockType( 'za/timeline-item', {
 			type: 'string',
 			default: '',
 		},
-		titleFontSize: { type: 'string', default: '' },
+		titleFontSize: {
+            type: 'string',
+            default: ''
+        },
+        titleFontWeight: {
+            type: 'string',
+            default: ''
+        },
+        titleAlign: {
+            type: 'string',
+            default: 'left'
+        },
 		titleMarginTop: {
 			type: 'number',
 			default: 0,
@@ -55,9 +65,18 @@ registerBlockType( 'za/timeline-item', {
 			type: 'string',
 			default: '',
 		},
-		linkUrl: { type: 'string', default: '' },
-		linkTarget: { type: 'string', default: '' },
-		rel: { type: 'string', default: '' },
+		linkUrl: {
+            type: 'string',
+            default: ''
+        },
+		linkTarget: {
+            type: 'string',
+            default: ''
+        },
+		rel: {
+            type: 'string',
+            default: ''
+        },
 		position: {
 			type: 'string',
 			default: 'timeline-left',
@@ -65,14 +84,6 @@ registerBlockType( 'za/timeline-item', {
 		onTheOneSide: {
 			type: 'boolean',
 			default: false,
-		},
-		align: {
-			type: 'string',
-			default: '',
-		},
-		textAlignClass: {
-			type: 'string',
-			default: '',
 		},
 		showImages: {
 			type: 'boolean',
@@ -94,7 +105,7 @@ registerBlockType( 'za/timeline-item', {
 		imageId: {
 			type: 'number',
 		},
-		showOtherSide: {
+            showOtherSide: {
 			type: 'boolean',
 			default: true,
 		},
@@ -103,6 +114,10 @@ registerBlockType( 'za/timeline-item', {
 			selector: '.timeline-side p',
 			default: '',
 		},
+        sideTextAlign: {
+            type: 'string',
+            default: 'left'
+        }
 	},
 	edit: Edit,
 	save: Save,

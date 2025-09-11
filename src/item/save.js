@@ -10,6 +10,8 @@ export default function Save( { attributes } ) {
 		titleInlineStyle,
 		titleColor,
 		titleFontSize,
+        titleFontWeight,
+        titleAlign,
 		titleMarginTop,
 		titleMarginBottom,
 		descriptionColor,
@@ -24,6 +26,7 @@ export default function Save( { attributes } ) {
 		imageAlt,
 		otherSiteTitle,
 		showOtherSide,
+        sideTextAlign,
 	} = attributes;
 
 	const classes = [ 'timeline-item', position ];
@@ -33,6 +36,7 @@ export default function Save( { attributes } ) {
 	const styleObj = buildStyleObject( {
 		titleInlineStyle: titleInlineStyle,
 		titleFontSize: titleFontSize,
+        titleFontWeight: titleFontWeight,
 		titleMarginTop: titleMarginTop,
 		titleMarginBottom: titleMarginBottom,
 		titleColor: titleColor,
@@ -44,6 +48,7 @@ export default function Save( { attributes } ) {
 				{ showOtherSide && (
 					<RichText.Content
 						tagName="p"
+                        className={ `t-text-align-${ sideTextAlign } ` }
 						value={ otherSiteTitle }
 						style={ styleObj }
 					/>
@@ -82,7 +87,7 @@ export default function Save( { attributes } ) {
 						{ titleTag === 'a' ? (
 							<RichText.Content
 								tagName="a"
-								className="tl-title"
+                                className={ `t-text-align-${ titleAlign } tl-title` }
 								value={ title }
 								{ ...linkProps }
 								style={ styleObj }
@@ -90,7 +95,7 @@ export default function Save( { attributes } ) {
 						) : (
 							<RichText.Content
 								tagName={ titleTag }
-								className="tl-title"
+                                className={ `t-text-align-${ titleAlign } tl-title` }
 								value={ title }
 								style={ styleObj }
 							/>

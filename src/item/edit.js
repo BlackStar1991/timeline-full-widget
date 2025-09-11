@@ -9,6 +9,7 @@ import {
 	LinkControl,
 	PanelColorSettings,
 	FontSizePicker,
+    AlignmentToolbar,
 } from '@wordpress/block-editor';
 import {
 	getSafeLinkAttributes,
@@ -33,8 +34,7 @@ import { link as linkIcon } from '@wordpress/icons';
 
 export default function Edit( { clientId, attributes, setAttributes } ) {
 	const {
-		align,
-		textAlignClass,
+        titleAlign,
 		title,
 		titleTag,
 		descriptionColor,
@@ -49,9 +49,13 @@ export default function Edit( { clientId, attributes, setAttributes } ) {
 		onTheOneSide,
 		titleInlineStyle,
 		titleFontSize,
+        titleFontWeight,
 		titleMarginTop,
 		titleMarginBottom,
 		titleColor,
+        showOtherSide,
+        otherSiteTitle,
+        sideTextAlign,
 	} = attributes;
 
 	const [ isLinkPickerOpen, setIsLinkPickerOpen ] = useState( false );
@@ -119,6 +123,10 @@ export default function Edit( { clientId, attributes, setAttributes } ) {
 			const m = parsed.fontSize.match( /^([\d.]+)(px|rem|em|%)?$/ );
 			updates.titleFontSize = m ? m[ 1 ] : parsed.fontSize;
 		}
+        if ( parsed.fontWeight && ! titleFontWeight ) {
+            updates.titleFontWeight = parsed.fontWeight;
+        }
+
 		if ( parsed.marginTop && ! titleMarginTop ) {
 			updates.titleMarginTop = parsed.marginTop.replace( /px$/, '' );
 		}
@@ -143,6 +151,7 @@ export default function Edit( { clientId, attributes, setAttributes } ) {
 		attributes.position,
 		titleInlineStyle,
 		titleFontSize,
+        titleFontWeight,
 		titleMarginTop,
 		titleMarginBottom,
 		titleColor,
@@ -152,10 +161,8 @@ export default function Edit( { clientId, attributes, setAttributes } ) {
 	// Memoize computed editor class name
 	const editorClassName = useMemo( () => {
 		const classes = [ liClass, 'timeline-item' ];
-		if ( textAlignClass )
-			classes.push( `t-text-align-${ textAlignClass }` );
 		return Array.from( new Set( classes ) ).join( ' ' );
-	}, [ liClass, textAlignClass ] );
+	}, [ liClass ] );
 
 	const blockProps = useBlockProps( {
 		tagName: 'li',
@@ -184,6 +191,7 @@ export default function Edit( { clientId, attributes, setAttributes } ) {
 			buildStyleObject( {
 				titleInlineStyle,
 				titleFontSize,
+                titleFontWeight,
 				titleMarginTop,
 				titleMarginBottom,
 				titleColor,
@@ -191,11 +199,13 @@ export default function Edit( { clientId, attributes, setAttributes } ) {
 		[
 			titleInlineStyle,
 			titleFontSize,
+            titleFontWeight,
 			titleMarginTop,
 			titleMarginBottom,
 			titleColor,
 		]
 	);
+    const [ activeField, setActiveField ] = useState(null);
 
 	return (
 		<>
@@ -298,6 +308,23 @@ export default function Edit( { clientId, attributes, setAttributes } ) {
 						} }
 						withSlider
 					/>
+                    <SelectControl
+                        label={ __( 'Title font weight', 'za' ) }
+                        value={ titleFontWeight || '' }
+                        options={ [
+                            { label: __( 'Default', 'za' ), value: '' },
+                            { label: '100', value: '100' },
+                            { label: '200', value: '200' },
+                            { label: '300', value: '300' },
+                            { label: '400', value: '400' },
+                            { label: '500', value: '500' },
+                            { label: '600', value: '600' },
+                            { label: '700', value: '700' },
+                            { label: '800', value: '800' },
+                            { label: '900', value: '900' },
+                        ] }
+                        onChange={ ( value ) => setAttributes( { titleFontWeight: value } ) }
+                    />
 				</PanelBody>
 
 				<PanelBody
@@ -335,7 +362,7 @@ export default function Edit( { clientId, attributes, setAttributes } ) {
 						name={ __( 'Replace Image', 'za' ) }
 						onSelect={ onSelect }
 						accept="image/*"
-						allowedTypes={ [ 'image' ] }
+						allowedTypes={ [ 'image', 'video' ] }
 						mediaId={ imageId }
 						mediaUrl={ imageUrl }
 						mediaAlt={ imageAlt }
@@ -409,15 +436,40 @@ export default function Edit( { clientId, attributes, setAttributes } ) {
 				</Popover>
 			) }
 
-			<li { ...blockProps }>
+            { activeField === 'title' && (
+                <BlockControls group="block">
+                    <AlignmentToolbar
+                        value={ titleAlign }
+                        onChange={ ( newAlign ) =>
+                            setAttributes( { titleAlign: newAlign || 'left' } )
+                        }
+                    />
+                </BlockControls>
+            )}
+
+            { activeField === 'sideText' && (
+                <BlockControls group="block">
+                    <AlignmentToolbar
+                        value={ sideTextAlign }
+                        onChange={ ( newAlign ) =>
+                            setAttributes( { sideTextAlign: newAlign || 'left' } )
+                        }
+                    />
+                </BlockControls>
+            )}
+
+            <li { ...blockProps }>
 				<div className="timeline-side">
-					{ attributes.showOtherSide && (
+					{ showOtherSide && (
 						<RichText
 							tagName="p"
-							value={ attributes.otherSiteTitle }
+                            className={ `t-text-align-${ sideTextAlign } ` }
+							value={ otherSiteTitle }
 							onChange={ ( val ) =>
 								setAttributes( { otherSiteTitle: val } )
 							}
+                            
+                            onFocus={ () => setActiveField('sideText') }
 							placeholder={ __( 'Add other side text', 'za' ) }
 						/>
 					) }
@@ -461,12 +513,14 @@ export default function Edit( { clientId, attributes, setAttributes } ) {
 							{ titleTag === 'a' ? (
 								<RichText
 									tagName="a"
-									className="tl-title"
+                                    className={ `t-text-align-${ titleAlign } tl-title` }
 									value={ title }
 									allowedFormats={ [] }
 									onChange={ ( val ) =>
 										setAttributes( { title: val } )
 									}
+                                    onFocus={ () => setActiveField('title') }
+
 									placeholder={ __( 'Add link text…', 'za' ) }
 									{ ...linkProps }
 									style={ titleStyle }
@@ -474,12 +528,14 @@ export default function Edit( { clientId, attributes, setAttributes } ) {
 							) : (
 								<RichText
 									tagName={ titleTag }
-									className="tl-title"
+                                    className={ `t-text-align-${ titleAlign } tl-title` }
 									value={ title }
 									allowedFormats={ [] }
 									onChange={ ( val ) =>
 										setAttributes( { title: val } )
 									}
+                                    onFocus={ () => setActiveField('title') }
+
 									style={ titleStyle }
 								/>
 							) }

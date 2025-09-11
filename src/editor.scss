@@ -1,6 +1,4 @@
 /* Editor */
-
-
 .editor-styles-wrapper .timeline-item.alignleft,
 .editor-styles-wrapper .timeline-item.alignright,
 .editor-styles-wrapper .timeline-item.aligncenter {
@@ -19,18 +17,14 @@
   transform: translateY(40px);
 }
 
-
-
 .timeline .block-editor-block-list__block{
     width: 100%;
-}
-
-
-.timeline .block-editor-block-list__layout > .block-editor-block-list__block:first-of-type .tl-circ {
-  transform: translateX(calc(-50% - 3px));
 }
 
 .timeline .block-editor-block-list__block:not(:first-child) {
   margin-top: 40px;
 }
 
+.tl-title{
+  margin-bottom: 20px;
+}

@@ -34,8 +34,8 @@ li.is-stuck .tl-circ{
   background-color: var(--timeline-color-animation, #F37321);
 }
 
-@media (min-width:701px) {
-  .timeline-item:first-child .tl-circ{
-    transform: translateX( calc(-50% - 3px));
-  }
-}
+//@media (min-width:701px) {
+//  .timeline-item:first-child .tl-circ{
+//    transform: translateX( calc(-50% - 3px));
+//  }
+//}
