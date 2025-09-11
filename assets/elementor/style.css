@@ -113,6 +113,7 @@ li.timeline-left {
     font-size: 12px;
 }
 
+
 .tl-body p,
 .tl-body ul {
     margin-bottom: 0;
@@ -184,11 +185,6 @@ li.timeline-left {
         margin-left: 35px;
     }
 
-
-
-    .timeline-item > .tldate {
-        margin: 0;
-    }
 
     .timeline-item > .timeline-panel:before {
         border-left-width: 0;
