@@ -1,7 +1,7 @@
 import { useBlockProps, InnerBlocks } from '@wordpress/block-editor';
 
 export default function Save( { attributes } ) {
-	const { lineColor, animationTimeline, animationTimelineColor } = attributes;
+	const { lineColor, animationTimeline, animationTimelineColor, animationMarker} = attributes;
 
 	return (
 		<div
@@ -15,7 +15,7 @@ export default function Save( { attributes } ) {
 			{ animationTimeline && (
 				<div className="timeline-line-animation"></div>
 			) }
-			<ul className="timeline">
+			<ul className={ animationMarker ? 'timeline-animation-marker timeline' : 'timeline'}>
 				<InnerBlocks.Content />
 			</ul>
 		</div>

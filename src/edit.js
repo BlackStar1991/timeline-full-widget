@@ -23,6 +23,7 @@ export default function Edit( { attributes, setAttributes, clientId } ) {
 		showOtherSide,
 		animationTimeline,
 		animationTimelineColor,
+        animationMarker,
 	} = attributes;
 
 	const wrapperRef = useRef( null );
@@ -79,6 +80,7 @@ export default function Edit( { attributes, setAttributes, clientId } ) {
 			onTheOneSide,
 			animationTimeline,
 			animationTimelineColor,
+            animationMarker,
 		} );
 	}, [
 		showOtherSide,
@@ -88,6 +90,7 @@ export default function Edit( { attributes, setAttributes, clientId } ) {
 		onTheOneSide,
 		animationTimeline,
 		animationTimelineColor,
+        animationMarker,
 		syncToChildren,
 	] );
 
@@ -181,6 +184,16 @@ export default function Edit( { attributes, setAttributes, clientId } ) {
 								onChange: ( val ) =>
 									setAttributes( { animationTimeline: val } ),
 							},
+                            {
+                                label: __( 'Enable Animation Marker', 'za' ),
+                                help: animationMarker
+                                    ? __( 'Yes', 'za' )
+                                    : __( 'No', 'za' ),
+                                checked: animationMarker,
+                                onChange: ( val ) =>
+                                    setAttributes( { animationMarker: val } ),
+                            }
+
 						].map( ( ctrl, i ) => (
 							<ToggleControl
 								key={ i }
@@ -222,7 +235,7 @@ export default function Edit( { attributes, setAttributes, clientId } ) {
 					<div className="timeline-line-animation" />
 				) }
 
-				<ul className="timeline">
+				<ul className={ animationMarker ? 'timeline-animation-marker timeline' : 'timeline'}>
 					<InnerBlocks
 						allowedBlocks={ [ 'za/timeline-item' ] }
 						template={ [

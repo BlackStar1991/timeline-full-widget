@@ -35,7 +35,8 @@
 }
 
 .timeline-panel {
-    width: calc(50% - 30px);
+    width: 50%;
+
     background: #fff;
     border: 1px solid #F6F6F8;
     padding: 15px;
@@ -146,11 +147,24 @@ li.timeline-left {
     /*    top: 50%;*/
     /*}*/
 
-    .tl-circ {
-        position: -webkit-sticky;
+
+    .timeline-inverted .timeline-panel {
+        margin-left: 82px;
+    }
+    .timeline-left .timeline-panel{
+        margin-right: 82px;
+    }
+
+
+    .timeline-animation-marker .tl-circ {
         position: sticky;
         top: 0;
     }
+    .timeline-animation-marker .timeline-panel {
+        width: calc(50% - 30px);
+        margin: 0;
+    }
+
 }
 
 @media (max-width: 700px) {

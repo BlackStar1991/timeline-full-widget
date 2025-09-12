@@ -1,6 +1,4 @@
 ( function () {
-	console.log( 'Timeline work' );
-
 	function toElement( el ) {
 		return el instanceof jQuery ? el[ 0 ] : el;
 	}

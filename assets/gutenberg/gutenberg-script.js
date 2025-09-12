@@ -1,6 +1,3 @@
-// assets/gutenberg/gutenberg-script.js
-// ES module but also safe when loaded as a normal script (exposes window.zaTimeline)
-
 function isElement( node ) {
 	return node && node.nodeType === 1;
 }

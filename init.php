@@ -102,6 +102,13 @@ final class TimelinePlugin {
                 filemtime( $js ),
                 true
             );
+            wp_enqueue_script(
+                'za-elementor-media-preview',
+                TIMELINE_ELEMENTOR_URL . 'assets/elementor/elementor-media-preview.js',
+                [ 'jquery' ],
+                filemtime( $js ),
+                true
+            );
         }
     }
 
