@@ -64,11 +64,19 @@ class Za_Pack_Widget_Timeline extends Widget_Base
         $repeater = new Repeater();
 
         $repeater->add_control('image', [
-                'label' => __('Image', 'za'),
+                'label' => __('Media Block', 'za'),
                 'type' => Controls_Manager::MEDIA,
                 'media_types' => ['image', 'video'],
                 'default' => ['url' => Utils::get_placeholder_image_src()],
         ]);
+
+        $repeater->add_control('posterURL', [
+                'label' => __('Poster URL', 'za'),
+                'type' => Controls_Manager::MEDIA,
+                'media_types' => ['image'],
+                'default' => ['url' => Utils::get_placeholder_image_src()],
+        ]);
+
 
         $repeater->add_group_control(
                 Group_Control_Image_Size::get_type(),
@@ -235,18 +243,21 @@ class Za_Pack_Widget_Timeline extends Widget_Base
 
             $image_html = '';
             $media_url = !empty($item['image']['url']) ? $item['image']['url'] : '';
+            $poster_url = !empty($item['posterURL']['url']) ? $item['posterURL']['url'] : '';
+
 
             if ($media_url) {
                 $filetype = wp_check_filetype($media_url);
                 $mime = isset($filetype['type']) ? $filetype['type'] : '';
 
                 if (strpos($mime, 'video/') === 0) {
-                    $video_attrs = ' autoplay muted loop playsinline';
+                    $video_attrs = ' autoplay muted loop playsinline preload="metadata"';
+                    $poster_attr = $poster_url ? ' poster="' . esc_url($poster_url) . '"' : '';
 
-                    $image_html = '<div class="timeline_pic pull-left">';
-                    $image_html .= '<video' . $video_attrs . ' preload="metadata" src="' . esc_url($media_url) . '">';
+                    $image_html  = '<div class="timeline_pic pull-left">';
+                    $image_html .= '<video' . $video_attrs . $poster_attr . ' style="width: 100%; height: auto;">';
                     $image_html .= '<source src="' . esc_url($media_url) . '" type="' . esc_attr($mime) . '">';
-                    $image_html .= __('Your browser does not support the video tag.', 'za');
+                    $image_html .= esc_html__('Your browser does not support the video tag.', 'za');
                     $image_html .= '</video>';
                     $image_html .= '</div>';
                 } else {
@@ -258,6 +269,7 @@ class Za_Pack_Widget_Timeline extends Widget_Base
                     }
                 }
             }
+
 
             echo '<li class="' . esc_attr($li_class) . ' timeline-item">';
             echo '<div class="timeline-side">' . wp_kses_post($item['side_content']) . '</div>';
@@ -326,6 +338,7 @@ class Za_Pack_Widget_Timeline extends Widget_Base
                     };
                     var image_url = elementor.imagesManager.getImageUrl( image ) || item.image.url;
                     var isVideo = isVideoUrl( image_url );
+                    var poster_url = elementor.imagesManager.getImageUrl( item.posterURL ) || item.posterURL.url;
 
                     // default title class
                     var titleClass = "tl-title";
@@ -342,9 +355,12 @@ class Za_Pack_Widget_Timeline extends Widget_Base
                                 <# if ( image_url ) { #>
                                 <div class="timeline_pic pull-left">
                                     <# if ( isVideo ) { #>
-                                    <video autoplay muted loop playsinline preload="metadata" src="{{{ image_url }}}">
-                                        <source src="{{{ image_url }}}" type="video/{{ (image_url.match(/\.([^.?]+)(\?.*)?$/i)||[])[1] }}">
-                                        {{{ 'Your browser does not support the video tag.' }}}
+                                    <video autoplay muted loop playsinline preload="metadata"
+                                           src="{{{ image_url }}}"
+                                    <# if ( poster_url ) { #> poster="{{{ poster_url }}}"<# } #>
+                                    style="width:100%; height:auto;">
+                                    <source src="{{{ image_url }}}" type="video/{{ (image_url.match(/\.([^.?]+)(\?.*)?$/i)||[])[1] }}">
+                                    {{{ 'Your browser does not support the video tag.' }}}
                                     </video>
                                     <# } else { #>
                                     <img src="{{{ image_url }}}" alt="image"/>
