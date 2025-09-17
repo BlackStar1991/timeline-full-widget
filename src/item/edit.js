@@ -9,7 +9,7 @@ import {
 	LinkControl,
 	PanelColorSettings,
 	FontSizePicker,
-    AlignmentToolbar,
+	AlignmentToolbar,
 } from '@wordpress/block-editor';
 import {
 	getSafeLinkAttributes,
@@ -34,7 +34,7 @@ import { link as linkIcon } from '@wordpress/icons';
 
 export default function Edit( { clientId, attributes, setAttributes } ) {
 	const {
-        titleAlign,
+		titleAlign,
 		title,
 		titleTag,
 		descriptionColor,
@@ -42,25 +42,29 @@ export default function Edit( { clientId, attributes, setAttributes } ) {
 		linkUrl,
 		linkTarget,
 		rel,
-		showImages,
-		imageUrl,
+		showMedia,
+		mediaUrl,
+		videoPoster,
 		imageAlt,
-		imageId,
+		mediaType,
+		mediaMime,
+		mediaId,
 		onTheOneSide,
 		titleInlineStyle,
 		titleFontSize,
-        titleFontWeight,
+		titleFontWeight,
 		titleMarginTop,
 		titleMarginBottom,
 		titleColor,
-        showOtherSide,
-        otherSiteTitle,
-        sideTextAlign,
+		showOtherSide,
+		otherSiteTitle,
+		sideTextAlign,
+		position,
 	} = attributes;
 
 	const [ isLinkPickerOpen, setIsLinkPickerOpen ] = useState( false );
+	const [ activeField, setActiveField ] = useState( null );
 
-	// Combine selects into one to avoid multiple selectors and reduce re-renders
 	const { blockIndex, parentDirection } = useSelect(
 		( select ) => {
 			const editor = select( 'core/block-editor' );
@@ -81,52 +85,49 @@ export default function Edit( { clientId, attributes, setAttributes } ) {
 		[ clientId ]
 	);
 
-	// Use parent's direction if available, otherwise local attribute (backwards compatible)
 	const direction =
 		typeof parentDirection !== 'undefined'
 			? parentDirection
 			: attributes.direction;
 
-	// Fallback position computed from direction + index
 	const computedFallbackPosition = useMemo( () => {
+		if ( typeof direction === 'undefined' ) return 'timeline-left';
+		const even = blockIndex % 2 === 0;
 		return direction
-			? blockIndex % 2 === 0
+			? even
 				? 'timeline-inverted'
 				: 'timeline-left'
-			: blockIndex % 2 === 0
+			: even
 			? 'timeline-left'
 			: 'timeline-inverted';
 	}, [ direction, blockIndex ] );
 
-	// final li class (prefer stored attribute position if present)
-	const liClass = attributes.position || computedFallbackPosition;
+	const liClass = useMemo(
+		() => position || computedFallbackPosition,
+		[ position, computedFallbackPosition ]
+	);
 
-	// ensure attributes.position (and parsed inline style) get set once when needed
 	useEffect( () => {
 		const updates = {};
 
-		// determine what position *should* be according to parent-level flags
 		const computedPosition = onTheOneSide
 			? direction
 				? 'timeline-inverted'
 				: 'timeline-left'
 			: computedFallbackPosition;
-
-		if ( attributes.position !== computedPosition ) {
+		if ( position !== computedPosition ) {
 			updates.position = computedPosition;
 		}
 
-		// parse inline style once and map to separate attributes (if they aren't present)
 		const parsed = parseStyleString( titleInlineStyle || '' );
 
 		if ( parsed.fontSize && ! titleFontSize ) {
 			const m = parsed.fontSize.match( /^([\d.]+)(px|rem|em|%)?$/ );
 			updates.titleFontSize = m ? m[ 1 ] : parsed.fontSize;
 		}
-        if ( parsed.fontWeight && ! titleFontWeight ) {
-            updates.titleFontWeight = parsed.fontWeight;
-        }
-
+		if ( parsed.fontWeight && ! titleFontWeight ) {
+			updates.titleFontWeight = parsed.fontWeight;
+		}
 		if ( parsed.marginTop && ! titleMarginTop ) {
 			updates.titleMarginTop = parsed.marginTop.replace( /px$/, '' );
 		}
@@ -143,22 +144,21 @@ export default function Edit( { clientId, attributes, setAttributes } ) {
 		if ( Object.keys( updates ).length ) {
 			setAttributes( updates );
 		}
-		// Only run when important inputs change
 	}, [
 		blockIndex,
 		direction,
 		onTheOneSide,
-		attributes.position,
+		computedFallbackPosition,
+		position,
 		titleInlineStyle,
 		titleFontSize,
-        titleFontWeight,
+		titleFontWeight,
 		titleMarginTop,
 		titleMarginBottom,
 		titleColor,
 		setAttributes,
 	] );
 
-	// Memoize computed editor class name
 	const editorClassName = useMemo( () => {
 		const classes = [ liClass, 'timeline-item' ];
 		return Array.from( new Set( classes ) ).join( ' ' );
@@ -172,9 +172,11 @@ export default function Edit( { clientId, attributes, setAttributes } ) {
 	const onSelect = useCallback(
 		( media ) => {
 			setAttributes( {
-				imageUrl: media.url,
-				imageAlt: media.alt,
-				imageId: media.id,
+				mediaUrl: media.url,
+				imageAlt: media.alt || '',
+				mediaId: media.id,
+				mediaType: media.type,
+				mediaMime: media.mime,
 			} );
 		},
 		[ setAttributes ]
@@ -185,13 +187,12 @@ export default function Edit( { clientId, attributes, setAttributes } ) {
 		[ linkUrl, rel, linkTarget ]
 	);
 
-	// title style object (memoized)
 	const titleStyle = useMemo(
 		() =>
 			buildStyleObject( {
 				titleInlineStyle,
 				titleFontSize,
-                titleFontWeight,
+				titleFontWeight,
 				titleMarginTop,
 				titleMarginBottom,
 				titleColor,
@@ -199,13 +200,143 @@ export default function Edit( { clientId, attributes, setAttributes } ) {
 		[
 			titleInlineStyle,
 			titleFontSize,
-            titleFontWeight,
+			titleFontWeight,
 			titleMarginTop,
 			titleMarginBottom,
 			titleColor,
 		]
 	);
-    const [ activeField, setActiveField ] = useState(null);
+
+	const isVideo = useMemo(
+		() =>
+			mediaType === 'video' ||
+			( typeof mediaMime === 'string' &&
+				mediaMime.indexOf( 'video/' ) === 0 ) ||
+			( typeof mediaUrl === 'string' &&
+				/\.(mp4|webm|ogv|ogg)(?:[\?#]|$)/i.test( mediaUrl ) ),
+		[ mediaType, mediaMime, mediaUrl ]
+	);
+
+	const mediaSettings = useMemo( () => {
+		if ( ! showMedia || ! mediaUrl || isBlobURL( mediaUrl ) ) return null;
+
+		return (
+			<PanelBody title={ __( 'Media Settings', 'za' ) }>
+				{ isVideo ? (
+					<PanelBody title={ __( 'Video Poster', 'za' ) }>
+						{ videoPoster ? (
+							<div className="video-poster-preview">
+								<img
+									src={ videoPoster }
+									alt={ __( 'Video poster', 'za' ) }
+									style={ { maxWidth: '100%' } }
+								/>
+								<ToolbarButton
+									icon="trash"
+									label={ __( 'Remove poster', 'za' ) }
+									onClick={ () =>
+										setAttributes( { videoPoster: '' } )
+									}
+								/>
+							</div>
+						) : (
+							<MediaPlaceholder
+								onSelect={ ( poster ) =>
+									setAttributes( { videoPoster: poster.url } )
+								}
+								accept="image/*"
+								allowedTypes={ [ 'image' ] }
+								labels={ {
+									title: __( 'Select video poster', 'za' ),
+								} }
+							/>
+						) }
+					</PanelBody>
+				) : (
+					<TextControl
+						label={ __( 'Image Alt', 'za' ) }
+						value={ imageAlt }
+						help={ __( 'Add alt text for the image.', 'za' ) }
+						onChange={ ( val ) =>
+							setAttributes( { imageAlt: val } )
+						}
+						__next40pxDefaultSize={ true }
+						__nextHasNoMarginBottom={ true }
+					/>
+				) }
+			</PanelBody>
+		);
+	}, [ showMedia, mediaUrl, isVideo, videoPoster, imageAlt, setAttributes ] );
+
+	const blockToolbarForMedia = useMemo( () => {
+		if ( ! showMedia || ! mediaUrl ) return null;
+		return (
+			<BlockControls>
+				<MediaReplaceFlow
+					name={ __( 'Replace Media File', 'za' ) }
+					onSelect={ onSelect }
+					accept="image/*"
+					allowedTypes={ [ 'image', 'video' ] }
+					mediaId={ mediaId }
+					mediaUrl={ mediaUrl }
+					mediaAlt={ imageAlt }
+				/>
+				<ToolbarButton
+					onClick={ () =>
+						setAttributes( {
+							mediaId: undefined,
+							mediaUrl: undefined,
+							imageAlt: '',
+							mediaType: '',
+							mediaMime: '',
+						} )
+					}
+					isDisabled={ ! mediaUrl }
+					icon="trash"
+					title={ __( 'Remove Media File', 'za' ) }
+				>
+					{ __( 'Remove Media File', 'za' ) }
+				</ToolbarButton>
+			</BlockControls>
+		);
+	}, [ showMedia, mediaUrl, onSelect, mediaId, imageAlt, setAttributes ] );
+
+	const linkPopover = useMemo( () => {
+		if ( ! isLinkPickerOpen ) return null;
+		return (
+			<Popover
+				position="bottom center"
+				onClose={ () => setIsLinkPickerOpen( false ) }
+			>
+				<LinkControl
+					value={ {
+						url: linkUrl,
+						opensInNewTab: linkTarget === '_blank',
+						rel,
+					} }
+					settings={ [
+						{
+							id: 'opensInNewTab',
+							title: __( 'Open in new tab', 'za' ),
+						},
+						{ id: 'rel', title: __( 'Add rel attribute', 'za' ) },
+					] }
+					onChange={ ( newVal ) => {
+						const linkAttrs = getSafeLinkAttributes(
+							newVal.url,
+							newVal.rel,
+							newVal.opensInNewTab ? '_blank' : ''
+						);
+						setAttributes( {
+							linkUrl: linkAttrs.href,
+							linkTarget: linkAttrs.target,
+							rel: linkAttrs.rel,
+						} );
+					} }
+				/>
+			</Popover>
+		);
+	}, [ isLinkPickerOpen, linkUrl, linkTarget, rel, setAttributes ] );
 
 	return (
 		<>
@@ -262,20 +393,7 @@ export default function Edit( { clientId, attributes, setAttributes } ) {
 					/>
 				</PanelBody>
 
-				{ showImages && imageUrl && ! isBlobURL( imageUrl ) && (
-					<PanelBody title={ __( 'Image Settings', 'za' ) }>
-						<TextControl
-							label={ __( 'Image Alt', 'za' ) }
-							value={ imageAlt }
-							help={ __( 'Add alt text for the image.', 'za' ) }
-							onChange={ ( val ) =>
-								setAttributes( { imageAlt: val } )
-							}
-							__next40pxDefaultSize={ true }
-							__nextHasNoMarginBottom={ true }
-						/>
-					</PanelBody>
-				) }
+				{ mediaSettings }
 
 				<PanelBody
 					title={ __( 'Typography', 'za' ) }
@@ -308,23 +426,27 @@ export default function Edit( { clientId, attributes, setAttributes } ) {
 						} }
 						withSlider
 					/>
-                    <SelectControl
-                        label={ __( 'Title font weight', 'za' ) }
-                        value={ titleFontWeight || '' }
-                        options={ [
-                            { label: __( 'Default', 'za' ), value: '' },
-                            { label: '100', value: '100' },
-                            { label: '200', value: '200' },
-                            { label: '300', value: '300' },
-                            { label: '400', value: '400' },
-                            { label: '500', value: '500' },
-                            { label: '600', value: '600' },
-                            { label: '700', value: '700' },
-                            { label: '800', value: '800' },
-                            { label: '900', value: '900' },
-                        ] }
-                        onChange={ ( value ) => setAttributes( { titleFontWeight: value } ) }
-                    />
+					<SelectControl
+						label={ __( 'Title font weight', 'za' ) }
+						value={ titleFontWeight || '' }
+						options={ [
+							{ label: __( 'Default', 'za' ), value: '' },
+							{ label: '100', value: '100' },
+							{ label: '200', value: '200' },
+							{ label: '300', value: '300' },
+							{ label: '400', value: '400' },
+							{ label: '500', value: '500' },
+							{ label: '600', value: '600' },
+							{ label: '700', value: '700' },
+							{ label: '800', value: '800' },
+							{ label: '900', value: '900' },
+						] }
+						onChange={ ( value ) =>
+							setAttributes( { titleFontWeight: value } )
+						}
+						__nextHasNoMarginBottom={ true }
+						__next40pxDefaultSize={ true }
+					/>
 				</PanelBody>
 
 				<PanelBody
@@ -356,33 +478,7 @@ export default function Edit( { clientId, attributes, setAttributes } ) {
 				</PanelBody>
 			</InspectorControls>
 
-			{ showImages && imageUrl && (
-				<BlockControls>
-					<MediaReplaceFlow
-						name={ __( 'Replace Image', 'za' ) }
-						onSelect={ onSelect }
-						accept="image/*"
-						allowedTypes={ [ 'image', 'video' ] }
-						mediaId={ imageId }
-						mediaUrl={ imageUrl }
-						mediaAlt={ imageAlt }
-					/>
-					<ToolbarButton
-						onClick={ () =>
-							setAttributes( {
-								imageId: undefined,
-								imageUrl: undefined,
-								imageAlt: '',
-							} )
-						}
-						isDisabled={ ! imageUrl }
-						icon="trash"
-						title={ __( 'Remove Image', 'za' ) }
-					>
-						{ __( 'Remove Image', 'za' ) }
-					</ToolbarButton>
-				</BlockControls>
-			) }
+			{ blockToolbarForMedia }
 
 			<BlockControls>
 				<ToolbarGroup>
@@ -399,77 +495,43 @@ export default function Edit( { clientId, attributes, setAttributes } ) {
 				</ToolbarGroup>
 			</BlockControls>
 
-			{ isLinkPickerOpen && (
-				<Popover
-					position="bottom center"
-					onClose={ () => setIsLinkPickerOpen( false ) }
-				>
-					<LinkControl
-						value={ {
-							url: linkUrl,
-							opensInNewTab: linkTarget === '_blank',
-							rel,
-						} }
-						settings={ [
-							{
-								id: 'opensInNewTab',
-								title: __( 'Open in new tab', 'za' ),
-							},
-							{
-								id: 'rel',
-								title: __( 'Add rel attribute', 'za' ),
-							},
-						] }
-						onChange={ ( newVal ) => {
-							const linkAttrs = getSafeLinkAttributes(
-								newVal.url,
-								newVal.rel,
-								newVal.opensInNewTab ? '_blank' : ''
-							);
-							setAttributes( {
-								linkUrl: linkAttrs.href,
-								linkTarget: linkAttrs.target,
-								rel: linkAttrs.rel,
-							} );
-						} }
+			{ linkPopover }
+
+			{ activeField === 'title' && (
+				<BlockControls group="block">
+					<AlignmentToolbar
+						value={ titleAlign }
+						onChange={ ( newAlign ) =>
+							setAttributes( { titleAlign: newAlign || 'left' } )
+						}
 					/>
-				</Popover>
+				</BlockControls>
 			) }
 
-            { activeField === 'title' && (
-                <BlockControls group="block">
-                    <AlignmentToolbar
-                        value={ titleAlign }
-                        onChange={ ( newAlign ) =>
-                            setAttributes( { titleAlign: newAlign || 'left' } )
-                        }
-                    />
-                </BlockControls>
-            )}
+			{ activeField === 'sideText' && (
+				<BlockControls group="block">
+					<AlignmentToolbar
+						value={ sideTextAlign }
+						onChange={ ( newAlign ) =>
+							setAttributes( {
+								sideTextAlign: newAlign || 'left',
+							} )
+						}
+					/>
+				</BlockControls>
+			) }
 
-            { activeField === 'sideText' && (
-                <BlockControls group="block">
-                    <AlignmentToolbar
-                        value={ sideTextAlign }
-                        onChange={ ( newAlign ) =>
-                            setAttributes( { sideTextAlign: newAlign || 'left' } )
-                        }
-                    />
-                </BlockControls>
-            )}
-
-            <li { ...blockProps }>
+			<li { ...blockProps }>
 				<div className="timeline-side">
 					{ showOtherSide && (
 						<RichText
 							tagName="p"
-                            className={ `t-text-align-${ sideTextAlign } ` }
+							className={ `t-text-align-${ sideTextAlign } ` }
 							value={ otherSiteTitle }
 							onChange={ ( val ) =>
 								setAttributes( { otherSiteTitle: val } )
 							}
-                            
-                            onFocus={ () => setActiveField('sideText') }
+							onFocus={ () => setActiveField( 'sideText' ) }
 							placeholder={ __( 'Add other side text', 'za' ) }
 						/>
 					) }
@@ -485,42 +547,74 @@ export default function Edit( { clientId, attributes, setAttributes } ) {
 				>
 					<div className="tl-content">
 						<div className="tl-desc">
-							{ showImages && imageUrl && (
+							{ showMedia && mediaUrl ? (
 								<div
 									className={ `timeline_pic ${
-										isBlobURL( imageUrl )
+										isBlobURL( mediaUrl )
 											? 'image-loading'
 											: 'loaded'
 									}` }
 								>
-									<img
-										id={ `img_${ imageId }` }
-										src={ imageUrl }
-										alt={ imageAlt }
-									/>
-									{ isBlobURL( imageUrl ) && <Spinner /> }
+									{ isVideo ? (
+										<video
+											id={
+												mediaId
+													? `video_${ mediaId }`
+													: undefined
+											}
+											autoPlay
+											muted
+											loop
+											playsInline
+											preload="metadata"
+											poster={ videoPoster || undefined }
+											style={ {
+												width: '100%',
+												height: 'auto',
+											} }
+										>
+											<source
+												src={ mediaUrl }
+												type={ mediaMime || undefined }
+											/>
+											{ __(
+												'Your browser does not support the video tag.',
+												'za'
+											) }
+										</video>
+									) : (
+										<img
+											id={
+												mediaId
+													? `img_${ mediaId }`
+													: undefined
+											}
+											src={ mediaUrl }
+											alt={ imageAlt || '' }
+										/>
+									) }
+									{ isBlobURL( mediaUrl ) && <Spinner /> }
 								</div>
-							) }
-
-							{ showImages && ! imageUrl && (
-								<MediaPlaceholder
-									onSelect={ onSelect }
-									accept="image/*"
-									allowedTypes={ [ 'image' ] }
-								/>
+							) : (
+								showMedia && (
+									<MediaPlaceholder
+										onSelect={ onSelect }
+										accept="image/*"
+										allowedTypes={ [ 'image', 'video' ] }
+									/>
+								)
 							) }
 
 							{ titleTag === 'a' ? (
 								<RichText
 									tagName="a"
-                                    className={ `t-text-align-${ titleAlign } tl-title` }
+									className={ `t-text-align-${ titleAlign } tl-title` }
 									value={ title }
 									allowedFormats={ [] }
 									onChange={ ( val ) =>
 										setAttributes( { title: val } )
 									}
-                                    onFocus={ () => setActiveField('title') }
-
+									onFocus={ () => setActiveField( 'title' ) }
 									placeholder={ __( 'Add link text…', 'za' ) }
 									{ ...linkProps }
 									style={ titleStyle }
@@ -528,14 +622,13 @@ export default function Edit( { clientId, attributes, setAttributes } ) {
 							) : (
 								<RichText
 									tagName={ titleTag }
-                                    className={ `t-text-align-${ titleAlign } tl-title` }
+									className={ `t-text-align-${ titleAlign } tl-title` }
 									value={ title }
 									allowedFormats={ [] }
 									onChange={ ( val ) =>
 										setAttributes( { title: val } )
 									}
-                                    onFocus={ () => setActiveField('title') }
-
+									onFocus={ () => setActiveField( 'title' ) }
 									style={ titleStyle }
 								/>
 							) }

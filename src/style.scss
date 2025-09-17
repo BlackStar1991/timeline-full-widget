@@ -1,44 +1,55 @@
 .t-text-align-left {
-	text-align: left;
+  text-align: left;
 }
 
 .t-text-align-center {
-	text-align: center;
+  text-align: center;
 }
 
 .t-text-align-right {
-	text-align: right;
+  text-align: right;
 }
 
 .timeline_pic .components-spinner {
-	position: absolute;
-	top: 50%;
-	left: 50%;
-	transform: translate(-50%, -50%);
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
 }
 
 .timeline_pic.image-loading {
-	opacity: 0.3;
+  opacity: 0.3;
 }
 
 .timeline::before {
-	background-color: var(--timeline-color, #f6f6f8);
+  background-color: var(--timeline-color, #f6f6f8);
 }
 
 .tl-circ {
-	background-color: var(--timeline-color, #f6f6f8);
+  background-color: var(--timeline-color, #f6f6f8);
 }
 
 .timeline-line-animation {
-	background-color: var(--timeline-color-animation, #f37321);
+  background-color: var(--timeline-color-animation, #f37321);
 }
 
 li.is-stuck .tl-circ {
-	background-color: var(--timeline-color-animation, #f37321);
+  background-color: var(--timeline-color-animation, #f37321);
 }
 
-//@media (min-width:701px) {
-	//  .timeline-item:first-child .tl-circ {
-		//    transform: translateX(calc(-50% - 3px));transform
-	//  }
-//}
+
+@media (min-width: 701px) {
+  .wp-block-za-timeline-item.timeline-item .tl-circ {
+    left: calc(50% - 11px);
+  }
+
+  .block-editor-block-list__block .timeline-panel,
+  .wp-block-za-timeline-item .timeline-panel {
+    width: calc(50% - 30px);
+  }
+  .timeline-animation-marker .block-editor-block-list__block .timeline-panel,
+  .timeline-animation-marker .wp-block-za-timeline-item .timeline-panel {
+    width: calc(50% - 35px);
+  }
+
+}

@@ -7,9 +7,11 @@
     position: absolute;
     top: 0;
     left: 50%;
-    transform: translateX(-50%);
     width: 4px;
-    height: 0;
+    height: 100%;
+    transform-origin: top;
+    transform: scaleY(0);
+    will-change: transform;
     z-index: 1;
 }
 
@@ -31,7 +33,6 @@
     bottom: 0;
     width: 4px;
     left: 50%;
-    margin-left: -2px;
 }
 
 .timeline-panel {
@@ -49,7 +50,7 @@
     display: flex;
     flex-direction: row;
     align-items: flex-start;
-    gap: 30px;
+    gap: 10px;
     justify-content: center;
 }
 
@@ -73,11 +74,16 @@ li.timeline-left {
 }
 
 
+
+
+.tl-desc-short strong{
+    font-weight: bold;
+}
+
 .tl-circ {
     position: absolute;
     top: 0;
-    left: 50%;
-    transform: translateX(-50%);
+    left: calc(50% - 11px);
     text-align: center;
     transition: background 0.2s;
     min-width: 26px;
@@ -141,29 +147,33 @@ li.timeline-left {
 
 @media (min-width: 701px) {
     /*.timeline-side {*/
-    /*    position: -webkit-sticky;*/
     /*    position: sticky;*/
-    /*    top: 50%;*/
+    /*    top: 0;*/
     /*}*/
 
 
     .timeline-inverted .timeline-panel {
-        margin-left: 82px;
+        margin-left: 60px;
     }
     .timeline-left .timeline-panel{
-        margin-right: 82px;
+        margin-right: 60px;
     }
 
 
     .timeline-animation-marker .tl-circ {
         position: sticky;
         top: 0;
-    }
-    .timeline-animation-marker .timeline-panel {
-        width: calc(50% - 30px);
-        margin: 0;
+        left: 0;
     }
 
+   .elementor-widget-container .timeline-item:nth-child(2n) .tl-circ{
+         left: calc(50% - 11px);
+     }
+
+    .timeline-animation-marker .timeline-panel {
+        width: 50%;
+        margin: 0;
+    }
 }
 
 @media (max-width: 700px) {
@@ -178,17 +188,16 @@ li.timeline-left {
 
     .tl-circ{
         transform: none;
-        left: -2px;
+        left: 8px;
     }
 
 
     .timeline-line-animation{
-        transform: none;
-        left: 10px;
+        left: 20px;
     }
 
     .timeline:before{
-        left: 10px;
+        left: 20px;
         margin-left: 0;
     }
 

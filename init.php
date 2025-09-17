@@ -13,219 +13,242 @@
  * Elementor tested up to: 3.31.4
  */
 
-if ( ! defined( 'ABSPATH' ) ) {
+if (!defined('ABSPATH')) {
     exit;
 }
 
-if ( ! defined( 'TIMELINE_ELEMENTOR_URL' ) ) {
-    define( 'TIMELINE_ELEMENTOR_URL', plugin_dir_url( __FILE__ ) );
+if (!defined('TIMELINE_ELEMENTOR_URL')) {
+    define('TIMELINE_ELEMENTOR_URL', plugin_dir_url(__FILE__));
 }
-if ( ! defined( 'TIMELINE_ELEMENTOR_PATH' ) ) {
-    define( 'TIMELINE_ELEMENTOR_PATH', plugin_dir_path( __FILE__ ) );
+if (!defined('TIMELINE_ELEMENTOR_PATH')) {
+    define('TIMELINE_ELEMENTOR_PATH', plugin_dir_path(__FILE__));
 }
 
-
-final class TimelinePlugin {
-
-    /**
-     * Singleton instance.
-     *
-     * @var TimelinePlugin|null
-     */
+final class TimelinePlugin
+{
     private static $instance = null;
 
-    /**
-     * Get instance.
-     *
-     * @return TimelinePlugin
-     */
-    public static function get_instance(): TimelinePlugin {
-        if ( null === self::$instance ) {
+    public static function get_instance(): TimelinePlugin
+    {
+        if (null === self::$instance) {
             self::$instance = new self();
         }
         return self::$instance;
     }
 
-    /**
-     * Constructor - private for singleton.
-     */
-    private function __construct() {
-        // nothing
+    public function init(): void
+    {
+        add_action('init', [$this, 'register_assets']);
+
+        // Elementor hooks
+        add_action('elementor/widgets/widgets_registered', [$this, 'widgets_registered']);
+        add_action('elementor/frontend/after_register_scripts', [$this, 'register_elementor_assets']);
+
+        // Gutenberg: register block and add editor frontend scripts
+        add_action('init', [$this, 'register_gutenberg_block']);
+
+        // For Gutenberg editor only (block editor)
+        add_action('enqueue_block_editor_assets', [$this, 'enqueue_block_editor_assets']);
+
+        // Frontend enqueue for Gutenberg block when present
+        add_action('wp_enqueue_scripts', [$this, 'maybe_enqueue_frontend_assets']);
+
+        // Modules support
+        add_filter( 'script_loader_tag', [ $this, 'add_module_type_attribute' ], 10, 3 );
     }
 
-    /**
-     * Bootstrap: attach WP hooks.
-     */
-    public function init(): void {
-        // Elementor widget registration & assets
-        add_action( 'elementor/widgets/widgets_registered', [ $this, 'widgets_registered' ] );
-        add_action( 'elementor/frontend/after_register_scripts', [ $this, 'register_elementor_assets' ] );
-
-        // Gutenberg block registration
-        add_action( 'init', [ $this, 'register_gutenberg_block' ] );
-
-        // Enqueue frontend assets for Gutenberg block only when needed (not in admin)
-        add_action( 'wp_enqueue_scripts', [ $this, 'maybe_enqueue_frontend_assets' ] );
-    }
-
-    /**
-     * Register block type (uses block.json).
-     */
-    public function register_gutenberg_block(): void {
-        $dir = TIMELINE_ELEMENTOR_PATH;
-        if ( function_exists( 'register_block_type' ) ) {
-            register_block_type( $dir . '/block.json' );
+    public function add_module_type_attribute( $tag, $handle, $src ) {
+        $module_handles = [
+            'za-timeline-elementor',
+            'za-timeline-gutenberg',
+        ];
+        if ( in_array( $handle, $module_handles, true ) ) {
+            if ( false !== strpos( $tag, 'type="module"' ) ) {
+                return $tag;
+            }
+            return '<script type="module" src="' . esc_url( $src ) . '"></script>';
         }
+        return $tag;
     }
 
     /**
-     * Register elementor widget assets (styles/scripts registered, not enqueued).
+     * Register JS/CSS module assets (do NOT enqueue here).
      */
-    public function register_elementor_assets(): void {
-        $css  = TIMELINE_ELEMENTOR_PATH . 'assets/elementor/style.css';
-        $js   = TIMELINE_ELEMENTOR_PATH . 'assets/elementor/script.js';
+    public function register_assets(): void
+    {
+        $base_path = TIMELINE_ELEMENTOR_PATH . 'assets/js/';
+        $base_url = TIMELINE_ELEMENTOR_URL . 'assets/js/';
 
-        if ( file_exists( $css ) ) {
+        // Elemento r adapter (module)
+        $elementor_adapter = $base_path . 'adapters/elementor-adapter.js';
+        if ( file_exists( $elementor_adapter ) ) {
+            wp_register_script(
+                'za-timeline-elementor',
+                $base_url . 'adapters/elementor-adapter.js',
+                [], // module import handles internal deps
+                filemtime( $elementor_adapter ),
+                true
+            );
+            // mark as module
+            wp_script_add_data( 'za-timeline-elementor', 'type', 'module' );
+        }
+
+        // Gutenberg adapter (module)
+        $gutenberg_adapter = $base_path . 'adapters/gutenberg-adapter.js';
+        if ( file_exists( $gutenberg_adapter ) ) {
+            wp_register_script(
+                'za-timeline-gutenberg',
+                $base_url . 'adapters/gutenberg-adapter.js',
+                [],
+                filemtime( $gutenberg_adapter ),
+                true
+            );
+            wp_script_add_data( 'za-timeline-gutenberg', 'type', 'module' );
+        }
+
+        // Styles (shared frontend style)
+        $style_frontend = TIMELINE_ELEMENTOR_PATH . 'assets/gutenberg/style.css';
+        if (file_exists($style_frontend)) {
+            wp_register_style(
+                'za-timeline-frontend-style',
+                TIMELINE_ELEMENTOR_URL . 'assets/gutenberg/style.css',
+                [],
+                filemtime($style_frontend)
+            );
+        }
+
+        // Elementor specific style (for editor / widget)
+        $elementor_style = TIMELINE_ELEMENTOR_PATH . 'assets/elementor/style.css';
+        if (file_exists($elementor_style)) {
             wp_register_style(
                 'timeline-elementor-style',
                 TIMELINE_ELEMENTOR_URL . 'assets/elementor/style.css',
                 [],
-                filemtime( $css )
-            );
-        }
-
-        if ( file_exists( $js ) ) {
-            wp_register_script(
-                'timeline-elementor-script',
-                TIMELINE_ELEMENTOR_URL . 'assets/elementor/script.js',
-                [],
-                filemtime( $js ),
-                true
-            );
-            wp_enqueue_script(
-                'za-elementor-media-preview',
-                TIMELINE_ELEMENTOR_URL . 'assets/elementor/elementor-media-preview.js',
-                [ 'jquery' ],
-                filemtime( $js ),
-                true
+                filemtime($elementor_style)
             );
         }
     }
 
     /**
-     * Widgets registration (Elementor widget PHP file).
+     * Register elementor assets hook (called by elementor/frontend/after_register_scripts).
+     * We register above; optionally we can enqueue preview helper.
      */
-    public function widgets_registered(): void {
-        if ( ! defined( 'ELEMENTOR_PATH' ) ) {
+    public function register_elementor_assets(): void
+    {
+        // In many setups it's convenient to enqueue a small "media preview" helper
+        $preview = TIMELINE_ELEMENTOR_PATH . 'assets/elementor/elementor-media-preview.js';
+        if (file_exists($preview)) {
+            wp_register_script(
+                'za-elementor-media-preview',
+                TIMELINE_ELEMENTOR_URL . 'assets/elementor/elementor-media-preview.js',
+                ['jquery'],
+                filemtime($preview),
+                true
+            );
+
+            wp_enqueue_script('za-elementor-media-preview');
+        }
+
+    }
+
+    /**
+     * Register block type if block.json exists.
+     */
+    public function register_gutenberg_block(): void
+    {
+        $dir = TIMELINE_ELEMENTOR_PATH;
+        if (function_exists('register_block_type')) {
+            register_block_type($dir . '/block.json');
+        }
+    }
+
+    /**
+     * Enqueue editor assets for Gutenberg editor (post editor).
+     * This ensures module is available in editor (for preview/edit).
+     */
+    public function enqueue_block_editor_assets(): void
+    {
+        if (wp_script_is('za-timeline-gutenberg', 'registered')) {
+            wp_enqueue_script('za-timeline-gutenberg');
+        }
+
+        if (wp_style_is('za-timeline-frontend-style', 'registered')) {
+            wp_enqueue_style('za-timeline-frontend-style');
+        }
+    }
+
+    /**
+     * Conditionally enqueue frontend assets for Gutenberg block.
+     */
+    public function maybe_enqueue_frontend_assets(): void
+    {
+        if (is_admin() || wp_doing_ajax() || (defined('REST_REQUEST') && REST_REQUEST)) {
             return;
         }
 
-        if ( ! class_exists( 'Elementor\Widget_Base' ) ) {
+        $post_id = (int)get_queried_object_id();
+
+        if ($post_id && $this->is_built_with_elementor($post_id)) {
             return;
         }
 
-        // Try theme override first, then fallback to plugin file
-        $template_file = locate_template( 'elementor-timeline/elementor-timeline-widget.php' );
-        if ( ! $template_file || ! is_readable( $template_file ) ) {
+        $should_enqueue = false;
+        if ($post_id && has_block('za/timeline-full-widget', $post_id)) {
+            $should_enqueue = true;
+        }
+
+        if (!$should_enqueue) {
+            return;
+        }
+
+        if (wp_script_is('za-timeline-gutenberg', 'registered')) {
+            wp_enqueue_script('za-timeline-gutenberg');
+        }
+        if (wp_style_is('za-timeline-frontend-style', 'registered')) {
+            wp_enqueue_style('za-timeline-frontend-style');
+        }
+    }
+
+    /**
+     * Widgets registration (Elementor): include widget PHP file.
+     * IMPORTANT: In widget render() you should call wp_enqueue_script('za-timeline-elementor') to load the adapter.
+     */
+    public function widgets_registered(): void
+    {
+        if (!defined('ELEMENTOR_PATH') || !class_exists('\Elementor\Widget_Base')) {
+            return;
+        }
+
+        // allow theme override
+        $template_file = locate_template('elementor-timeline/elementor-timeline-widget.php');
+        if (!$template_file || !is_readable($template_file)) {
             $template_file = TIMELINE_ELEMENTOR_PATH . 'elementor-timeline-widget.php';
         }
 
-        if ( $template_file && is_readable( $template_file ) ) {
+        if ($template_file && is_readable($template_file)) {
             require_once $template_file;
         }
     }
 
     /**
-     * Conditionally enqueue frontend Gutenberg (module) script and styles.
-     *
-     * - Do not enqueue in admin (/wp-admin).
-     * - Do not enqueue when page is built with Elementor (if that is required).
-     * - Enqueue only when current queried object contains our block,
-     *   or when no specific post ID (e.g. archive) if you want global.
+     * Helper: detect if post built with Elementor
      */
-    public function maybe_enqueue_frontend_assets(): void {
-        // never enqueue in admin screens, REST, cron, or ajax contexts
-        if ( is_admin() || wp_doing_ajax() || ( defined( 'REST_REQUEST' ) && REST_REQUEST ) ) {
-            return;
-        }
-
-        // Resolve post ID of current request (may be 0 on some archives)
-        $post_id = (int) get_queried_object_id();
-
-        // If we can detect that page is built with Elementor, skip enqueue
-        if ( $post_id && $this->is_built_with_elementor( $post_id ) ) {
-            return;
-        }
-
-        // Only load if the current post contains the block OR if you want to always load, change logic.
-        $should_enqueue = false;
-        if ( $post_id && has_block( 'za/timeline-full-widget', $post_id ) ) {
-            $should_enqueue = true;
-        }
-
-        // Optionally: also check if the block might be present in global areas or if you want to always enable on specific templates.
-        // e.g. enable on homepage if has block in a page assigned to home
-
-        if ( ! $should_enqueue ) {
-            return;
-        }
-
-        $script_path = TIMELINE_ELEMENTOR_PATH . 'assets/gutenberg/gutenberg-script.js';
-        $style_path  = TIMELINE_ELEMENTOR_PATH . 'assets/gutenberg/style.css';
-
-        if ( file_exists( $script_path ) ) {
-            $handle = 'za-timeline-frontend';
-            wp_register_script(
-                $handle,
-                TIMELINE_ELEMENTOR_URL . 'assets/gutenberg/gutenberg-script.js',
-                [],
-                filemtime( $script_path ),
-                true
-            );
-            add_filter("script_loader_tag", "add_module_to_my_script", 10, 3);
-            function add_module_to_my_script($tag, $handle, $src)
-            {
-                if ("za-timeline-frontend" === $handle) {
-                    $tag = '<script type="module" src="' . esc_url($src) . '"></script>';
-                }
-                return $tag;
-            }
-
-            wp_enqueue_script( $handle );
-        }
-
-        if ( file_exists( $style_path ) ) {
-            wp_enqueue_style(
-                'za-timeline-frontend-style',
-                TIMELINE_ELEMENTOR_URL . 'assets/gutenberg/style.css',
-                [],
-                filemtime( $style_path )
-            );
-        }
-    }
-
-    /**
-     * Helper: detect Elementor-built page (defensive).
-     *
-     * @param int $post_id
-     * @return bool
-     */
-    private function is_built_with_elementor( int $post_id ): bool {
-        // Defensive checks for Elementor API (may change across versions).
-        if ( class_exists( '\Elementor\Plugin' ) ) {
+    private function is_built_with_elementor(int $post_id): bool
+    {
+        if (class_exists('\Elementor\Plugin')) {
             try {
                 $elementor = \Elementor\Plugin::instance();
-                if ( isset( $elementor->db ) && method_exists( $elementor->db, 'is_built_with_elementor' ) ) {
-                    return (bool) $elementor->db->is_built_with_elementor( $post_id );
+                if (isset($elementor->db) && method_exists($elementor->db, 'is_built_with_elementor')) {
+                    return (bool)$elementor->db->is_built_with_elementor($post_id);
                 }
-            } catch ( \Throwable $e ) {
-                // swallow errors: assume not elementor-built on failure
+            } catch (\Throwable $e) {
+                // swallow
             }
         }
         return false;
     }
 }
 
-// Bootstrap
+// bootstrap
 TimelinePlugin::get_instance()->init();
 

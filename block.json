@@ -11,7 +11,7 @@
 	"style": "file:./build/style-index.css",
 	"editorStyle": "file:./build/index.css",
 	"attributes": {
-		"showImages": {
+		"showMedia": {
 			"type": "boolean",
 			"default": true
 		},

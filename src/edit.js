@@ -16,14 +16,14 @@ import {
 
 export default function Edit( { attributes, setAttributes, clientId } ) {
 	const {
-		showImages = true,
+		showMedia = true,
 		direction = false,
 		onTheOneSide,
 		lineColor,
 		showOtherSide,
 		animationTimeline,
 		animationTimelineColor,
-        animationMarker,
+		animationMarker,
 	} = attributes;
 
 	const wrapperRef = useRef( null );
@@ -74,23 +74,23 @@ export default function Edit( { attributes, setAttributes, clientId } ) {
 	useLayoutEffect( () => {
 		syncToChildren( {
 			showOtherSide,
-			showImages,
+			showMedia,
 			lineColor,
 			direction,
 			onTheOneSide,
 			animationTimeline,
 			animationTimelineColor,
-            animationMarker,
+			animationMarker,
 		} );
 	}, [
 		showOtherSide,
-		showImages,
+		showMedia,
 		lineColor,
 		direction,
 		onTheOneSide,
 		animationTimeline,
 		animationTimelineColor,
-        animationMarker,
+		animationMarker,
 		syncToChildren,
 	] );
 
@@ -101,7 +101,7 @@ export default function Edit( { attributes, setAttributes, clientId } ) {
 		let active = true;
 		const el = wrapperRef.current;
 
-		import( '../assets/gutenberg/gutenberg-script.js' )
+		import( '../assets/js/core/animation.js' )
 			.then( ( mod ) => {
 				if ( ! active ) return;
 				if ( typeof mod.initTimelineAnimation === 'function' ) {
@@ -141,12 +141,12 @@ export default function Edit( { attributes, setAttributes, clientId } ) {
 						{ [
 							{
 								label: __( 'Show Images', 'za' ),
-								help: showImages
+								help: showMedia
 									? __( 'On', 'za' )
 									: __( 'Off', 'za' ),
-								checked: showImages,
+								checked: showMedia,
 								onChange: ( val ) =>
-									setAttributes( { showImages: val } ),
+									setAttributes( { showMedia: val } ),
 							},
 							{
 								label: __( 'Direction', 'za' ),
@@ -184,16 +184,15 @@ export default function Edit( { attributes, setAttributes, clientId } ) {
 								onChange: ( val ) =>
 									setAttributes( { animationTimeline: val } ),
 							},
-                            {
-                                label: __( 'Enable Animation Marker', 'za' ),
-                                help: animationMarker
-                                    ? __( 'Yes', 'za' )
-                                    : __( 'No', 'za' ),
-                                checked: animationMarker,
-                                onChange: ( val ) =>
-                                    setAttributes( { animationMarker: val } ),
-                            }
-
+							{
+								label: __( 'Enable Animation Marker', 'za' ),
+								help: animationMarker
+									? __( 'Yes', 'za' )
+									: __( 'No', 'za' ),
+								checked: animationMarker,
+								onChange: ( val ) =>
+									setAttributes( { animationMarker: val } ),
+							},
 						].map( ( ctrl, i ) => (
 							<ToggleControl
 								key={ i }
@@ -235,7 +234,13 @@ export default function Edit( { attributes, setAttributes, clientId } ) {
 					<div className="timeline-line-animation" />
 				) }
 
-				<ul className={ animationMarker ? 'timeline-animation-marker timeline' : 'timeline'}>
+				<ul
+					className={
+						animationMarker
+							? 'timeline-animation-marker timeline'
+							: 'timeline'
+					}
+				>
 					<InnerBlocks
 						allowedBlocks={ [ 'za/timeline-item' ] }
 						template={ [
@@ -243,7 +248,7 @@ export default function Edit( { attributes, setAttributes, clientId } ) {
 								'za/timeline-item',
 								{
 									title: __( 'Timeline Item #1', 'za' ),
-									showImages,
+									showMedia,
 									direction,
 									showOtherSide,
 								},
@@ -252,7 +257,7 @@ export default function Edit( { attributes, setAttributes, clientId } ) {
 								'za/timeline-item',
 								{
 									title: __( 'Timeline Item #2', 'za' ),
-									showImages,
+									showMedia,
 									direction,
 									showOtherSide,
 								},

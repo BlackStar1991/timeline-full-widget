@@ -37,17 +37,17 @@ registerBlockType( 'za/timeline-item', {
 			default: '',
 		},
 		titleFontSize: {
-            type: 'string',
-            default: ''
-        },
-        titleFontWeight: {
-            type: 'string',
-            default: ''
-        },
-        titleAlign: {
-            type: 'string',
-            default: 'left'
-        },
+			type: 'string',
+			default: '',
+		},
+		titleFontWeight: {
+			type: 'string',
+			default: '',
+		},
+		titleAlign: {
+			type: 'string',
+			default: 'left',
+		},
 		titleMarginTop: {
 			type: 'number',
 			default: 0,
@@ -66,17 +66,17 @@ registerBlockType( 'za/timeline-item', {
 			default: '',
 		},
 		linkUrl: {
-            type: 'string',
-            default: ''
-        },
+			type: 'string',
+			default: '',
+		},
 		linkTarget: {
-            type: 'string',
-            default: ''
-        },
+			type: 'string',
+			default: '',
+		},
 		rel: {
-            type: 'string',
-            default: ''
-        },
+			type: 'string',
+			default: '',
+		},
 		position: {
 			type: 'string',
 			default: 'timeline-left',
@@ -85,15 +85,17 @@ registerBlockType( 'za/timeline-item', {
 			type: 'boolean',
 			default: false,
 		},
-		showImages: {
+		showMedia: {
 			type: 'boolean',
 			default: true,
 		},
-		imageUrl: {
+		mediaUrl: { type: 'string', default: '' },
+		videoPoster: {
 			type: 'string',
 			source: 'attribute',
-			selector: '.timeline_pic img',
-			attribute: 'src',
+			selector: '.timeline_pic video',
+			attribute: 'poster',
+			default: '',
 		},
 		imageAlt: {
 			type: 'string',
@@ -102,10 +104,12 @@ registerBlockType( 'za/timeline-item', {
 			attribute: 'alt',
 			default: '',
 		},
-		imageId: {
+		mediaId: {
 			type: 'number',
 		},
-            showOtherSide: {
+		mediaType: { type: 'string', default: '' },
+		mediaMime: { type: 'string', default: '' },
+		showOtherSide: {
 			type: 'boolean',
 			default: true,
 		},
@@ -114,10 +118,10 @@ registerBlockType( 'za/timeline-item', {
 			selector: '.timeline-side p',
 			default: '',
 		},
-        sideTextAlign: {
-            type: 'string',
-            default: 'left'
-        }
+		sideTextAlign: {
+			type: 'string',
+			default: 'left',
+		},
 	},
 	edit: Edit,
 	save: Save,

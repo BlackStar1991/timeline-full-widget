@@ -43,7 +43,7 @@ class Za_Pack_Widget_Timeline extends Widget_Base {
     }
 
     public function get_script_depends() {
-        return [ 'timeline-elementor-script' ];
+        return [ 'za-timeline-elementor' ];
     }
 
     /* ---------------------------
@@ -226,7 +226,21 @@ class Za_Pack_Widget_Timeline extends Widget_Base {
                         ],
                 ]
         );
-
+        $this->add_control(
+                'timeline_animation_color',
+                [
+                        'label'     => __( 'Timeline Animation Color', 'za' ),
+                        'type'      => Controls_Manager::COLOR,
+                        'default'   => '#F37321',
+                        'selectors' => [
+                                '{{WRAPPER}} .timeline-line-animation' => 'background-color: {{VALUE}};',
+                                '{{WRAPPER}} .is-stuck .tl-circ'       => 'background-color: {{VALUE}};',
+                        ],
+                        'condition' => [
+                                'tl_animation_timeline' => 'yes',
+                        ],
+                ]
+        );
         $this->add_control(
                 'tl_change_direction',
                 [
@@ -273,21 +287,7 @@ class Za_Pack_Widget_Timeline extends Widget_Base {
                 ]
         );
 
-        $this->add_control(
-                'timeline_animation_color',
-                [
-                        'label'     => __( 'Timeline Animation Color', 'za' ),
-                        'type'      => Controls_Manager::COLOR,
-                        'default'   => '#F37321',
-                        'selectors' => [
-                                '{{WRAPPER}} .timeline-line-animation' => 'background-color: {{VALUE}};',
-                                '{{WRAPPER}} .is-stuck .tl-circ'       => 'background-color: {{VALUE}};',
-                        ],
-                        'condition' => [
-                                'tl_animation_timeline' => 'yes',
-                        ],
-                ]
-        );
+
 
         $this->end_controls_section();
     }
@@ -327,6 +327,14 @@ class Za_Pack_Widget_Timeline extends Widget_Base {
         }
 
         echo '</ul></div>';
+
+        if (wp_script_is('za-timeline-elementor', 'registered')) {
+            wp_enqueue_script('za-timeline-elementor');
+        }
+        if (wp_style_is('timeline-elementor-style', 'registered')) {
+            wp_enqueue_style('timeline-elementor-style');
+        }
+
     }
 
     /**

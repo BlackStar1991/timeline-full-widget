@@ -1,6 +1,7 @@
 import { RichText, InnerBlocks } from '@wordpress/block-editor';
 import { isBlobURL } from '@wordpress/blob';
 import { getSafeLinkAttributes, buildStyleObject } from './utils';
+import { createElement as el } from '@wordpress/element';
 
 export default function Save( { attributes } ) {
 	const {
@@ -10,8 +11,8 @@ export default function Save( { attributes } ) {
 		titleInlineStyle,
 		titleColor,
 		titleFontSize,
-        titleFontWeight,
-        titleAlign,
+		titleFontWeight,
+		titleAlign,
 		titleMarginTop,
 		titleMarginBottom,
 		descriptionColor,
@@ -20,13 +21,16 @@ export default function Save( { attributes } ) {
 		linkTarget,
 		rel,
 		position,
-		showImages,
-		imageId,
-		imageUrl,
+		showMedia,
+		mediaId,
+		mediaUrl,
 		imageAlt,
+		videoPoster,
+		mediaType,
+		mediaMime,
 		otherSiteTitle,
 		showOtherSide,
-        sideTextAlign,
+		sideTextAlign,
 	} = attributes;
 
 	const classes = [ 'timeline-item', position ];
@@ -36,11 +40,30 @@ export default function Save( { attributes } ) {
 	const styleObj = buildStyleObject( {
 		titleInlineStyle: titleInlineStyle,
 		titleFontSize: titleFontSize,
-        titleFontWeight: titleFontWeight,
+		titleFontWeight: titleFontWeight,
 		titleMarginTop: titleMarginTop,
 		titleMarginBottom: titleMarginBottom,
 		titleColor: titleColor,
 	} );
+
+	const isVideoByMime =
+		typeof mediaMime === 'string' && mediaMime.indexOf( 'video/' ) === 0;
+	const isVideoByType = mediaType === 'video';
+	const isVideoByExt =
+		typeof mediaUrl === 'string' &&
+		/\.(mp4|webm|ogv|ogg)(?:[\?#]|$)/i.test( mediaUrl );
+	const isVideo = isVideoByType || isVideoByMime || isVideoByExt;
+
+	let sourceType = mediaMime || undefined;
+	if ( ! sourceType && isVideo && mediaUrl ) {
+		const extMatch = mediaUrl.match( /\.([0-9a-z]+)(?:[\?#]|$)/i );
+		if ( extMatch ) {
+			const ext = extMatch[ 1 ].toLowerCase();
+			if ( ext === 'mp4' ) sourceType = 'video/mp4';
+			if ( ext === 'webm' ) sourceType = 'video/webm';
+			if ( ext === 'ogv' || ext === 'ogg' ) sourceType = 'video/ogg';
+		}
+	}
 
 	return (
 		<li className={ className }>
@@ -48,9 +71,8 @@ export default function Save( { attributes } ) {
 				{ showOtherSide && (
 					<RichText.Content
 						tagName="p"
-                        className={ `t-text-align-${ sideTextAlign } ` }
+						className={ `t-text-align-${ sideTextAlign } ` }
 						value={ otherSiteTitle }
-						style={ styleObj }
 					/>
 				) }
 			</div>
@@ -68,26 +90,59 @@ export default function Save( { attributes } ) {
 			>
 				<div className="tl-content">
 					<div className="tl-desc">
-						{ showImages && imageUrl && (
+						{ showMedia && mediaUrl && (
 							<div
 								className={ `timeline_pic ${
-									isBlobURL( imageUrl )
+									isBlobURL( mediaUrl )
 										? 'image-loading'
 										: 'loaded'
 								}` }
 							>
-								<img
-									id={ `img_${ imageId }` }
-									src={ imageUrl }
-									alt={ imageAlt }
-								/>
+								{ isVideo ? (
+									el(
+										'video',
+										{
+											id: mediaId
+												? `video_${ mediaId }`
+												: undefined,
+											poster: videoPoster || undefined,
+											autoPlay: true,
+											muted: true,
+											loop: true,
+											playsInline: true,
+											preload: 'metadata',
+											style: {
+												width: '100%',
+												height: 'auto',
+											},
+										},
+										// source
+										mediaUrl
+											? el( 'source', {
+													src: mediaUrl,
+													type: sourceType,
+											  } )
+											: null,
+										'Your browser does not support the video tag.'
+									)
+								) : (
+									<img
+										id={
+											mediaId
+												? `img_${ mediaId }`
+												: undefined
+										}
+										src={ mediaUrl }
+										alt={ imageAlt || '' }
+									/>
+								) }
 							</div>
 						) }
 
 						{ titleTag === 'a' ? (
 							<RichText.Content
 								tagName="a"
-                                className={ `t-text-align-${ titleAlign } tl-title` }
+								className={ `t-text-align-${ titleAlign } tl-title` }
 								value={ title }
 								{ ...linkProps }
 								style={ styleObj }
@@ -95,7 +150,7 @@ export default function Save( { attributes } ) {
 						) : (
 							<RichText.Content
 								tagName={ titleTag }
-                                className={ `t-text-align-${ titleAlign } tl-title` }
+								className={ `t-text-align-${ titleAlign } tl-title` }
 								value={ title }
 								style={ styleObj }
 							/>

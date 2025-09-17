@@ -99,26 +99,28 @@ export function getSafeLinkAttributes(
  */
 
 export function parseStyleString( styleString ) {
-    if ( ! styleString || typeof styleString !== 'string' ) return {};
-    return styleString.split( ';' ).reduce( ( acc, pair ) => {
-        // trim each pair first
-        const trimmed = String( pair ).trim();
-        if ( ! trimmed ) return acc;
+	if ( ! styleString || typeof styleString !== 'string' ) return {};
+	return styleString.split( ';' ).reduce( ( acc, pair ) => {
+		// trim each pair first
+		const trimmed = String( pair ).trim();
+		if ( ! trimmed ) return acc;
 
-        // split on FIRST ':' to allow values containing ':' (e.g. url(...))
-        const idx = trimmed.indexOf( ':' );
-        if ( idx === -1 ) return acc;
+		// split on FIRST ':' to allow values containing ':' (e.g. url(...))
+		const idx = trimmed.indexOf( ':' );
+		if ( idx === -1 ) return acc;
 
-        const rawProp = trimmed.slice( 0, idx ).trim();
-        const rawVal = trimmed.slice( idx + 1 ).trim();
-        if ( ! rawProp || ! rawVal ) return acc;
+		const rawProp = trimmed.slice( 0, idx ).trim();
+		const rawVal = trimmed.slice( idx + 1 ).trim();
+		if ( ! rawProp || ! rawVal ) return acc;
 
-        // convert CSS property-name to JS camelCase key
-        const jsKey = rawProp.replace( /-([a-z])/g, ( m, p1 ) => p1.toUpperCase() );
-        if ( jsKey ) acc[ jsKey ] = rawVal;
+		// convert CSS property-name to JS camelCase key
+		const jsKey = rawProp.replace( /-([a-z])/g, ( m, p1 ) =>
+			p1.toUpperCase()
+		);
+		if ( jsKey ) acc[ jsKey ] = rawVal;
 
-        return acc;
-    }, {} );
+		return acc;
+	}, {} );
 }
 
 /**
@@ -126,36 +128,40 @@ export function parseStyleString( styleString ) {
  * Separate attributes override style-string values.
  */
 export function buildStyleObject( attrs = {} ) {
-    // attrs: { titleInlineStyle, titleFontSize, titleFontWeight, titleMarginTop, titleMarginBottom, titleColor }
-    const styleFromAttr = parseStyleString( attrs.titleInlineStyle );
-    const result = { ...styleFromAttr }; // base from stored style-str
+	// attrs: { titleInlineStyle, titleFontSize, titleFontWeight, titleMarginTop, titleMarginBottom, titleColor }
+	const styleFromAttr = parseStyleString( attrs.titleInlineStyle );
+	const result = { ...styleFromAttr }; // base from stored style-str
 
-    // explicitly override if we have separate attributes (so newer UI wins)
-    if ( attrs.titleColor ) result.color = attrs.titleColor;
+	// explicitly override if we have separate attributes (so newer UI wins)
+	if ( attrs.titleColor ) result.color = attrs.titleColor;
 
-    if ( attrs.titleFontSize ) {
-        const size = String( attrs.titleFontSize );
-        result.fontSize = /px|rem|em|%/.test( size ) ? size : `${ size }px`;
-    }
+	if ( attrs.titleFontSize ) {
+		const size = String( attrs.titleFontSize );
+		result.fontSize = /px|rem|em|%/.test( size ) ? size : `${ size }px`;
+	}
 
-    // Font weight handling: allow 'normal'/'bold' or numeric '400'..'900'
-    if ( attrs.titleFontWeight !== undefined && attrs.titleFontWeight !== null && attrs.titleFontWeight !== '' ) {
-        // ensure it's a string (CSS accepts '700' or 'bold')
-        result.fontWeight = String( attrs.titleFontWeight );
-    } else if ( styleFromAttr.fontWeight ) {
-        // keep parsed inline font-weight if separate attr not set
-        result.fontWeight = styleFromAttr.fontWeight;
-    }
+	// Font weight handling: allow 'normal'/'bold' or numeric '400'..'900'
+	if (
+		attrs.titleFontWeight !== undefined &&
+		attrs.titleFontWeight !== null &&
+		attrs.titleFontWeight !== ''
+	) {
+		// ensure it's a string (CSS accepts '700' or 'bold')
+		result.fontWeight = String( attrs.titleFontWeight );
+	} else if ( styleFromAttr.fontWeight ) {
+		// keep parsed inline font-weight if separate attr not set
+		result.fontWeight = styleFromAttr.fontWeight;
+	}
 
-    if ( attrs.titleMarginTop )
-        result.marginTop = String( attrs.titleMarginTop ).endsWith( 'px' )
-            ? String( attrs.titleMarginTop )
-            : `${ attrs.titleMarginTop }px`;
+	if ( attrs.titleMarginTop )
+		result.marginTop = String( attrs.titleMarginTop ).endsWith( 'px' )
+			? String( attrs.titleMarginTop )
+			: `${ attrs.titleMarginTop }px`;
 
-    if ( attrs.titleMarginBottom )
-        result.marginBottom = String( attrs.titleMarginBottom ).endsWith( 'px' )
-            ? String( attrs.titleMarginBottom )
-            : `${ attrs.titleMarginBottom }px`;
+	if ( attrs.titleMarginBottom )
+		result.marginBottom = String( attrs.titleMarginBottom ).endsWith( 'px' )
+			? String( attrs.titleMarginBottom )
+			: `${ attrs.titleMarginBottom }px`;
 
-    return result;
+	return result;
 }
