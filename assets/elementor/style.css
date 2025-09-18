@@ -84,7 +84,7 @@ li.timeline-left {
     position: absolute;
     top: 0;
     left: calc(50% - 11px);
-    text-align: center;
+    align-self: self-start;
     transition: background 0.2s;
     min-width: 26px;
     height: 26px;
@@ -114,11 +114,6 @@ li.timeline-left {
     margin-top: 0;
     margin-bottom: 0;
 }
-
-.timeline-side .min {
-    font-size: 12px;
-}
-
 
 .tl-body p,
 .tl-body ul {
@@ -162,8 +157,6 @@ li.timeline-left {
 
     .timeline-animation-marker .tl-circ {
         position: sticky;
-        top: 0;
-        left: 0;
     }
 
    .elementor-widget-container .timeline-item:nth-child(2n) .tl-circ{
