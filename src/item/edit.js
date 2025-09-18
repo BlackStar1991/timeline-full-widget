@@ -400,7 +400,7 @@ export default function Edit( { clientId, attributes, setAttributes } ) {
 					initialOpen={ true }
 				>
 					<FontSizePicker
-						__next40pxDefaultSize
+
 						fontSizes={ [
 							{ name: 'Small', size: 12, slug: 'small' },
 							{ name: 'Normal', size: 16, slug: 'normal' },
@@ -424,6 +424,7 @@ export default function Edit( { clientId, attributes, setAttributes } ) {
 								titleFontUnit: 'px',
 							} );
 						} }
+                        __next40pxDefaultSize={ true }
 						withSlider
 					/>
 					<SelectControl

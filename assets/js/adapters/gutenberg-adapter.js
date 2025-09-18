@@ -1,13 +1,25 @@
+// assets/js/adapters/gutenberg-adapter.js
 import { initAllWidgets } from '../core/animation.js';
 
-// Auto init for frontend pages (DOMContentLoaded)
-document.addEventListener( 'DOMContentLoaded', () => {
-	try {
-		initAllWidgets( document );
-	} catch ( e ) {}
-} );
+// If document already parsed — init immediately, otherwise wait for DOMContentLoaded.
+// This avoids the "listener missed because script loaded after DOMContentLoaded" problem.
+function boot() {
+    try {
+        initAllWidgets(document);
+    } catch (e) {
+        // fail silently in production; you can console.error during debug
+        if (typeof console !== 'undefined') console.debug('za-timeline: initAllWidgets error', e);
+    }
+}
 
-// Export helpers (for editor scripts to call if needed)
-export function initGutenbergForRoot( root = document ) {
-	return initAllWidgets( root );
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', boot, { once: true, passive: true });
+} else {
+    // document already interactive/complete
+    boot();
+}
+
+// Export helper for editors/tests
+export function initGutenbergForRoot(root = document) {
+    return initAllWidgets(root);
 }

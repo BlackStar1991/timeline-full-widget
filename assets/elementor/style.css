@@ -171,7 +171,7 @@ li.timeline-left {
      }
 
     .timeline-animation-marker .timeline-panel {
-        width: 50%;
+        width: calc(50% + 2px);
         margin: 0;
     }
 }

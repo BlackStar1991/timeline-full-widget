@@ -357,13 +357,11 @@ function initParentContext() {
 const runningInIframe = window.self !== window.top;
 
 if ( runningInIframe ) {
-	// code runs inside iframe: initialize inside preview
 	initInsideIframe();
 } else {
-	// parent context: frontend or editor parent window
 	initParentContext();
 }
 
-// exports (debug/programmatic)
+
 export { initInsideIframe, injectAdapterIntoIframe };
-export default null;
+

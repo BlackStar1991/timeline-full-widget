@@ -16,6 +16,12 @@ registerBlockType( 'za/timeline-full-widget', {
 		</svg>
 	),
 	category: 'widgets',
+    supports: {
+        html: false,
+        spacing: {
+            margin: true
+        }
+    },
 	edit: Edit,
 	save: Save,
 } );

@@ -45,11 +45,19 @@ li.is-stuck .tl-circ {
 
   .block-editor-block-list__block .timeline-panel,
   .wp-block-za-timeline-item .timeline-panel {
-    width: calc(50% - 30px);
+    width: 50%;
   }
-  .timeline-animation-marker .block-editor-block-list__block .timeline-panel,
-  .timeline-animation-marker .wp-block-za-timeline-item .timeline-panel {
-    width: calc(50% - 35px);
+
+
+  .timeline-animation-marker {
+    .block-editor-block-list__block .timeline-panel,
+    .wp-block-za-timeline-item .timeline-panel {
+      width: calc(50% - 30px) ;
+    }
   }
+
+
+
+
 
 }
