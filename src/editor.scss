@@ -26,28 +26,26 @@
 }
 
 @media (min-width: 701px) {
-  .block-editor-block-list__block.timeline-item .tl-circ {
-    transform: translateX(calc(-50% + 14px));
+
+  .block-editor-block-list__block .timeline-panel{
+    width: calc(50% - 30px);
   }
 
-  .timeline-wrapper .timeline.timeline-animation-marker li.timeline-left .tl-circ {
-    transform: translateX(calc(-50% + 28px));
+  // animation-marker
+
+  .timeline-animation-marker .block-editor-block-list__block .timeline-panel {
+    width: calc(50% - 30px);
   }
 
-  .timeline-animation-marker .block-editor-block-list__layout > .block-editor-block-list__block:nth-child(even) li.timeline-item .tl-circ {
-    transform: translateX(calc(-50% + 4px));
-  }
 
-  .timeline-animation-marker {
-    .block-editor-block-list__block .timeline-panel {
-      width: calc(50% - 30px);
-    }
 
-    .timeline-side {
-      margin-left: 30px;
-    }
 
-  }
+
+
+
+
+
+
 
 
 }

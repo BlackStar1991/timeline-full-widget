@@ -1,4 +1,3 @@
-
 .timeline-wrapper {
     position: relative;
 }
@@ -23,7 +22,7 @@
 .timeline {
     list-style: none;
     position: relative;
-    padding: 0;
+    padding-left: 0!important;
 }
 
 .timeline:before {
@@ -50,7 +49,7 @@
     display: flex;
     flex-direction: row;
     align-items: flex-start;
-    gap: 10px;
+    gap: 26px;
     justify-content: center;
 }
 
@@ -80,21 +79,28 @@ li.timeline-left {
     font-weight: bold;
 }
 
-.tl-circ {
+.tl-mark {
     position: absolute;
     top: 0;
     left: calc(50% - 11px);
+
     align-self: self-start;
     transition: background 0.2s;
     min-width: 26px;
     height: 26px;
     border-radius: 50%;
+    box-sizing: border-box;
+    backface-visibility: hidden;
     z-index: 1;
 }
 
-.is-stuck .tl-circ {
+
+.is-stuck .tl-mark {
     transition: background 0.2s;
+
 }
+
+
 
 .tl-trigger {
     position: absolute;
@@ -146,27 +152,38 @@ li.timeline-left {
     /*    top: 0;*/
     /*}*/
 
-
     .timeline-inverted .timeline-panel {
         margin-left: 60px;
     }
+
     .timeline-left .timeline-panel{
         margin-right: 60px;
     }
 
 
-    .timeline-animation-marker .tl-circ {
+    .timeline-animation-marker .tl-mark {
         position: sticky;
+        transform: translateX(-50%);
     }
 
-   .elementor-widget-container .timeline-item:nth-child(2n) .tl-circ{
-         left: calc(50% - 11px);
-     }
+    .timeline-animation-marker .timeline-inverted .tl-mark {
+        left: calc(50% + 2px);
+    }
+
+
+   /*.elementor-widget-container .timeline-item:nth-child(2n) .tl-mark{*/
+   /*      left: calc(50% - 11px);*/
+   /*  }*/
+
 
     .timeline-animation-marker .timeline-panel {
-        width: calc(50% + 2px);
         margin: 0;
     }
+
+    .timeline-animation-marker .timeline-side{
+        width: calc(50% - 30px);
+    }
+
 }
 
 @media (max-width: 700px) {
@@ -179,7 +196,7 @@ li.timeline-left {
         text-align: left;
     }
 
-    .tl-circ{
+    .tl-mark{
         transform: none;
         left: 8px;
     }

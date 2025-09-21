@@ -221,7 +221,7 @@ class Za_Pack_Widget_Timeline extends Widget_Base {
                         'type'      => Controls_Manager::COLOR,
                         'default'   => '#F6F6F8',
                         'selectors' => [
-                                '{{WRAPPER}} .tl-circ'         => 'background-color: {{VALUE}};',
+                                '{{WRAPPER}} .tl-mark'         => 'background-color: {{VALUE}};',
                                 '{{WRAPPER}} .timeline:before' => 'background-color: {{VALUE}};',
                         ],
                 ]
@@ -234,7 +234,7 @@ class Za_Pack_Widget_Timeline extends Widget_Base {
                         'default'   => '#F37321',
                         'selectors' => [
                                 '{{WRAPPER}} .timeline-line-animation' => 'background-color: {{VALUE}};',
-                                '{{WRAPPER}} .is-stuck .tl-circ'       => 'background-color: {{VALUE}};',
+                                '{{WRAPPER}} .is-stuck .tl-mark'       => 'background-color: {{VALUE}};',
                         ],
                         'condition' => [
                                 'tl_animation_timeline' => 'yes',
@@ -354,7 +354,7 @@ class Za_Pack_Widget_Timeline extends Widget_Base {
         <li class="<?php echo esc_attr( $li_class ); ?> timeline-item">
             <div class="timeline-side"><?php echo $side_content; ?></div>
             <div class="tl-trigger"></div>
-            <div class="tl-circ"></div>
+            <div class="tl-mark"></div>
             <div class="timeline-panel" <?php if ( $bg_color ) echo 'style="' . $bg_color . '"'; ?> >
                 <div class="tl-content">
                     <?php echo $media_html; ?>
@@ -486,7 +486,7 @@ class Za_Pack_Widget_Timeline extends Widget_Base {
                     <li class="{{ li_class }} timeline-item">
                         <div class="timeline-side">{{{ item.side_content }}}</div>
                         <div class="tl-trigger"></div>
-                        <div class="tl-circ"></div>
+                        <div class="tl-mark"></div>
                         <div class="timeline-panel" style="{{ bg_color }}" >
                             <div class="tl-content">
                                 <# if ( image_url ) { #>

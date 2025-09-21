@@ -77,7 +77,7 @@ export default function Save( { attributes } ) {
 				) }
 			</div>
 			<div className="tl-trigger"></div>
-			<div className="tl-circ"></div>
+			<div className="tl-mark"></div>
 			<div
 				className="timeline-panel"
 				{ ...( itemBackgroundColor

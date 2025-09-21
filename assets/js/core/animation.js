@@ -32,6 +32,7 @@ export function initTimelineAnimation(scopeEl) {
         (el !== wrapper && el.querySelector && el.querySelector('.timeline-line-animation'));
     if (!line) return null;
 
+
     // get scroll parent
     function getScrollParent(node) {
         if (!node) return window;

@@ -165,3 +165,23 @@ export function buildStyleObject( attrs = {} ) {
 
 	return result;
 }
+
+export function convertMarginAttrToStyle( attrStyle ) {
+    if ( ! attrStyle || ! attrStyle.spacing || ! attrStyle.spacing.margin ) {
+        return {};
+    }
+    const m = attrStyle.spacing.margin;
+    const toCss = (v) => {
+        if ( v === undefined || v === null || v === '' ) return undefined;
+        if ( typeof v === 'string' && /[a-z%]$/i.test( v.trim() ) ) return v;
+        return String(v) + 'px';
+    };
+
+    const style = {};
+    const top = toCss(m.top); if ( top ) style.marginTop = top;
+    const right = toCss(m.right); if ( right ) style.marginRight = right;
+    const bottom = toCss(m.bottom); if ( bottom ) style.marginBottom = bottom;
+    const left = toCss(m.left); if ( left ) style.marginLeft = left;
+    return style;
+}
+

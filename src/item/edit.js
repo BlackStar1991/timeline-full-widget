@@ -396,7 +396,7 @@ export default function Edit( { clientId, attributes, setAttributes } ) {
 				{ mediaSettings }
 
 				<PanelBody
-					title={ __( 'Typography', 'za' ) }
+					title={ __( 'Title Typography', 'za' ) }
 					initialOpen={ true }
 				>
 					<FontSizePicker
@@ -539,7 +539,7 @@ export default function Edit( { clientId, attributes, setAttributes } ) {
 				</div>
 
 				<div className="tl-trigger" />
-				<div className="tl-circ" />
+				<div className="tl-mark" />
 				<div
 					className="timeline-panel"
 					{ ...( itemBackgroundColor

@@ -14,6 +14,9 @@ import {
 	useLayoutEffect,
 } from '@wordpress/element';
 
+import { convertMarginAttrToStyle } from './item/utils';
+import { initTimelineAnimation, initAllWidgets } from '../assets/js/core/animation.js';
+
 export default function Edit( { attributes, setAttributes, clientId } ) {
 	const {
 		showMedia = true,
@@ -94,48 +97,46 @@ export default function Edit( { attributes, setAttributes, clientId } ) {
 		syncToChildren,
 	] );
 
-	useEffect( () => {
-		if ( ! animationTimeline || ! wrapperRef.current ) return;
+    useEffect(() => {
+        if ( ! animationTimeline || ! wrapperRef.current ) return;
 
-		let destroyFn;
-		let active = true;
-		const el = wrapperRef.current;
+        let destroyFn;
 
-		import( '../assets/js/core/animation.js' )
-			.then( ( mod ) => {
-				if ( ! active ) return;
-				if ( typeof mod.initTimelineAnimation === 'function' ) {
-					destroyFn = mod.initTimelineAnimation( el );
-				} else if ( typeof mod.initAllWidgets === 'function' ) {
-					destroyFn = mod.initAllWidgets( el );
-				}
-			} )
-			.catch( ( err ) => {
-				console.error(
-					'Failed to load timeline animation script',
-					err
-				);
-			} );
+        try {
+            const el = wrapperRef.current;
+            if ( typeof initTimelineAnimation === 'function' ) {
+                destroyFn = initTimelineAnimation( el );
+            } else if ( typeof initAllWidgets === 'function' ) {
+                destroyFn = initAllWidgets( el );
+            }
+        } catch ( err ) {
+            console.error( 'Timeline animation init failed', err );
+        }
 
-		return () => {
-			active = false;
-			if ( typeof destroyFn === 'function' ) destroyFn();
-		};
-	}, [ animationTimeline, innerBlocks.length ] );
+        return () => {
+            if ( typeof destroyFn === 'function' ) destroyFn();
+        };
+    }, [ animationTimeline, innerBlocks.length ] );
 
-	const outerProps = useBlockProps();
+
+
+
+
+    const outerProps = useBlockProps();
+    const marginStyle = convertMarginAttrToStyle( attributes.style );
+    const mergedOuterStyle = {
+        ...( outerProps.style || {} ),
+        ...marginStyle,
+    };
 
 	return (
-		<div { ...outerProps }>
-			<div
-				className="timeline-wrapper"
-				ref={ wrapperRef }
-				style={ {
-					'--timeline-color': lineColor || '#F6F6F8',
-					'--timeline-color-animation':
-						animationTimelineColor || '#F37321',
-				} }
-			>
+
+        <div {...outerProps} style={ mergedOuterStyle }>
+            <div className="timeline-wrapper" ref={ wrapperRef }
+                 style={{
+                     '--timeline-color': lineColor || '#F6F6F8',
+                     '--timeline-color-animation': animationTimelineColor || '#F37321',
+                 }}>
 				<InspectorControls>
 					<PanelBody title={ __( 'Timeline Settings', 'za' ) }>
 						{ [
@@ -208,7 +209,7 @@ export default function Edit( { attributes, setAttributes, clientId } ) {
 									value: lineColor,
 									onChange: ( color ) =>
 										setAttributes( { lineColor: color } ),
-									label: __( 'Line & circle color', 'za' ),
+									label: __( 'Line & mark color', 'za' ),
 								},
 							] }
 						/>
