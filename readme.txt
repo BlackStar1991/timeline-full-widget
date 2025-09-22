@@ -1,21 +1,38 @@
 === Timeline Full Widget ===
 Contributors: Blackstar1991
 Donate link: https://www.paypal.com/donate/?hosted_button_id=TK9QQ5DE2K378
-Tags: timeline, Elementor, gutenberg blocks, editor, blocks, addons,  widget,
+Tags: timeline, Elementor, gutenberg blocks, editor, blocks
 Requires at least: 5.0
 Tested up to: 6.8
-Stable tag: 6.4
+Stable tag: 1.0.0
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
- 
-Add Timeline Widget with easy way to your WordPress site.
+
+Add a Timeline Widget easily to your WordPress site.
 
 == Description ==
-Adds Timeline Addons/Widgets that are specifically designed to be used in conjunction with the Elementor Page Builder,
-also you can add Timeline Gutenberg Block for you modern WordPress site, or you can add Timeline Widget for your classic template
+
+Adds Timeline Addons/Widgets designed to be used with the Elementor Page Builder.
+You can also add a Timeline Gutenberg Block for modern WordPress sites, or a Timeline Widget for classic themes.
+
+== Installation ==
+
+1. Upload the plugin files to the `/wp-content/plugins/timeline-full-widget` directory, or install it through the WordPress plugins screen directly.
+2. Activate the plugin through the 'Plugins' screen in WordPress.
+3. Use the Elementor editor, Gutenberg editor, or classic widget to add a Timeline.
+
+== Frequently Asked Questions ==
+
+= Does it work with the latest Elementor? =
+Yes, tested with Elementor 3.31.4 and WordPress 6.8.
+
+== Screenshots ==
+
+1. Timeline widget in Elementor.
+2. Timeline block in Gutenberg.
 
 == Changelog ==
 
-= 1.0 =
-* Release Date - 11th August, 2025
+= 1.0.0 =
+* Release Date - 22th September 2025
 * Initial Release

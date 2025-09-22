@@ -4,11 +4,11 @@
  * Plugin Name: Timeline Full Widget
  * Description: A versatile Timeline plugin for Elementor, Gutenberg, and classic WordPress themes — add beautiful Timelines anywhere!
  * Plugin URI: https://wordpress.org/plugins/timeline-full-widget
- * Version: 1.0.2
+ * Version: 1.0.0
  * License: GPL-2.0-or-later
  * License URI:  https://spdx.org/licenses/GPL-2.0-or-later.html
  * Author: Andry Zirka
- * Text Domain: za
+ * Text Domain: timeline-full-widget
  * Domain Path: /languages
  * Elementor requires at least: 3.0.0
  * Elementor tested up to: 3.31.4
@@ -59,7 +59,8 @@ final class TimelinePlugin {
         add_action( 'init', [ $this, 'register_assets' ] );
 
         add_action( 'elementor/widgets/widgets_registered', [ $this, 'widgets_registered' ] );
-//        add_action( 'elementor/frontend/after_register_scripts', [ $this, 'register_elementor_assets' ] );
+        add_action( 'elementor/editor/after_enqueue_scripts', [ $this, 'enqueue_elementor_editor_assets' ] );
+
 
         add_action( 'init', [ $this, 'register_gutenberg_block' ] );
         add_action( 'enqueue_block_editor_assets', [ $this, 'enqueue_block_editor_assets' ] );
@@ -90,7 +91,7 @@ final class TimelinePlugin {
         $ver_base = TIMELINE_VERSION;
         $use_filemtime = defined( 'WP_DEBUG' ) && WP_DEBUG === true;
 
-        // REGISTER preview helper FIRST (do not enqueue here)
+
         $preview = TIMELINE_ELEMENTOR_PATH . 'assets/elementor/elementor-media-preview.js';
         if ( file_exists( $preview ) ) {
             $ver = $use_filemtime ? filemtime( $preview ) : $ver_base;
@@ -179,20 +180,29 @@ final class TimelinePlugin {
     }
 
 
-    public function register_elementor_assets(): void {
-//        $preview = TIMELINE_ELEMENTOR_PATH . 'assets/elementor/elementor-media-preview.js';
-//        if ( file_exists( $preview ) ) {
-//            $ver = ( defined( 'WP_DEBUG' ) && WP_DEBUG ) ? filemtime( $preview ) : TIMELINE_VERSION;
-//            wp_register_script(
-//                'za-elementor-media-preview',
-//                TIMELINE_ELEMENTOR_URL . 'assets/elementor/elementor-media-preview.js',
-//                [ 'jquery' ],
-//                $ver,
-//                true
-//            );
-//            wp_enqueue_script( 'za-elementor-media-preview' );
-//        }
+    public function enqueue_elementor_editor_assets(): void {
+        $preview = TIMELINE_ELEMENTOR_PATH . 'assets/elementor/elementor-media-preview.js';
+        if ( file_exists( $preview ) ) {
+            $ver = ( defined( 'WP_DEBUG' ) && WP_DEBUG ) ? filemtime( $preview ) : TIMELINE_VERSION;
+            wp_register_script(
+                'za-elementor-media-preview',
+                TIMELINE_ELEMENTOR_URL . 'assets/elementor/elementor-media-preview.js',
+                [ 'jquery' ],
+                $ver,
+                true
+            );
+            wp_enqueue_script( 'za-elementor-media-preview' );
+        }
+
+        if ( wp_script_is( 'za-timeline-elementor', 'registered' ) ) {
+            wp_enqueue_script( 'za-timeline-elementor' );
+        }
+
+        if ( wp_style_is( 'timeline-elementor-style', 'registered' ) ) {
+            wp_enqueue_style( 'timeline-elementor-style' );
+        }
     }
+
 
     public function register_gutenberg_block(): void {
         $dir = TIMELINE_ELEMENTOR_PATH;

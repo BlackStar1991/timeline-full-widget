@@ -15,8 +15,8 @@
 	"main": "index.js",
 	"scripts": {
 		"start": "wp-scripts start",
-        "build": "wp-scripts build && npm run minify:css",
-        "minify:css": "postcss build/*.css --dir build --ext .min.css",
+		"build": "wp-scripts build && npm run minify:css",
+		"minify:css": "postcss build/*.css --dir build --ext .min.css",
 		"format": "wp-scripts format",
 		"lint:js": "wp-scripts lint-js --max-warnings=0",
 		"format:js": "wp-scripts lint-js --fix",
@@ -32,7 +32,7 @@
 		"@wordpress/blob": "^4.9.0",
 		"@wordpress/components": "^28.9.0",
 		"@wordpress/data": "^10.9.0",
-		"@wordpress/eslint-plugin": "^22.16.0",
+		"@wordpress/eslint-plugin": "^22.0.0",
 		"@wordpress/prettier-config": "^4.30.0",
 		"@wordpress/scripts": "^19.2.4",
 		"@wordpress/stylelint-config": "^23.22.0",
@@ -47,6 +47,7 @@
 		"@wordpress/block-editor": "^14.4.0",
 		"@wordpress/blocks": "^13.9.0",
 		"@wordpress/element": "^6.9.0",
-		"@wordpress/i18n": "^5.9.0"
+		"@wordpress/i18n": "^5.9.0",
+		"package-name": "^0.1.0"
 	}
 }

@@ -1,62 +1,70 @@
 {
-	"apiVersion": 3,
-	"name": "za/timeline-full-widget",
-	"title": "Timeline Full Widget",
-	"category": "widgets",
-	"icon": "schedule",
-	"description": "A versatile Timeline block — add beautiful Timelines anywhere in Gutenberg.",
-	"keywords": [ "timeline", "events", "history" ],
-	"textdomain": "za",
-	"editorScript": "file:./build/index.js",
-	"style": "file:./build/style-index.css",
-	"editorStyle": "file:./build/index.css",
-	"attributes": {
-		"showMedia": {
-			"type": "boolean",
-			"default": true
-		},
-		"direction": {
-			"type": "boolean",
-			"default": false
-		},
-		"onTheOneSide": {
-			"type": "boolean",
-			"default": false
-		},
-		"position": {
-			"type": "string",
-			"default": "timeline-left"
-		},
-		"lineColor": {
-			"type": "string",
-			"default": "#F6F6F8"
-		},
-		"showOtherSide": {
-			"type": "boolean",
-			"default": true
-		},
-		"animationTimeline": {
-			"type": "boolean",
-			"default": true
-		},
-		"animationTimelineColor": {
-			"type": "string",
-			"default": "#F37321"
-		},
-        "animationMarker": {
-          "type": "boolean",
-          "default": true
-        }
-	},
-	"supports": {
-		"html": false,
-		"spacing": {
-			"margin": true
-		}
-	},
-	"example": {
-		"attributes": {},
-		"innerBlocks": [],
-		"viewportWidth": 600
-	}
+  "apiVersion": 3,
+  "name": "za/timeline-full-widget",
+  "title": "Timeline Full Widget",
+  "category": "widgets",
+  "icon": "schedule",
+  "description": "A versatile Timeline block — add beautiful Timelines anywhere in Gutenberg.",
+  "keywords": [
+    "timeline",
+    "events",
+    "history"
+  ],
+  "textdomain": "za",
+  "editorScript": "file:./build/index.js",
+  "style": "file:./build/style-index.css",
+  "editorStyle": "file:./build/index.css",
+  "attributes": {
+    "showMedia": {
+      "type": "boolean",
+      "default": true
+    },
+    "direction": {
+      "type": "boolean",
+      "default": false
+    },
+    "onTheOneSide": {
+      "type": "boolean",
+      "default": false
+    },
+    "position": {
+      "type": "string",
+      "default": "timeline-left"
+    },
+    "lineColor": {
+      "type": "string",
+      "default": "#F6F6F8"
+    },
+    "showOtherSide": {
+      "type": "boolean",
+      "default": true
+    },
+    "animationTimeline": {
+      "type": "boolean",
+      "default": true
+    },
+    "animationTimelineColor": {
+      "type": "string",
+      "default": "#F37321"
+    },
+    "showMarker": {
+      "type": "boolean",
+      "default": true
+    },
+    "animationMarker": {
+      "type": "boolean",
+      "default": true
+    }
+  },
+  "supports": {
+    "html": false,
+    "spacing": {
+      "margin": true
+    }
+  },
+  "example": {
+    "attributes": {},
+    "innerBlocks": [],
+    "viewportWidth": 600
+  }
 }

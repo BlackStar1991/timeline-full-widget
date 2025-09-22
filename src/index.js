@@ -8,7 +8,7 @@ import './../assets/elementor/style.css';
 import './style.scss';
 import './editor.scss';
 
-registerBlockType( 'za/timeline-full-widget', {
+registerBlockType('za/timeline-full-widget', {
 	title: 'Timeline',
 	icon: (
 		<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
@@ -16,12 +16,12 @@ registerBlockType( 'za/timeline-full-widget', {
 		</svg>
 	),
 	category: 'widgets',
-    supports: {
-        html: false,
-        spacing: {
-            margin: true
-        }
-    },
+	supports: {
+		html: false,
+		spacing: {
+			margin: true,
+		},
+	},
 	edit: Edit,
 	save: Save,
-} );
+});

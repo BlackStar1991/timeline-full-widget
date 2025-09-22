@@ -3,7 +3,7 @@ import { isBlobURL } from '@wordpress/blob';
 import { getSafeLinkAttributes, buildStyleObject } from './utils';
 import { createElement as el } from '@wordpress/element';
 
-export default function Save( { attributes } ) {
+export default function Save({ attributes }) {
 	const {
 		textAlignClass,
 		title,
@@ -22,6 +22,7 @@ export default function Save( { attributes } ) {
 		rel,
 		position,
 		showMedia,
+		showMarker,
 		mediaId,
 		mediaUrl,
 		imageAlt,
@@ -33,77 +34,77 @@ export default function Save( { attributes } ) {
 		sideTextAlign,
 	} = attributes;
 
-	const classes = [ 'timeline-item', position ];
-	if ( textAlignClass ) classes.push( `t-text-align-${ textAlignClass }` );
-	const className = Array.from( new Set( classes ) ).join( ' ' );
-	const linkProps = getSafeLinkAttributes( linkUrl, rel, linkTarget );
-	const styleObj = buildStyleObject( {
+	const classes = ['timeline-item', position];
+	if (textAlignClass) classes.push(`t-text-align-${textAlignClass}`);
+	const className = Array.from(new Set(classes)).join(' ');
+	const linkProps = getSafeLinkAttributes(linkUrl, rel, linkTarget);
+	const styleObj = buildStyleObject({
 		titleInlineStyle: titleInlineStyle,
 		titleFontSize: titleFontSize,
 		titleFontWeight: titleFontWeight,
 		titleMarginTop: titleMarginTop,
 		titleMarginBottom: titleMarginBottom,
 		titleColor: titleColor,
-	} );
+	});
 
 	const isVideoByMime =
-		typeof mediaMime === 'string' && mediaMime.indexOf( 'video/' ) === 0;
+		typeof mediaMime === 'string' && mediaMime.indexOf('video/') === 0;
 	const isVideoByType = mediaType === 'video';
 	const isVideoByExt =
 		typeof mediaUrl === 'string' &&
-		/\.(mp4|webm|ogv|ogg)(?:[\?#]|$)/i.test( mediaUrl );
+		/\.(mp4|webm|ogv|ogg)(?:[\?#]|$)/i.test(mediaUrl);
 	const isVideo = isVideoByType || isVideoByMime || isVideoByExt;
 
 	let sourceType = mediaMime || undefined;
-	if ( ! sourceType && isVideo && mediaUrl ) {
-		const extMatch = mediaUrl.match( /\.([0-9a-z]+)(?:[\?#]|$)/i );
-		if ( extMatch ) {
-			const ext = extMatch[ 1 ].toLowerCase();
-			if ( ext === 'mp4' ) sourceType = 'video/mp4';
-			if ( ext === 'webm' ) sourceType = 'video/webm';
-			if ( ext === 'ogv' || ext === 'ogg' ) sourceType = 'video/ogg';
+	if (!sourceType && isVideo && mediaUrl) {
+		const extMatch = mediaUrl.match(/\.([0-9a-z]+)(?:[\?#]|$)/i);
+		if (extMatch) {
+			const ext = extMatch[1].toLowerCase();
+			if (ext === 'mp4') sourceType = 'video/mp4';
+			if (ext === 'webm') sourceType = 'video/webm';
+			if (ext === 'ogv' || ext === 'ogg') sourceType = 'video/ogg';
 		}
 	}
 
 	return (
-		<li className={ className }>
+		<li className={className}>
 			<div className="timeline-side">
-				{ showOtherSide && (
+				{showOtherSide && (
 					<RichText.Content
 						tagName="p"
-						className={ `t-text-align-${ sideTextAlign } ` }
-						value={ otherSiteTitle }
+						className={`t-text-align-${sideTextAlign} `}
+						value={otherSiteTitle}
 					/>
-				) }
+				)}
 			</div>
 			<div className="tl-trigger"></div>
-			<div className="tl-mark"></div>
+			{showMarker && <div className="tl-mark" />}
 			<div
 				className="timeline-panel"
-				{ ...( itemBackgroundColor
+				{...(itemBackgroundColor
 					? {
 							style: {
 								backgroundColor: itemBackgroundColor,
 							},
-					  }
-					: {} ) }
+						}
+					: {})}
 			>
 				<div className="tl-content">
 					<div className="tl-desc">
-						{ showMedia && mediaUrl && (
+						{showMedia && mediaUrl && (
 							<div
-								className={ `timeline_pic ${
-									isBlobURL( mediaUrl )
+								className={`timeline_pic ${
+									isBlobURL(mediaUrl)
 										? 'image-loading'
 										: 'loaded'
-								}` }
+								}`}
 							>
-								{ isVideo ? (
+								{isVideo ? (
 									el(
 										'video',
 										{
 											id: mediaId
-												? `video_${ mediaId }`
+												? `video_${mediaId}`
 												: undefined,
 											poster: videoPoster || undefined,
 											autoPlay: true,
@@ -118,10 +119,10 @@ export default function Save( { attributes } ) {
 										},
 										// source
 										mediaUrl
-											? el( 'source', {
+											? el('source', {
 													src: mediaUrl,
 													type: sourceType,
-											  } )
+												})
 											: null,
 										'Your browser does not support the video tag.'
 									)
@@ -129,38 +130,38 @@ export default function Save( { attributes } ) {
 									<img
 										id={
 											mediaId
-												? `img_${ mediaId }`
+												? `img_${mediaId}`
 												: undefined
 										}
-										src={ mediaUrl }
-										alt={ imageAlt || '' }
+										src={mediaUrl}
+										alt={imageAlt || ''}
 									/>
-								) }
+								)}
 							</div>
-						) }
+						)}
 
-						{ titleTag === 'a' ? (
+						{titleTag === 'a' ? (
 							<RichText.Content
 								tagName="a"
-								className={ `t-text-align-${ titleAlign } tl-title` }
-								value={ title }
-								{ ...linkProps }
-								style={ styleObj }
+								className={`t-text-align-${titleAlign} tl-title`}
+								value={title}
+								{...linkProps}
+								style={styleObj}
 							/>
 						) : (
 							<RichText.Content
-								tagName={ titleTag }
-								className={ `t-text-align-${ titleAlign } tl-title` }
-								value={ title }
-								style={ styleObj }
+								tagName={titleTag}
+								className={`t-text-align-${titleAlign} tl-title`}
+								value={title}
+								style={styleObj}
 							/>
-						) }
+						)}
 
 						<div
 							className="tl-desc-short"
-							{ ...( descriptionColor
+							{...(descriptionColor
 								? { style: { color: descriptionColor } }
-								: {} ) }
+								: {})}
 						>
 							<InnerBlocks.Content />
 						</div>
