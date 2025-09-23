@@ -222,6 +222,17 @@ class Za_Pack_Widget_Timeline extends Widget_Base
                         'default' => 'h2',
                 ]
         );
+        $this->add_control(
+            'blocks_color',
+            [
+                'label'   => __('Blocks Color', 'timeline-full-widget'),
+                'type'    => Controls_Manager::COLOR,
+                'default' => '#333333',
+                'selectors' => [
+                        '{{WRAPPER}} .timeline-item' => 'color: {{VALUE}};',
+                ]
+            ]
+        );
 
         $this->add_control(
                 'timeline_color',
@@ -424,57 +435,53 @@ class Za_Pack_Widget_Timeline extends Widget_Base
     /**
      * Render media HTML (image or video).
      */
-    private function render_media_html( $item )
-    {
-        $type = $item['media_type'] ?? null;
+    private function render_media_html( $item ) {
+        $type = $item['media_type'] ?? '';
 
-        // VIDEO branch
+        // VIDEO
         if ( $type === 'video' ) {
-            $media_url = ! empty( $item['media_video']['url'] ) ? $item['media_video']['url'] : '';
-            $poster    = ! empty( $item['posterURL']['url'] ) ? $item['posterURL']['url'] : '';
+            $media_url = $item['media_video']['url'] ?? '';
+            $poster    = $item['posterURL']['url'] ?? '';
 
             if ( empty( $media_url ) ) {
                 return '';
             }
 
             $filetype    = wp_check_filetype( $media_url );
-            $mime        = $filetype['type'] ?? 'video/mp4';
+            $mime        = $filetype['type'] ?: 'video/mp4';
             $poster_attr = $poster ? ' poster="' . esc_url( $poster ) . '"' : '';
 
-            $html  = '<div class="timeline_pic pull-left">';
-            $html .= '<video autoplay muted loop playsinline preload="metadata"' . $poster_attr . ' style="width:100%;height:auto;">';
-            $html .= '<source src="' . esc_url( $media_url ) . '" type="' . esc_attr( $mime ) . '">';
-            $html .= esc_html__( 'Your browser does not support the video tag.', 'timeline-full-widget' );
-            $html .= '</video>';
-            $html .= '</div>';
-
-            return $html;
+            return sprintf(
+                    '<div class="timeline_pic pull-left"><video autoplay muted loop playsinline preload="metadata"%1$s style="width:100%%;height:auto;"><source src="%2$s" type="%3$s">%4$s</video></div>',
+                    $poster_attr,
+                    esc_url( $media_url ),
+                    esc_attr( $mime ),
+                    esc_html__( 'Your browser does not support the video tag.', 'timeline-full-widget' )
+            );
         }
 
-        // IMAGE branch
-        $media = $item['media_image'] ?? [];
-        $media_url = ! empty( $media['url'] ) ? $media['url'] : '';
+        // IMAGE (ACF field)
+        $media     = $item['media_image'] ?? [];
+        $media_url = $media['url'] ?? '';
 
+        // If attachment ID exists — let Group_Control_Image_Size handle output (safe markup).
         if ( ! empty( $media['id'] ) ) {
-            // use Group_Control_Image_Size to respect thumbnail size control (this outputs safe markup)
-            $img_html = Group_Control_Image_Size::get_attachment_image_html( $item, 'thumbnail', 'media_image' );
-            return '<div class="timeline_pic pull-left">' . $img_html . '</div>';
+            return '<div class="timeline_pic pull-left">' . Group_Control_Image_Size::get_attachment_image_html( $item, 'thumbnail', 'media_image' ) . '</div>';
         }
 
+        // If direct URL — print <img> with optimized attributes
         if ( $media_url ) {
-            $alt = '';
-            if ( ! empty( $media['alt'] ) ) {
-                $alt = $media['alt'];
-            } elseif ( ! empty( $media['title'] ) ) {
-                $alt = $media['title'];
-            } else {
-                $alt = '';
-            }
-            return '<div class="timeline_pic pull-left"><img src="' . esc_url( $media_url ) . '" alt="' . esc_attr( $alt ) . '" loading="lazy" decoding="async" /></div>';
+            $alt = $media['alt'] ?? $media['title'] ?? '';
+            return sprintf(
+                    '<div class="timeline_pic pull-left"><img src="%1$s" alt="%2$s" loading="lazy" decoding="async" /></div>',
+                    esc_url( $media_url ),
+                    esc_attr( $alt )
+            );
         }
 
         return '';
     }
+
 
     /*  Editor template (Underscore.js) */
     protected function content_template() { ?>
