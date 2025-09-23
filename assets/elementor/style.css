@@ -94,6 +94,19 @@ li.timeline-left {
     z-index: 1;
 }
 
+.tl-mark:has(img){
+    background: none!important;
+    height: auto;
+    background-size: cover;
+    max-width: 42px;
+    /*max-height: 42px;*/
+}
+
+.tl-mark img{
+    object-fit: contain;
+}
+
+
 
 .is-stuck .tl-mark {
     transition: background 0.2s;

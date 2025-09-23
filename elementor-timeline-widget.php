@@ -178,6 +178,27 @@ class Za_Pack_Widget_Timeline extends Widget_Base
                 ]
         );
 
+        $repeater->add_control(
+                'marker_image',
+                [
+                        'label'       => __('Marker Image', 'timeline-full-widget'),
+                        'type'        => Controls_Manager::MEDIA,
+                        'media_types' => ['image'],
+
+                ]
+        );
+        $repeater->add_control(
+                'marker_image_notice',
+                [
+                        'type'            => Controls_Manager::RAW_HTML,
+                        'raw'             => sprintf(
+                                '<div class="elementor-control-description">%s</div>',
+                                esc_html__( 'Note: this image will be used only when "Unique Marker" (Style) is set to Yes. Recommend size 42x42px', 'timeline-full-widget' )
+                        ),
+                        'content_classes' => 'elementor-control-descriptor',
+                ]
+        );
+
         $this->add_control(
                 'list',
                 [
@@ -308,6 +329,20 @@ class Za_Pack_Widget_Timeline extends Widget_Base
                         'default'      => 'yes',
                 ]
         );
+        $this->add_control(
+            'tl_is_marker_unique',
+                [
+                        'label'        => __('Unique Marker', 'timeline-full-widget'),
+                        'type'         => Controls_Manager::SWITCHER,
+                        'label_on'     => __('Yes', 'timeline-full-widget'),
+                        'label_off'    => __('No', 'timeline-full-widget'),
+                        'return_value' => 'yes',
+                        'default'      => 'no',
+                        'condition'    => [
+                                'tl_show_marker' => 'yes',
+                        ],
+                ]
+        );
 
         $this->add_control(
                 'tl_animation_marker',
@@ -396,7 +431,16 @@ class Za_Pack_Widget_Timeline extends Widget_Base
             <div class="tl-trigger"></div>
 
             <?php if ( $show_marker ) : ?>
-                <div class="tl-mark"></div>
+                <?php
+                $unique_marker_enabled = ( $this->get_settings_for_display('tl_is_marker_unique') === 'yes' );
+                $marker_img = $item['marker_image']['url'] ?? '';
+
+                if ( $unique_marker_enabled && $marker_img ) {
+                    echo '<div class="tl-mark"><img src="' . esc_url($marker_img) . '" alt="marker" loading="lazy" decoding="async" /></div>';
+                } else {
+                    echo '<div class="tl-mark"></div>';
+                }
+                ?>
             <?php endif; ?>
 
             <div class="timeline-panel" <?php if ( $bg_color ) echo 'style="' . esc_attr( $bg_color ) . '"'; ?>>
@@ -460,7 +504,7 @@ class Za_Pack_Widget_Timeline extends Widget_Base
             );
         }
 
-        // IMAGE (ACF field)
+
         $media     = $item['media_image'] ?? [];
         $media_url = $media['url'] ?? '';
 
@@ -563,7 +607,11 @@ class Za_Pack_Widget_Timeline extends Widget_Base
                     <div class="tl-trigger"></div>
 
                     <# if ( showMarker ) { #>
-                    <div class="tl-mark"></div>
+                        <# if ( settings.tl_is_marker_unique === 'yes' && item.marker_image && item.marker_image.url ) { #>
+                            <div class="tl-mark"><img src="{{ item.marker_image.url }}" alt="marker" /></div>
+                         <# } else { #>
+                            <div class="tl-mark"></div>
+                        <# } #>
                     <# } #>
 
                     <div class="timeline-panel" style="{{ bg_color }}">

@@ -70,9 +70,7 @@ export function initTimelineAnimation(scopeEl) {
 		if (!rootEl || rootEl === window) return false;
 		try {
 			const rect = rootEl.getBoundingClientRect();
-			// if root has zero height or extremely small -> not a real scroll root for viewport
 			if (!rect || rect.height < 2) return true;
-			// if root is body/html -> let window handle it
 			if (rootEl === document.body || rootEl === document.documentElement)
 				return true;
 		} catch (e) {
@@ -88,8 +86,6 @@ export function initTimelineAnimation(scopeEl) {
 		scrollParent = window;
 	}
 
-	line.style.transformOrigin = 'top';
-	line.style.willChange = 'transform';
 	line.style.transform = 'scaleY(0)';
 
 	// state
