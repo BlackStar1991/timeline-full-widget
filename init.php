@@ -2,7 +2,7 @@
 
 /**
  * Plugin Name: Timeline Full Widget
- * Description: A versatile Timeline plugin for Elementor, Gutenberg, and classic WordPress themes — add beautiful Timelines anywhere!
+ * Description: A versatile Timeline plugin for Elementor, and Gutenberg WordPress themes — add beautiful Timelines anywhere!
  * Plugin URI: https://wordpress.org/plugins/timeline-full-widget
  * Version: 1.0.0
  * License: GPL-2.0-or-later

@@ -51,6 +51,10 @@
       "type": "boolean",
       "default": true
     },
+    "markerUnique": {
+      "type": "boolean",
+      "default": false
+    },
     "animationMarker": {
       "type": "boolean",
       "default": true
@@ -64,7 +68,6 @@
   },
   "example": {
     "attributes": {},
-    "innerBlocks": [],
-    "viewportWidth": 600
+    "innerBlocks": []
   }
 }

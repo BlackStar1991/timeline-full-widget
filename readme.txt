@@ -26,6 +26,8 @@ You can also add a Timeline Gutenberg Block for modern WordPress sites, or a Tim
 = Does it work with the latest Elementor? =
 Yes, tested with Elementor 3.31.4 and WordPress 6.8.
 
+
+
 == Screenshots ==
 
 1. Timeline widget in Elementor.

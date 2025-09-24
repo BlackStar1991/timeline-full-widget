@@ -122,6 +122,17 @@ registerBlockType('za/timeline-item', {
 			type: 'string',
 			default: 'left',
 		},
+		showMarker: {
+			type: 'boolean',
+			default: true,
+		},
+		markerUnique: {
+			type: 'boolean',
+			default: false,
+		},
+		markerUrl: { type: 'string', default: '' },
+		markerId: { type: 'number' },
+		markerAlt: { type: 'string', default: '' },
 	},
 	edit: Edit,
 	save: Save,

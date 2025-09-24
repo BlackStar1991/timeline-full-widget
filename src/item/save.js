@@ -32,6 +32,10 @@ export default function Save({ attributes }) {
 		otherSiteTitle,
 		showOtherSide,
 		sideTextAlign,
+		markerUnique,
+		markerAlt,
+		markerUrl,
+		markerId,
 	} = attributes;
 
 	const classes = ['timeline-item', position];
@@ -78,7 +82,16 @@ export default function Save({ attributes }) {
 				)}
 			</div>
 			<div className="tl-trigger"></div>
-			{showMarker && <div className="tl-mark" />}
+			{showMarker && (
+				<div
+					className="tl-mark"
+					id={mediaId ? `marker_${markerId}` : undefined}
+				>
+					{markerUnique && markerUrl && (
+						<img src={markerUrl} alt={markerAlt || ''} />
+					)}
+				</div>
+			)}
 			<div
 				className="timeline-panel"
 				{...(itemBackgroundColor

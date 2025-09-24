@@ -31,6 +31,7 @@ export default function Edit({ attributes, setAttributes, clientId }) {
 		animationTimelineColor,
 		showMarker,
 		animationMarker,
+		markerUnique,
 	} = attributes;
 
 	const wrapperRef = useRef(null);
@@ -88,6 +89,7 @@ export default function Edit({ attributes, setAttributes, clientId }) {
 			animationTimeline,
 			animationTimelineColor,
 			showMarker,
+			markerUnique,
 			animationMarker,
 		});
 	}, [
@@ -99,6 +101,7 @@ export default function Edit({ attributes, setAttributes, clientId }) {
 		animationTimeline,
 		animationTimelineColor,
 		showMarker,
+		markerUnique,
 		animationMarker,
 		syncToChildren,
 	]);
@@ -221,23 +224,6 @@ export default function Edit({ attributes, setAttributes, clientId }) {
 								onChange: (val) =>
 									setAttributes({ showMarker: val }),
 							},
-
-							showMarker
-								? {
-										label: __(
-											'Animate Markers',
-											'timeline-full-widget'
-										),
-										help: animationMarker
-											? __('Yes', 'timeline-full-widget')
-											: __('No', 'timeline-full-widget'),
-										checked: animationMarker,
-										onChange: (val) =>
-											setAttributes({
-												animationMarker: val,
-											}),
-									}
-								: null,
 						]
 							.filter(Boolean)
 							.map((ctrl, i) => (
@@ -262,6 +248,7 @@ export default function Edit({ attributes, setAttributes, clientId }) {
 								},
 							]}
 						/>
+
 						{animationTimeline && (
 							<PanelColorSettings
 								title={__(
@@ -284,6 +271,53 @@ export default function Edit({ attributes, setAttributes, clientId }) {
 							/>
 						)}
 					</PanelBody>
+					{showMarker && (
+						<PanelBody
+							title={__(
+								'Marker Settings',
+								'timeline-full-widget'
+							)}
+						>
+							{[
+								{
+									label: __(
+										'Animate Markers',
+										'timeline-full-widget'
+									),
+									help: animationMarker
+										? __('Yes', 'timeline-full-widget')
+										: __('No', 'timeline-full-widget'),
+									checked: animationMarker,
+									onChange: (val) =>
+										setAttributes({
+											animationMarker: val,
+										}),
+								},
+								{
+									label: __(
+										'Unique Marker',
+										'timeline-full-widget'
+									),
+									help: markerUnique
+										? __('Yes', 'timeline-full-widget')
+										: __('No', 'timeline-full-widget'),
+									checked: markerUnique,
+									onChange: (val) =>
+										setAttributes({
+											markerUnique: val,
+										}),
+								},
+							]
+								.filter(Boolean)
+								.map((ctrl, i) => (
+									<ToggleControl
+										key={i}
+										{...ctrl}
+										__nextHasNoMarginBottom
+									/>
+								))}
+						</PanelBody>
+					)}
 				</InspectorControls>
 
 				{animationTimeline && (
@@ -311,6 +345,7 @@ export default function Edit({ attributes, setAttributes, clientId }) {
 									direction,
 									showOtherSide,
 									showMarker,
+									markerUnique,
 								},
 							],
 							[
@@ -324,6 +359,7 @@ export default function Edit({ attributes, setAttributes, clientId }) {
 									direction,
 									showOtherSide,
 									showMarker,
+									markerUnique,
 								},
 							],
 						]}

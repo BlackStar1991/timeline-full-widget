@@ -27,6 +27,7 @@ import {
 	Spinner,
 	TextControl,
 	RangeControl,
+	Button,
 } from '@wordpress/components';
 import { isBlobURL } from '@wordpress/blob';
 import { useState, useEffect, useMemo, useCallback } from '@wordpress/element';
@@ -44,6 +45,7 @@ export default function Edit({ clientId, attributes, setAttributes }) {
 		rel,
 		showMedia,
 		mediaUrl,
+		markerAlt,
 		videoPoster,
 		imageAlt,
 		mediaType,
@@ -57,6 +59,9 @@ export default function Edit({ clientId, attributes, setAttributes }) {
 		titleMarginBottom,
 		titleColor,
 		showMarker,
+		markerUnique,
+		markerUrl,
+		markerId,
 		showOtherSide,
 		otherSiteTitle,
 		sideTextAlign,
@@ -502,6 +507,82 @@ export default function Edit({ clientId, attributes, setAttributes }) {
 						__next40pxDefaultSize={true}
 					/>
 				</PanelBody>
+
+				{markerUnique && (
+					<PanelBody
+						title={__(
+							'Unique marker for this item',
+							'timeline-full-widget'
+						)}
+						initialOpen={true}
+					>
+						{markerUrl ? (
+							<div style={{ display: 'grid', gap: 8 }}>
+								<img
+									src={markerUrl}
+									alt={markerAlt || ''}
+									style={{ maxWidth: '100%', height: 'auto' }}
+								/>
+								<MediaReplaceFlow
+									name={__(
+										'Replace marker image',
+										'timeline-full-widget'
+									)}
+									onSelect={(media) =>
+										setAttributes({
+											markerUrl: media.url,
+											markerId: media.id,
+											markerAlt: media.alt || '',
+										})
+									}
+									accept="image/*"
+									allowedTypes={['image']}
+									mediaId={markerId}
+									mediaUrl={markerUrl}
+								/>
+								<Button
+									isDestructive
+									onClick={() =>
+										setAttributes({
+											markerUrl: '',
+											markerId: undefined,
+											markerAlt: '',
+										})
+									}
+								>
+									{__(
+										'Remove marker',
+										'timeline-full-widget'
+									)}
+								</Button>
+							</div>
+						) : (
+							<MediaPlaceholder
+								onSelect={(media) =>
+									setAttributes({
+										markerUrl: media.url,
+										markerId: media.id,
+										markerAlt: media.alt || '',
+									})
+								}
+								accept="image/*"
+								allowedTypes={['image']}
+								labels={{
+									title: __(
+										'Select marker image',
+										'timeline-full-widget'
+									),
+								}}
+							/>
+						)}
+						<p>
+							{__(
+								'Note: this image will be used only when "Unique Marker" (Style) is set to Yes. Recommend size 42x42px',
+								'timeline-full-widget'
+							)}
+						</p>
+					</PanelBody>
+				)}
 			</InspectorControls>
 
 			{blockToolbarForMedia}
@@ -565,7 +646,16 @@ export default function Edit({ clientId, attributes, setAttributes }) {
 				</div>
 
 				<div className="tl-trigger" />
-				{showMarker && <div className="tl-mark" />}
+				{showMarker && (
+					<div
+						className="tl-mark"
+						id={mediaId ? `marker_${markerId}` : undefined}
+					>
+						{markerUnique && markerUrl && (
+							<img src={markerUrl} alt={markerAlt || 'marker'} />
+						)}
+					</div>
+				)}
 				<div
 					className="timeline-panel"
 					{...(itemBackgroundColor
