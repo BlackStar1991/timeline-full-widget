@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: timeline-full-widget 1.0\n"
-"POT-Creation-Date: 2025-09-24 20:28+0300\n"
-"PO-Revision-Date: 2025-09-24 20:28+0300\n"
+"POT-Creation-Date: 2025-09-25 18:32+0300\n"
+"PO-Revision-Date: 2025-09-25 18:33+0300\n"
 "Last-Translator: \n"
 "Language-Team: za\n"
 "Language: en\n"
@@ -27,7 +27,7 @@ msgstr ""
 msgid "Timeline Items"
 msgstr ""
 
-#: elementor-timeline-widget.php:81 src/item/edit.js:416
+#: elementor-timeline-widget.php:81 src/item/edit.js:338
 msgid "Item background color"
 msgstr ""
 
@@ -75,10 +75,10 @@ msgstr ""
 msgid "Marker Image"
 msgstr ""
 
-#: elementor-timeline-widget.php:196 src/item/edit.js:580
+#: elementor-timeline-widget.php:196 src/item/edit.js:500
 msgid ""
 "Note: this image will be used only when \"Unique Marker\" (Style) is set to "
-"Yes. Recommend size 42x42px"
+"Yes. Recommend width size <=30px"
 msgstr ""
 
 #: elementor-timeline-widget.php:210 src/edit.js:341
@@ -159,11 +159,11 @@ msgstr ""
 msgid "Unique Marker"
 msgstr ""
 
-#: elementor-timeline-widget.php:350 src/edit.js:284
+#: elementor-timeline-widget.php:350
 msgid "Animate Markers"
 msgstr ""
 
-#: elementor-timeline-widget.php:503 src/item/edit.js:698
+#: elementor-timeline-widget.php:503 src/item/edit.js:587
 msgid "Your browser does not support the video tag."
 msgstr ""
 
@@ -203,120 +203,108 @@ msgstr ""
 msgid "Marker Settings"
 msgstr ""
 
-#: src/item/edit.js:224
+#: src/edit.js:284
+msgid "Sticky Markers"
+msgstr ""
+
+#: src/item/edit.js:194
 msgid "Media Settings"
 msgstr ""
 
-#: src/item/edit.js:227
+#: src/item/edit.js:197
 msgid "Video Poster"
 msgstr ""
 
-#: src/item/edit.js:234
+#: src/item/edit.js:204
 msgid "Video poster"
 msgstr ""
 
-#: src/item/edit.js:242
+#: src/item/edit.js:212
 msgid "Remove poster"
 msgstr ""
 
-#: src/item/edit.js:259
+#: src/item/edit.js:229
 msgid "Select video poster"
 msgstr ""
 
-#: src/item/edit.js:268
+#: src/item/edit.js:238
 msgid "Image Alt"
 msgstr ""
 
-#: src/item/edit.js:271
+#: src/item/edit.js:241
 msgid "Add alt text for the image."
 msgstr ""
 
-#: src/item/edit.js:288
+#: src/item/edit.js:258
 msgid "Replace Media File"
 msgstr ""
 
-#: src/item/edit.js:308 src/item/edit.js:310
+#: src/item/edit.js:278 src/item/edit.js:280
 msgid "Remove Media File"
 msgstr ""
 
-#: src/item/edit.js:333
-msgid "Open in new tab"
-msgstr ""
-
-#: src/item/edit.js:340
-msgid "Add rel attribute"
-msgstr ""
-
-#: src/item/edit.js:365
+#: src/item/edit.js:289
 msgid "Title Settings"
 msgstr ""
 
-#: src/item/edit.js:367
+#: src/item/edit.js:291
 msgid "Title Tag"
 msgstr ""
 
-#: src/item/edit.js:387
+#: src/item/edit.js:311
 msgid "Color settings"
 msgstr ""
 
-#: src/item/edit.js:394
+#: src/item/edit.js:318
 msgid "Title color"
 msgstr ""
 
-#: src/item/edit.js:405
+#: src/item/edit.js:327
 msgid "Description color"
 msgstr ""
 
-#: src/item/edit.js:427
+#: src/item/edit.js:349
 msgid "Title Typography"
 msgstr ""
 
-#: src/item/edit.js:458
+#: src/item/edit.js:380
 msgid "Title font weight"
 msgstr ""
 
-#: src/item/edit.js:462
+#: src/item/edit.js:384
 msgid "Default"
 msgstr ""
 
-#: src/item/edit.js:484
+#: src/item/edit.js:406
 msgid "Title Spacing"
 msgstr ""
 
-#: src/item/edit.js:488
+#: src/item/edit.js:410
 msgid "Margin Top (px)"
 msgstr ""
 
-#: src/item/edit.js:498
+#: src/item/edit.js:420
 msgid "Margin Bottom (px)"
 msgstr ""
 
-#: src/item/edit.js:514
+#: src/item/edit.js:434
 msgid "Unique marker for this item"
 msgstr ""
 
-#: src/item/edit.js:528
+#: src/item/edit.js:448
 msgid "Replace marker image"
 msgstr ""
 
-#: src/item/edit.js:554
+#: src/item/edit.js:474
 msgid "Remove marker"
 msgstr ""
 
-#: src/item/edit.js:572
+#: src/item/edit.js:492
 msgid "Select marker image"
 msgstr ""
 
-#: src/item/edit.js:595
-msgid "Edit link"
-msgstr ""
-
-#: src/item/edit.js:641
+#: src/item/edit.js:534
 msgid "Add other side text"
-msgstr ""
-
-#: src/item/edit.js:736
-msgid "Add link text…"
 msgstr ""
 
 #: src/item/index.js:7
@@ -325,4 +313,16 @@ msgstr ""
 
 #: src/item/index.js:8
 msgid "Timeline Item Description"
+msgstr ""
+
+#: src/item/title/index.js:80
+msgid "Open in new tab"
+msgstr ""
+
+#: src/item/title/index.js:87
+msgid "Add rel attribute"
+msgstr ""
+
+#: src/item/title/index.js:116
+msgid "Edit link"
 msgstr ""

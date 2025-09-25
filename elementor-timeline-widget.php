@@ -193,7 +193,7 @@ class Za_Pack_Widget_Timeline extends Widget_Base
                         'type'            => Controls_Manager::RAW_HTML,
                         'raw'             => sprintf(
                                 '<div class="elementor-control-description">%s</div>',
-                                esc_html__( 'Note: this image will be used only when "Unique Marker" (Style) is set to Yes. Recommend size 42x42px', 'timeline-full-widget' )
+                                esc_html__( 'Note: this image will be used only when "Unique Marker" (Style) is set to Yes. Recommend width size <=30px', 'timeline-full-widget' )
                         ),
                         'content_classes' => 'elementor-control-descriptor',
                 ]

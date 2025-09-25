@@ -38,9 +38,10 @@
     width: 50%;
 
     border: 1px solid #F6F6F8;
+    border-radius: 5px;
+
     padding: 15px;
     position: relative;
-    border-radius: 5px;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
 }
 
@@ -96,24 +97,17 @@ li.timeline-left {
 
 .tl-mark:has(img){
     background: none!important;
-    height: auto;
     background-size: cover;
-    max-width: 42px;
-    /*max-height: 42px;*/
+    max-width: 30px;
 }
 
 .tl-mark img{
     object-fit: contain;
 }
 
-
-
 .is-stuck .tl-mark {
     transition: background 0.2s;
-
 }
-
-
 
 .tl-trigger {
     position: absolute;
@@ -147,13 +141,12 @@ li.timeline-left {
 .timeline .timeline_pic {
     position: relative;
     padding: 0;
+    width: 100%;
 }
 
 .tl-title{
     margin: 0;
 }
-
-
 
 .tl-content p {
     margin-bottom: 5px
@@ -182,12 +175,6 @@ li.timeline-left {
     .timeline-animation-marker .timeline-inverted .tl-mark {
         left: calc(50% + 2px);
     }
-
-
-   /*.elementor-widget-container .timeline-item:nth-child(2n) .tl-mark{*/
-   /*      left: calc(50% - 11px);*/
-   /*  }*/
-
 
     .timeline-animation-marker .timeline-panel {
         margin: 0;

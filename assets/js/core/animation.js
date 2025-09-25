@@ -1,4 +1,4 @@
-const DEBUG = false; // включите для отладки
+const DEBUG = false;
 
 function log(...args) {
 	if (!DEBUG) return;

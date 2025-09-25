@@ -48,6 +48,10 @@ registerBlockType('za/timeline-item', {
 			type: 'string',
 			default: 'left',
 		},
+		titleFontFamily: {
+			type: 'string',
+			default: '',
+		},
 		titleMarginTop: {
 			type: 'number',
 			default: 0,

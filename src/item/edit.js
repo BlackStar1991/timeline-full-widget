@@ -6,24 +6,17 @@ import {
 	MediaPlaceholder,
 	MediaReplaceFlow,
 	InnerBlocks,
-	LinkControl,
 	PanelColorSettings,
 	FontSizePicker,
 	AlignmentToolbar,
 } from '@wordpress/block-editor';
-import {
-	getSafeLinkAttributes,
-	parseStyleString,
-	buildStyleObject,
-} from './utils';
+import { parseStyleString } from './utils';
 import { __ } from '@wordpress/i18n';
 import { useSelect } from '@wordpress/data';
 import {
 	PanelBody,
 	SelectControl,
-	ToolbarGroup,
 	ToolbarButton,
-	Popover,
 	Spinner,
 	TextControl,
 	RangeControl,
@@ -32,6 +25,8 @@ import {
 import { isBlobURL } from '@wordpress/blob';
 import { useState, useEffect, useMemo, useCallback } from '@wordpress/element';
 import { link as linkIcon } from '@wordpress/icons';
+
+import Title from './title';
 
 export default function Edit({ clientId, attributes, setAttributes }) {
 	const {
@@ -68,7 +63,6 @@ export default function Edit({ clientId, attributes, setAttributes }) {
 		position,
 	} = attributes;
 
-	const [isLinkPickerOpen, setIsLinkPickerOpen] = useState(false);
 	const [activeField, setActiveField] = useState(null);
 
 	const { blockIndex, parentDirection } = useSelect(
@@ -110,6 +104,7 @@ export default function Edit({ clientId, attributes, setAttributes }) {
 		[position, computedFallbackPosition]
 	);
 
+	// синхронизация / извлечение inline-стилей заголовка в атрибуты
 	useEffect(() => {
 		const updates = {};
 
@@ -180,31 +175,6 @@ export default function Edit({ clientId, attributes, setAttributes }) {
 			});
 		},
 		[setAttributes]
-	);
-
-	const linkProps = useMemo(
-		() => getSafeLinkAttributes(linkUrl, rel, linkTarget),
-		[linkUrl, rel, linkTarget]
-	);
-
-	const titleStyle = useMemo(
-		() =>
-			buildStyleObject({
-				titleInlineStyle,
-				titleFontSize,
-				titleFontWeight,
-				titleMarginTop,
-				titleMarginBottom,
-				titleColor,
-			}),
-		[
-			titleInlineStyle,
-			titleFontSize,
-			titleFontWeight,
-			titleMarginTop,
-			titleMarginBottom,
-			titleColor,
-		]
 	);
 
 	const isVideo = useMemo(
@@ -313,52 +283,6 @@ export default function Edit({ clientId, attributes, setAttributes }) {
 		);
 	}, [showMedia, mediaUrl, onSelect, mediaId, imageAlt, setAttributes]);
 
-	const linkPopover = useMemo(() => {
-		if (!isLinkPickerOpen) return null;
-		return (
-			<Popover
-				position="bottom center"
-				onClose={() => setIsLinkPickerOpen(false)}
-			>
-				<LinkControl
-					value={{
-						url: linkUrl,
-						opensInNewTab: linkTarget === '_blank',
-						rel,
-					}}
-					settings={[
-						{
-							id: 'opensInNewTab',
-							title: __(
-								'Open in new tab',
-								'timeline-full-widget'
-							),
-						},
-						{
-							id: 'rel',
-							title: __(
-								'Add rel attribute',
-								'timeline-full-widget'
-							),
-						},
-					]}
-					onChange={(newVal) => {
-						const linkAttrs = getSafeLinkAttributes(
-							newVal.url,
-							newVal.rel,
-							newVal.opensInNewTab ? '_blank' : ''
-						);
-						setAttributes({
-							linkUrl: linkAttrs.href,
-							linkTarget: linkAttrs.target,
-							rel: linkAttrs.rel,
-						});
-					}}
-				/>
-			</Popover>
-		);
-	}, [isLinkPickerOpen, linkUrl, linkTarget, rel, setAttributes]);
-
 	return (
 		<>
 			<InspectorControls>
@@ -398,9 +322,7 @@ export default function Edit({ clientId, attributes, setAttributes }) {
 							{
 								value: descriptionColor,
 								onChange: (color) =>
-									setAttributes({
-										descriptionColor: color,
-									}),
+									setAttributes({ descriptionColor: color }),
 								label: __(
 									'Description color',
 									'timeline-full-widget'
@@ -498,9 +420,7 @@ export default function Edit({ clientId, attributes, setAttributes }) {
 						label={__('Margin Bottom (px)', 'timeline-full-widget')}
 						value={Number(titleMarginBottom) || 0}
 						onChange={(value) =>
-							setAttributes({
-								titleMarginBottom: String(value),
-							})
+							setAttributes({ titleMarginBottom: String(value) })
 						}
 						min={0}
 						max={100}
@@ -577,7 +497,7 @@ export default function Edit({ clientId, attributes, setAttributes }) {
 						)}
 						<p>
 							{__(
-								'Note: this image will be used only when "Unique Marker" (Style) is set to Yes. Recommend size 42x42px',
+								'Note: this image will be used only when "Unique Marker" (Style) is set to Yes. Recommend width size <=30px',
 								'timeline-full-widget'
 							)}
 						</p>
@@ -587,40 +507,12 @@ export default function Edit({ clientId, attributes, setAttributes }) {
 
 			{blockToolbarForMedia}
 
-			<BlockControls>
-				<ToolbarGroup>
-					{titleTag === 'a' && (
-						<ToolbarButton
-							icon={linkIcon}
-							label={__('Edit link', 'timeline-full-widget')}
-							onClick={() => setIsLinkPickerOpen((prev) => !prev)}
-							isPressed={isLinkPickerOpen}
-						/>
-					)}
-				</ToolbarGroup>
-			</BlockControls>
-
-			{linkPopover}
-
-			{activeField === 'title' && (
-				<BlockControls group="block">
-					<AlignmentToolbar
-						value={titleAlign}
-						onChange={(newAlign) =>
-							setAttributes({ titleAlign: newAlign || 'left' })
-						}
-					/>
-				</BlockControls>
-			)}
-
 			{activeField === 'sideText' && (
 				<BlockControls group="block">
 					<AlignmentToolbar
 						value={sideTextAlign}
 						onChange={(newAlign) =>
-							setAttributes({
-								sideTextAlign: newAlign || 'left',
-							})
+							setAttributes({ sideTextAlign: newAlign || 'left' })
 						}
 					/>
 				</BlockControls>
@@ -637,6 +529,7 @@ export default function Edit({ clientId, attributes, setAttributes }) {
 								setAttributes({ otherSiteTitle: val })
 							}
 							onFocus={() => setActiveField('sideText')}
+							onBlur={() => setActiveField(null)}
 							placeholder={__(
 								'Add other side text',
 								'timeline-full-widget'
@@ -666,11 +559,7 @@ export default function Edit({ clientId, attributes, setAttributes }) {
 						<div className="tl-desc">
 							{showMedia && mediaUrl ? (
 								<div
-									className={`timeline_pic ${
-										isBlobURL(mediaUrl)
-											? 'image-loading'
-											: 'loaded'
-									}`}
+									className={`timeline_pic ${isBlobURL(mediaUrl) ? 'image-loading' : 'loaded'}`}
 								>
 									{isVideo ? (
 										<video
@@ -722,36 +611,22 @@ export default function Edit({ clientId, attributes, setAttributes }) {
 								)
 							)}
 
-							{titleTag === 'a' ? (
-								<RichText
-									tagName="a"
-									className={`t-text-align-${titleAlign} tl-title`}
-									value={title}
-									allowedFormats={[]}
-									onChange={(val) =>
-										setAttributes({ title: val })
-									}
-									onFocus={() => setActiveField('title')}
-									placeholder={__(
-										'Add link text…',
-										'timeline-full-widget'
-									)}
-									{...linkProps}
-									style={titleStyle}
-								/>
-							) : (
-								<RichText
-									tagName={titleTag}
-									className={`t-text-align-${titleAlign} tl-title`}
-									value={title}
-									allowedFormats={[]}
-									onChange={(val) =>
-										setAttributes({ title: val })
-									}
-									onFocus={() => setActiveField('title')}
-									style={titleStyle}
-								/>
-							)}
+							<Title
+								clientId={clientId}
+								title={title}
+								titleTag={titleTag}
+								titleAlign={titleAlign}
+								titleInlineStyle={titleInlineStyle}
+								titleFontSize={titleFontSize}
+								titleFontWeight={titleFontWeight}
+								titleMarginTop={titleMarginTop}
+								titleMarginBottom={titleMarginBottom}
+								titleColor={titleColor}
+								linkUrl={linkUrl}
+								linkTarget={linkTarget}
+								rel={rel}
+								setAttributes={setAttributes}
+							/>
 
 							<div
 								className="tl-desc-short"

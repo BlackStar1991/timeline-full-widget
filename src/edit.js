@@ -281,7 +281,7 @@ export default function Edit({ attributes, setAttributes, clientId }) {
 							{[
 								{
 									label: __(
-										'Animate Markers',
+										'Sticky Markers',
 										'timeline-full-widget'
 									),
 									help: animationMarker

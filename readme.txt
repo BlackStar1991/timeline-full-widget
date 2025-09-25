@@ -26,7 +26,15 @@ You can also add a Timeline Gutenberg Block for modern WordPress sites, or a Tim
 = Does it work with the latest Elementor? =
 Yes, tested with Elementor 3.31.4 and WordPress 6.8.
 
-
+= Can I set a unique marker that is wider (width) than 30 px? =
+Yes, but then the styles for the timeline may shift. To correct them, you will need to specify the styles separately. For example:
+@media (min-width: 701px) {
+    .tl-mark:has(img) {
+    max-width: 42px !important;
+    height: 30px;
+    left: calc(50% + 2px);
+    }
+}
 
 == Screenshots ==
 
@@ -36,5 +44,5 @@ Yes, tested with Elementor 3.31.4 and WordPress 6.8.
 == Changelog ==
 
 = 1.0.0 =
-* Release Date - 22th September 2025
+* Release Date - 25th September 2025
 * Initial Release
