@@ -28,17 +28,17 @@ export default function Title({
 	linkTarget,
 	rel,
 	setAttributes,
+	activeField,
+	setActiveField,
 }) {
-	const [isFocused, setIsFocused] = useState(false);
 	const [isLinkPickerOpen, setIsLinkPickerOpen] = useState(false);
 
-	const selectedBlockClientId = useSelect((select) =>
-		select('core/block-editor').getSelectedBlockClientId()
+	const selectedBlockClientId = useSelect(
+		(select) => select('core/block-editor').getSelectedBlockClientId(),
+		[]
 	);
-	const blockIsSelected = selectedBlockClientId === clientId;
-	const handleBlur = () => {
-		setTimeout(() => setIsFocused(false), 150);
-	};
+	const showAlignmentForTitle =
+		activeField === 'title' && selectedBlockClientId === clientId;
 
 	const styleObj = useMemo(
 		() =>
@@ -120,7 +120,7 @@ export default function Title({
 					</ToolbarGroup>
 				)}
 
-				{(isFocused || blockIsSelected) && (
+				{showAlignmentForTitle && (
 					<AlignmentToolbar
 						value={titleAlign}
 						onChange={(newAlign) =>
@@ -139,8 +139,7 @@ export default function Title({
 					value={title}
 					allowedFormats={[]}
 					onChange={(val) => setAttributes({ title: val })}
-					onFocus={() => setIsFocused(true)}
-					onBlur={() => setIsFocused(false)}
+					onFocus={() => setActiveField('title')}
 					style={styleObj}
 				/>
 			) : (
@@ -150,8 +149,7 @@ export default function Title({
 					value={title}
 					allowedFormats={[]}
 					onChange={(val) => setAttributes({ title: val })}
-					onFocus={() => setIsFocused(true)}
-					onBlur={() => setIsFocused(false)}
+					onFocus={() => setActiveField('title')}
 					style={styleObj}
 				/>
 			)}

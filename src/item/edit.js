@@ -24,7 +24,6 @@ import {
 } from '@wordpress/components';
 import { isBlobURL } from '@wordpress/blob';
 import { useState, useEffect, useMemo, useCallback } from '@wordpress/element';
-import { link as linkIcon } from '@wordpress/icons';
 
 import Title from './title';
 
@@ -99,12 +98,16 @@ export default function Edit({ clientId, attributes, setAttributes }) {
 				: 'timeline-inverted';
 	}, [direction, blockIndex]);
 
+	const selectedBlockClientId = useSelect(
+		(select) => select('core/block-editor').getSelectedBlockClientId(),
+		[]
+	);
+
 	const liClass = useMemo(
 		() => position || computedFallbackPosition,
 		[position, computedFallbackPosition]
 	);
 
-	// синхронизация / извлечение inline-стилей заголовка в атрибуты
 	useEffect(() => {
 		const updates = {};
 
@@ -507,16 +510,19 @@ export default function Edit({ clientId, attributes, setAttributes }) {
 
 			{blockToolbarForMedia}
 
-			{activeField === 'sideText' && (
-				<BlockControls group="block">
-					<AlignmentToolbar
-						value={sideTextAlign}
-						onChange={(newAlign) =>
-							setAttributes({ sideTextAlign: newAlign || 'left' })
-						}
-					/>
-				</BlockControls>
-			)}
+			{activeField === 'sideText' &&
+				selectedBlockClientId === clientId && (
+					<BlockControls group="block">
+						<AlignmentToolbar
+							value={sideTextAlign}
+							onChange={(newAlign) =>
+								setAttributes({
+									sideTextAlign: newAlign || 'left',
+								})
+							}
+						/>
+					</BlockControls>
+				)}
 
 			<li {...blockProps}>
 				<div className="timeline-side">
@@ -529,7 +535,6 @@ export default function Edit({ clientId, attributes, setAttributes }) {
 								setAttributes({ otherSiteTitle: val })
 							}
 							onFocus={() => setActiveField('sideText')}
-							onBlur={() => setActiveField(null)}
 							placeholder={__(
 								'Add other side text',
 								'timeline-full-widget'
@@ -626,6 +631,8 @@ export default function Edit({ clientId, attributes, setAttributes }) {
 								linkTarget={linkTarget}
 								rel={rel}
 								setAttributes={setAttributes}
+								activeField={activeField}
+								setActiveField={setActiveField}
 							/>
 
 							<div
