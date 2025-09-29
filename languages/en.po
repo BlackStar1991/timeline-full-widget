@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: timeline-full-widget 1.0\n"
-"POT-Creation-Date: 2025-09-25 18:32+0300\n"
-"PO-Revision-Date: 2025-09-25 18:33+0300\n"
+"POT-Creation-Date: 2025-09-25 21:23+0300\n"
+"PO-Revision-Date: 2025-09-25 21:24+0300\n"
 "Last-Translator: \n"
 "Language-Team: za\n"
 "Language: en\n"
@@ -27,7 +27,7 @@ msgstr ""
 msgid "Timeline Items"
 msgstr ""
 
-#: elementor-timeline-widget.php:81 src/item/edit.js:338
+#: elementor-timeline-widget.php:81 src/item/edit.js:341
 msgid "Item background color"
 msgstr ""
 
@@ -75,7 +75,7 @@ msgstr ""
 msgid "Marker Image"
 msgstr ""
 
-#: elementor-timeline-widget.php:196 src/item/edit.js:500
+#: elementor-timeline-widget.php:196 src/item/edit.js:503
 msgid ""
 "Note: this image will be used only when \"Unique Marker\" (Style) is set to "
 "Yes. Recommend width size <=30px"
@@ -163,7 +163,7 @@ msgstr ""
 msgid "Animate Markers"
 msgstr ""
 
-#: elementor-timeline-widget.php:503 src/item/edit.js:587
+#: elementor-timeline-widget.php:503 src/item/edit.js:592
 msgid "Your browser does not support the video tag."
 msgstr ""
 
@@ -207,103 +207,103 @@ msgstr ""
 msgid "Sticky Markers"
 msgstr ""
 
-#: src/item/edit.js:194
+#: src/item/edit.js:197
 msgid "Media Settings"
 msgstr ""
 
-#: src/item/edit.js:197
+#: src/item/edit.js:200
 msgid "Video Poster"
 msgstr ""
 
-#: src/item/edit.js:204
+#: src/item/edit.js:207
 msgid "Video poster"
 msgstr ""
 
-#: src/item/edit.js:212
+#: src/item/edit.js:215
 msgid "Remove poster"
 msgstr ""
 
-#: src/item/edit.js:229
+#: src/item/edit.js:232
 msgid "Select video poster"
 msgstr ""
 
-#: src/item/edit.js:238
+#: src/item/edit.js:241
 msgid "Image Alt"
 msgstr ""
 
-#: src/item/edit.js:241
+#: src/item/edit.js:244
 msgid "Add alt text for the image."
 msgstr ""
 
-#: src/item/edit.js:258
+#: src/item/edit.js:261
 msgid "Replace Media File"
 msgstr ""
 
-#: src/item/edit.js:278 src/item/edit.js:280
+#: src/item/edit.js:281 src/item/edit.js:283
 msgid "Remove Media File"
 msgstr ""
 
-#: src/item/edit.js:289
+#: src/item/edit.js:292
 msgid "Title Settings"
 msgstr ""
 
-#: src/item/edit.js:291
+#: src/item/edit.js:294
 msgid "Title Tag"
 msgstr ""
 
-#: src/item/edit.js:311
+#: src/item/edit.js:314
 msgid "Color settings"
 msgstr ""
 
-#: src/item/edit.js:318
+#: src/item/edit.js:321
 msgid "Title color"
 msgstr ""
 
-#: src/item/edit.js:327
+#: src/item/edit.js:330
 msgid "Description color"
 msgstr ""
 
-#: src/item/edit.js:349
+#: src/item/edit.js:352
 msgid "Title Typography"
 msgstr ""
 
-#: src/item/edit.js:380
+#: src/item/edit.js:383
 msgid "Title font weight"
 msgstr ""
 
-#: src/item/edit.js:384
+#: src/item/edit.js:387
 msgid "Default"
 msgstr ""
 
-#: src/item/edit.js:406
+#: src/item/edit.js:409
 msgid "Title Spacing"
 msgstr ""
 
-#: src/item/edit.js:410
+#: src/item/edit.js:413
 msgid "Margin Top (px)"
 msgstr ""
 
-#: src/item/edit.js:420
+#: src/item/edit.js:423
 msgid "Margin Bottom (px)"
 msgstr ""
 
-#: src/item/edit.js:434
+#: src/item/edit.js:437
 msgid "Unique marker for this item"
 msgstr ""
 
-#: src/item/edit.js:448
+#: src/item/edit.js:451
 msgid "Replace marker image"
 msgstr ""
 
-#: src/item/edit.js:474
+#: src/item/edit.js:477
 msgid "Remove marker"
 msgstr ""
 
-#: src/item/edit.js:492
+#: src/item/edit.js:495
 msgid "Select marker image"
 msgstr ""
 
-#: src/item/edit.js:534
+#: src/item/edit.js:539
 msgid "Add other side text"
 msgstr ""
 
