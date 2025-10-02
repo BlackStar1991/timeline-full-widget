@@ -15,6 +15,7 @@ export default function Save({ attributes }) {
 		titleAlign,
 		titleMarginTop,
 		titleMarginBottom,
+		titleLineHeight,
 		descriptionColor,
 		itemBackgroundColor,
 		linkUrl,
@@ -48,6 +49,7 @@ export default function Save({ attributes }) {
 		titleFontWeight: titleFontWeight,
 		titleMarginTop: titleMarginTop,
 		titleMarginBottom: titleMarginBottom,
+		titleLineHeight: titleLineHeight,
 		titleColor: titleColor,
 	});
 

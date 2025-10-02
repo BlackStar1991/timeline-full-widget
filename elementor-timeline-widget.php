@@ -529,66 +529,60 @@ class Za_Pack_Widget_Timeline extends Widget_Base
 
 
     /*  Editor template (Underscore.js) */
-    protected function content_template()
-    { ?>
+    protected function content_template() { ?>
         <div class="timeline-wrapper">
             <# if ( settings.tl_animation_timeline === 'yes' ) { #>
             <div class="timeline-line-animation"></div>
             <# } #>
 
             <#
-
             function isVideoUrl(url) {
             if (!url) return false;
             return /\.(mp4|webm|ogg|ogv)(\?.*)?$/i.test(url);
             }
 
-            function buildTitleHtml( item, tag ) {
-            var safeTitle = _.escape( item.list_title || '' );
-            if ( item.link_url && item.link_url.url ) {
-            var href = _.escape( item.link_url.url );
+            function buildTitleHtml(item) {
+            var safeTitle = _.escape(item.list_title || '');
+            if (item.link_url && item.link_url.url) {
+            var href = _.escape(item.link_url.url);
             var attrs = ' href="' + href + '"';
-            if ( item.link_url.is_external ) attrs += ' target="_blank"';
-            if ( item.link_url.nofollow ) attrs += ' rel="nofollow"';
+            if (item.link_url.is_external) attrs += ' target="_blank"';
+            if (item.link_url.nofollow) attrs += ' rel="nofollow"';
             return '<a' + attrs + '>' + safeTitle + '</a>';
             }
             return safeTitle;
             }
 
-            function buildMediaHtml( item ) {
+            function buildMediaHtml(item) {
             var image_url = '';
-            var isVideo = false;
             var poster_url = '';
+            var isVideo = false;
 
-            if ( item.media_type === 'video' && item.media_video && item.media_video.url ) {
+            if (item.media_type === 'video' && item.media_video && item.media_video.url) {
             image_url = item.media_video.url;
-            isVideo = isVideoUrl( image_url );
-            poster_url = ( item.posterURL && item.posterURL.url ) ? item.posterURL.url : '';
-            } else if ( item.media_image && item.media_image.url ) {
+            isVideo = isVideoUrl(image_url);
+            poster_url = (item.posterURL && item.posterURL.url) ? item.posterURL.url : '';
+            } else if (item.media_image && item.media_image.url) {
             image_url = item.media_image.url;
             }
 
-            if ( ! image_url ) return '';
+            if (!image_url) return '';
 
-            if ( isVideo ) {
+            if (isVideo) {
+            var sourceType = (image_url.match(/\.([^.?]+)(\?.*)?$/i) || [])[1] || 'mp4';
             var posterAttr = poster_url ? ' poster="' + _.escape(poster_url) + '"' : '';
-            return '
-            <div class="timeline_pic pull-left">
-                <video playsinline preload="metadata"
-                ' + posterAttr + ' style="width:100%;height:auto;">' + '
-                <source src="' + _.escape(image_url) + '"
-                        type="video/' + ( (image_url.match(/\.([^.?]+)(\?.*)?$/i)||[])[1] ) + '">
-                ' + _.escape( 'Your browser does not support the video tag.' ) + '</video></div>
-            ';
+            // Собираем строку без многострочных '...' литералов
+            return '<div class="timeline_pic pull-left"><video playsinline preload="metadata"'
+                + posterAttr
+                + ' style="width:100%;height:auto;"><source src="' + _.escape(image_url) + '" type="video/' + _.escape(sourceType) + '">'
+                + _.escape('Your browser does not support the video tag.')
+                + '</video></div>';
             }
 
-            // image
-            var alt = ( item.media_image && ( item.media_image.alt || item.media_image.title ) ) ? _.escape(
-            item.media_image.alt || item.media_image.title ) : '';
-            return '
-            <div class="timeline_pic pull-left"><img src="' + _.escape(image_url) + '" alt="' + alt + '"
-                                                     loading="lazy"/></div>
-            '; } #>
+            var alt = (item.media_image && (item.media_image.alt || item.media_image.title)) ? _.escape(item.media_image.alt || item.media_image.title) : '';
+            return '<div class="timeline_pic pull-left"><img src="' + _.escape(image_url) + '" alt="' + alt + '" loading="lazy" decoding="async" /></div>';
+            }
+            #>
 
             <#
             var showMarker = settings.tl_show_marker === 'yes';
@@ -600,8 +594,7 @@ class Za_Pack_Widget_Timeline extends Widget_Base
             #>
 
             <ul class="{{ ulClass }}">
-                <# if ( settings.list ) { _.each( settings.list, function( item, index ) {
-                // compute li class
+                <# if ( settings.list ) { _.each( settings.list, function( item ) {
                 var li_class = '';
                 if ( onSide ) {
                 li_class = (direction === 'right') ? 'timeline-inverted' : 'timeline-left';
@@ -609,13 +602,11 @@ class Za_Pack_Widget_Timeline extends Widget_Base
                 count++;
                 li_class = (count % 2 === 0) ? 'timeline-inverted' : 'timeline-left';
                 }
-                var bg_color = item.li_bg_color ? 'background-color:' + _.escape( item.li_bg_color ) + ';' : '';
+                var bg_color = item.li_bg_color ? 'background-color:' + _.escape(item.li_bg_color) + ';' : '';
                 var titleTag = settings.header_tag ? settings.header_tag : 'h2';
-                var titleInner = buildTitleHtml( item, titleTag );
-                var titleHtml = '<' + titleTag + ' class="tl-title">' + titleInner + '
-            </
-            ' + titleTag + '>';
-            var mediaHtml = buildMediaHtml( item );
+                var titleInner = buildTitleHtml(item);
+                var titleHtml = '<' + titleTag + ' class="tl-title">' + titleInner + '</' + titleTag + '>';
+            var mediaHtml = buildMediaHtml(item);
             #>
 
             <li class="{{ li_class }} timeline-item">
@@ -623,17 +614,17 @@ class Za_Pack_Widget_Timeline extends Widget_Base
                 <div class="tl-trigger"></div>
 
                 <# if ( showMarker ) { #>
-                    <# if ( settings.tl_is_marker_unique === 'yes' && item.marker_image && item.marker_image.url ) { #>
-                         <div class="tl-mark"><img src="{{ item.marker_image.url }}" alt="marker" loading="lazy"/></div>
-                    <# } else { #>
-                         <div class="tl-mark"></div>
-                    <# } #>
+                <# if ( settings.tl_is_marker_unique === 'yes' && item.marker_image && item.marker_image.url ) { #>
+                <div class="tl-mark"><img src="{{ item.marker_image.url }}" alt="marker" loading="lazy" decoding="async" /></div>
+                <# } else { #>
+                <div class="tl-mark"></div>
+                <# } #>
                 <# } #>
 
                 <div class="timeline-panel" style="{{ bg_color }}">
                     <div class="tl-content">
                         <# if ( mediaHtml ) { #>
-                          {{{ mediaHtml }}}
+                        {{{ mediaHtml }}}
                         <# } #>
                         <div class="tl-desc">
                             {{{ titleHtml }}}
@@ -644,7 +635,6 @@ class Za_Pack_Widget_Timeline extends Widget_Base
             </li>
             <# }); } #>
             </ul>
-
         </div>
         <?php
     }

@@ -161,81 +161,113 @@ export function buildStyleObject(attrs = {}) {
 			? String(attrs.titleMarginBottom)
 			: `${attrs.titleMarginBottom}px`;
 
+	if (
+		attrs.titleLineHeight !== undefined &&
+		attrs.titleLineHeight !== null &&
+		String(attrs.titleLineHeight).trim() !== ''
+	) {
+		const raw = String(attrs.titleLineHeight).trim();
+		if (/^\d+(\.\d+)?px$/.test(raw)) {
+			result.lineHeight = raw;
+		} else if (/^\d+(\.\d+)?$/.test(raw)) {
+			result.lineHeight = `${raw}px`;
+		} else {
+			if (/^\d+(\.\d+)?(rem|em|%)$/.test(raw)) {
+				result.lineHeight = raw;
+			} else {
+				result.lineHeight = raw;
+			}
+		}
+	} else if (styleFromAttr.lineHeight) {
+		const inlineVal = String(styleFromAttr.lineHeight).trim();
+		if (/^\d+(\.\d+)?px$/.test(inlineVal)) {
+			result.lineHeight = inlineVal;
+		} else if (/^\d+(\.\d+)?$/.test(inlineVal)) {
+			result.lineHeight = `${inlineVal}px`;
+		} else {
+			result.lineHeight = inlineVal;
+		}
+	}
+
 	return result;
 }
 
 export function convertMarginAttrToStyle(style = {}) {
-    const result = {};
-    if (!style) return result;
+	const result = {};
+	if (!style) return result;
 
-    const spacing = style.spacing ?? style;
-    const normalize = (v) => {
-        if (v == null) return null;
+	const spacing = style.spacing ?? style;
+	const normalize = (v) => {
+		if (v == null) return null;
 
-        if (typeof v === 'number') return `${v}px`;
+		if (typeof v === 'number') return `${v}px`;
 
-        if (typeof v === 'string') {
-            if (v === '0' || v === '0px' || v === '0rem') return '0';
-            if (/^(?:-?\d+(\.\d+)?(px|rem|em|%)|var\(|--)/.test(v)) return v;
-            const wpVarMatch = v.match(/^var:preset\|([^\|]+)\|(.+)$/);
-            if (wpVarMatch) {
-                const group = wpVarMatch[1];
-                const name = wpVarMatch[2];
-                return `var(--wp--preset--${group}--${name})`;
-            }
+		if (typeof v === 'string') {
+			if (v === '0' || v === '0px' || v === '0rem') return '0';
+			if (/^(?:-?\d+(\.\d+)?(px|rem|em|%)|var\(|--)/.test(v)) return v;
+			const wpVarMatch = v.match(/^var:preset\|([^\|]+)\|(.+)$/);
+			if (wpVarMatch) {
+				const group = wpVarMatch[1];
+				const name = wpVarMatch[2];
+				return `var(--wp--preset--${group}--${name})`;
+			}
 
-            if (/^-?\d+(\.\d+)?$/.test(v)) return `${v}px`;
-            return v;
-        }
-        return null;
-    };
+			if (/^-?\d+(\.\d+)?$/.test(v)) return `${v}px`;
+			return v;
+		}
+		return null;
+	};
 
-    if (spacing && typeof spacing.margin === 'object' && !Array.isArray(spacing.margin)) {
-        const m = spacing.margin;
-        if (m.top != null) result.marginTop = normalize(m.top);
-        if (m.right != null) result.marginRight = normalize(m.right);
-        if (m.bottom != null) result.marginBottom = normalize(m.bottom);
-        if (m.left != null) result.marginLeft = normalize(m.left);
+	if (
+		spacing &&
+		typeof spacing.margin === 'object' &&
+		!Array.isArray(spacing.margin)
+	) {
+		const m = spacing.margin;
+		if (m.top != null) result.marginTop = normalize(m.top);
+		if (m.right != null) result.marginRight = normalize(m.right);
+		if (m.bottom != null) result.marginBottom = normalize(m.bottom);
+		if (m.left != null) result.marginLeft = normalize(m.left);
 
-        if (m.vertical != null) {
-            const v = normalize(m.vertical);
-            if (v) {
-                result.marginTop = result.marginTop ?? v;
-                result.marginBottom = result.marginBottom ?? v;
-            }
-        }
-        if (m.horizontal != null) {
-            const h = normalize(m.horizontal);
-            if (h) {
-                result.marginLeft = result.marginLeft ?? h;
-                result.marginRight = result.marginRight ?? h;
-            }
-        }
-    }
+		if (m.vertical != null) {
+			const v = normalize(m.vertical);
+			if (v) {
+				result.marginTop = result.marginTop ?? v;
+				result.marginBottom = result.marginBottom ?? v;
+			}
+		}
+		if (m.horizontal != null) {
+			const h = normalize(m.horizontal);
+			if (h) {
+				result.marginLeft = result.marginLeft ?? h;
+				result.marginRight = result.marginRight ?? h;
+			}
+		}
+	}
 
-    if (spacing && Array.isArray(spacing.margin)) {
-        const [t, r, b, l] = spacing.margin;
-        if (t != null) result.marginTop = normalize(t);
-        if (r != null) result.marginRight = normalize(r);
-        if (b != null) result.marginBottom = normalize(b);
-        if (l != null) result.marginLeft = normalize(l);
-    }
+	if (spacing && Array.isArray(spacing.margin)) {
+		const [t, r, b, l] = spacing.margin;
+		if (t != null) result.marginTop = normalize(t);
+		if (r != null) result.marginRight = normalize(r);
+		if (b != null) result.marginBottom = normalize(b);
+		if (l != null) result.marginLeft = normalize(l);
+	}
 
-    ['marginTop', 'marginRight', 'marginBottom', 'marginLeft'].forEach((k) => {
-        const v = spacing?.[k] ?? style?.[k];
-        if (v != null) result[k] = normalize(v);
-    });
+	['marginTop', 'marginRight', 'marginBottom', 'marginLeft'].forEach((k) => {
+		const v = spacing?.[k] ?? style?.[k];
+		if (v != null) result[k] = normalize(v);
+	});
 
-    if (!Object.keys(result).length) {
-        if (typeof spacing === 'string' || typeof spacing === 'number') {
-            const v = normalize(spacing);
-            if (v != null) result.margin = v;
-        }
-    }
+	if (!Object.keys(result).length) {
+		if (typeof spacing === 'string' || typeof spacing === 'number') {
+			const v = normalize(spacing);
+			if (v != null) result.margin = v;
+		}
+	}
 
-    Object.keys(result).forEach((k) => {
-        if (result[k] == null) delete result[k];
-    });
+	Object.keys(result).forEach((k) => {
+		if (result[k] == null) delete result[k];
+	});
 
-    return result;
+	return result;
 }

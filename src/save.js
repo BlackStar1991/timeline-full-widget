@@ -9,12 +9,19 @@ export default function Save({ attributes }) {
 		animationMarker,
 	} = attributes;
 
-    const marginStyle = convertMarginAttrToStyle(attributes.style);
-    const blockProps = useBlockProps.save({ style: marginStyle });
+	const marginStyle = convertMarginAttrToStyle(attributes.style);
+	const blockProps = useBlockProps.save({ style: marginStyle });
 
 	return (
-        <div {...blockProps}>
-            <div className="timeline-wrapper" style={{ '--timeline-color': lineColor || '#F6F6F8', '--timeline-color-animation': animationTimelineColor || '#F37321' }}>
+		<div {...blockProps}>
+			<div
+				className="timeline-wrapper"
+				style={{
+					'--timeline-color': lineColor || '#F6F6F8',
+					'--timeline-color-animation':
+						animationTimelineColor || '#F37321',
+				}}
+			>
 				{animationTimeline && (
 					<div className="timeline-line-animation"></div>
 				)}

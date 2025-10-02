@@ -129,12 +129,20 @@ export default function Edit({ attributes, setAttributes, clientId }) {
 		};
 	}, [animationTimeline, innerBlocks.length, showMarker]);
 
-    const marginStyle = convertMarginAttrToStyle(attributes.style);
-    const outerProps = useBlockProps({ style: marginStyle });
+	const marginStyle = convertMarginAttrToStyle(attributes.style);
+	const outerProps = useBlockProps({ style: marginStyle });
 
 	return (
-        <div {...outerProps}>
-            <div className="timeline-wrapper" ref={wrapperRef} style={{ '--timeline-color': lineColor || '#F6F6F8', '--timeline-color-animation': animationTimelineColor || '#F37321' }}>
+		<div {...outerProps}>
+			<div
+				className="timeline-wrapper"
+				ref={wrapperRef}
+				style={{
+					'--timeline-color': lineColor || '#F6F6F8',
+					'--timeline-color-animation':
+						animationTimelineColor || '#F37321',
+				}}
+			>
 				<InspectorControls>
 					<PanelBody
 						title={__('Timeline Settings', 'timeline-full-widget')}
