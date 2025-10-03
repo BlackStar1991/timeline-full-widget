@@ -80,6 +80,7 @@ class Za_Pack_Widget_Timeline extends Widget_Base
                 [
                         'label' => __('Item background color', 'timeline-full-widget'),
                         'type' => Controls_Manager::COLOR,
+                        'render_type' => 'template',
                         'selectors' => [
                                 '{{WRAPPER}} {{CURRENT_ITEM}} .timeline-panel' => 'background-color: {{VALUE}};',
                         ],
@@ -330,6 +331,31 @@ class Za_Pack_Widget_Timeline extends Widget_Base
                 ]
         );
         $this->add_control(
+                'tl_animation_marker',
+                [
+                        'label' => __('Animate Markers', 'timeline-full-widget'),
+                        'type' => Controls_Manager::SWITCHER,
+                        'label_on' => __('Yes', 'timeline-full-widget'),
+                        'label_off' => __('No', 'timeline-full-widget'),
+                        'return_value' => 'yes',
+                        'default' => 'yes',
+                        'condition' => [
+                                'tl_show_marker' => 'yes',
+                        ],
+                ]
+        );
+        $this->add_control(
+                'tl_animation_other_side_sticky',
+                [
+                        'label' => __('Sticky Other Side', 'timeline-full-widget'),
+                        'type' => Controls_Manager::SWITCHER,
+                        'label_on' => __('Yes', 'timeline-full-widget'),
+                        'label_off' => __('No', 'timeline-full-widget'),
+                        'return_value' => 'yes',
+                        'default' => 'no',
+                ]
+        );
+        $this->add_control(
                 'tl_is_marker_unique',
                 [
                         'label' => __('Unique Marker', 'timeline-full-widget'),
@@ -344,20 +370,7 @@ class Za_Pack_Widget_Timeline extends Widget_Base
                 ]
         );
 
-        $this->add_control(
-                'tl_animation_marker',
-                [
-                        'label' => __('Animate Markers', 'timeline-full-widget'),
-                        'type' => Controls_Manager::SWITCHER,
-                        'label_on' => __('Yes', 'timeline-full-widget'),
-                        'label_off' => __('No', 'timeline-full-widget'),
-                        'return_value' => 'yes',
-                        'default' => 'yes',
-                        'condition' => [
-                                'tl_show_marker' => 'yes',
-                        ],
-                ]
-        );
+
 
         $this->end_controls_section();
     }
@@ -374,6 +387,7 @@ class Za_Pack_Widget_Timeline extends Widget_Base
 
         $show_marker = ($settings['tl_show_marker'] ?? '') === 'yes';
         $animation_marker_enabled = $show_marker && (($settings['tl_animation_marker'] ?? '') === 'yes');
+        $sticky_other_side = ($settings['tl_animation_other_side_sticky'] ?? '') === 'yes';
 
         $wrapper_attr = esc_attr($settings['tl_animation_timeline'] ?? '');
         echo '<div class="timeline-wrapper" data-animate-timeline="' . esc_attr($wrapper_attr) . '">';
@@ -384,8 +398,17 @@ class Za_Pack_Widget_Timeline extends Widget_Base
         }
 
         // ul open
-        $ul_class = $animation_marker_enabled ? 'timeline timeline-animation-marker' : 'timeline';
-        echo '<ul class="' . esc_attr($ul_class) . '">';
+        $ul_classes = ['timeline'];
+
+        if ( $animation_marker_enabled ) {
+            $ul_classes[] = 'timeline-animation-marker';
+        }
+
+        if ( $sticky_other_side ) {
+            $ul_classes[] = 'timeline-animation-other-side-sticky';
+        }
+
+        echo '<ul class="' . esc_attr( implode( ' ', $ul_classes ) ) . '">';
 
         // iterate items
         $countBase = ($direction === 'left') ? 1 : 2;
@@ -536,6 +559,7 @@ class Za_Pack_Widget_Timeline extends Widget_Base
             <# } #>
 
             <#
+            // helpers
             function isVideoUrl(url) {
             if (!url) return false;
             return /\.(mp4|webm|ogg|ogv)(\?.*)?$/i.test(url);
@@ -571,12 +595,12 @@ class Za_Pack_Widget_Timeline extends Widget_Base
             if (isVideo) {
             var sourceType = (image_url.match(/\.([^.?]+)(\?.*)?$/i) || [])[1] || 'mp4';
             var posterAttr = poster_url ? ' poster="' + _.escape(poster_url) + '"' : '';
-            // Собираем строку без многострочных '...' литералов
-            return '<div class="timeline_pic pull-left"><video playsinline preload="metadata"'
-                + posterAttr
-                + ' style="width:100%;height:auto;"><source src="' + _.escape(image_url) + '" type="video/' + _.escape(sourceType) + '">'
-                + _.escape('Your browser does not support the video tag.')
-                + '</video></div>';
+            var html = '<div class="timeline_pic pull-left">';
+                html += '<video playsinline preload="metadata"' + posterAttr + ' style="width:100%;height:auto;">';
+                html += '<source src="' + _.escape(image_url) + '" type="video/' + _.escape(sourceType) + '">';
+                html += _.escape('Your browser does not support the video tag.');
+                html += '</video></div>';
+            return html;
             }
 
             var alt = (item.media_image && (item.media_image.alt || item.media_image.title)) ? _.escape(item.media_image.alt || item.media_image.title) : '';
@@ -585,9 +609,16 @@ class Za_Pack_Widget_Timeline extends Widget_Base
             #>
 
             <#
+            // cache settings
             var showMarker = settings.tl_show_marker === 'yes';
             var animationMarkerEnabled = showMarker && settings.tl_animation_marker === 'yes';
-            var ulClass = animationMarkerEnabled ? 'timeline timeline-animation-marker' : 'timeline';
+            var stickyOtherSide = settings.tl_animation_other_side_sticky === 'yes';
+
+            var ulClassesArr = ['timeline'];
+            if (animationMarkerEnabled) ulClassesArr.push('timeline-animation-marker');
+            if (stickyOtherSide) ulClassesArr.push('timeline-animation-other-side-sticky');
+            var ulClass = _.escape( ulClassesArr.join(' ') );
+
             var onSide = settings.tl_change_onside === 'yes';
             var direction = settings.tl_change_direction ? 'left' : 'right';
             var count = direction === 'left' ? 1 : 2;
@@ -595,13 +626,11 @@ class Za_Pack_Widget_Timeline extends Widget_Base
 
             <ul class="{{ ulClass }}">
                 <# if ( settings.list ) { _.each( settings.list, function( item ) {
-                var li_class = '';
-                if ( onSide ) {
-                li_class = (direction === 'right') ? 'timeline-inverted' : 'timeline-left';
-                } else {
-                count++;
-                li_class = (count % 2 === 0) ? 'timeline-inverted' : 'timeline-left';
-                }
+                // compute li class (compact)
+                var li_class = onSide
+                ? (direction === 'right' ? 'timeline-inverted' : 'timeline-left')
+                : ((++count % 2 === 0) ? 'timeline-inverted' : 'timeline-left');
+
                 var bg_color = item.li_bg_color ? 'background-color:' + _.escape(item.li_bg_color) + ';' : '';
                 var titleTag = settings.header_tag ? settings.header_tag : 'h2';
                 var titleInner = buildTitleHtml(item);
@@ -614,11 +643,11 @@ class Za_Pack_Widget_Timeline extends Widget_Base
                 <div class="tl-trigger"></div>
 
                 <# if ( showMarker ) { #>
-                <# if ( settings.tl_is_marker_unique === 'yes' && item.marker_image && item.marker_image.url ) { #>
-                <div class="tl-mark"><img src="{{ item.marker_image.url }}" alt="marker" loading="lazy" decoding="async" /></div>
-                <# } else { #>
-                <div class="tl-mark"></div>
-                <# } #>
+                    <# if ( settings.tl_is_marker_unique === 'yes' && item.marker_image && item.marker_image.url ) { #>
+                         <div class="tl-mark"><img src="{{ item.marker_image.url }}" alt="marker" loading="lazy" decoding="async" /></div>
+                    <# } else { #>
+                        <div class="tl-mark"></div>
+                    <# } #>
                 <# } #>
 
                 <div class="timeline-panel" style="{{ bg_color }}">

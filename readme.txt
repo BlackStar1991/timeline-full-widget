@@ -4,7 +4,7 @@ Donate link: https://www.paypal.com/donate/?hosted_button_id=TK9QQ5DE2K378
 Tags: timeline, Elementor, gutenberg blocks, editor, blocks
 Requires at least: 5.0
 Tested up to: 6.8
-Stable tag: 1.0.0
+Stable tag: 1.0.1
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -40,8 +40,13 @@ Yes, but then the styles for the timeline may shift. To correct them, you will n
 
 1. Timeline widget in Elementor.
 2. Timeline block in Gutenberg.
+3. Timeline block in Gutenberg.
 
 == Changelog ==
+
+= 1.0.1 =
+* Added sticky text settings on the opposite side of the timeline.
+* Corrected animation for markers
 
 = 1.0.0 =
 * Release Date - 25th September 2025

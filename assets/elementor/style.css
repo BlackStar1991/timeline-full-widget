@@ -153,10 +153,10 @@ li.timeline-left {
 }
 
 @media (min-width: 701px) {
-    /*.timeline-side {*/
-    /*    position: sticky;*/
-    /*    top: 0;*/
-    /*}*/
+    .timeline-animation-other-side-sticky .timeline-side {
+        position: sticky;
+        top: 0;
+    }
 
     .timeline-inverted .timeline-panel {
         margin-left: 60px;
@@ -165,7 +165,6 @@ li.timeline-left {
     .timeline-left .timeline-panel{
         margin-right: 60px;
     }
-
 
     .timeline-animation-marker .tl-mark {
         position: sticky;

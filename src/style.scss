@@ -45,7 +45,7 @@ li.is-stuck .tl-mark {
   }
 
 
-  // TODO This corrected wor different themes
+
   .timeline-animation-marker {
     .block-editor-block-list__block .timeline-panel,
     .wp-block-za-timeline-item .timeline-panel {
@@ -53,20 +53,10 @@ li.is-stuck .tl-mark {
     }
   }
 
-  /// Astra Theme
-  .ast-desktop .timeline-animation-marker .tl-mark{
-    left: calc(50% + 2px);
-  }
-
-  // Kadence Theme
-  .wp-theme-kadence .timeline-animation-marker .tl-mark{
-    left: calc(50% + 2px);
-  }
-  // Hello Biz Theme
-  .wp-theme-hello-biz .timeline-animation-marker .tl-mark{
-    left: calc(50% + 2px);
-  }
-  // Hello Elementor Theme
+  /// Astra, Kadence, Hello Biz, Hello Elementor, Theme
+  .ast-desktop .timeline-animation-marker .tl-mark,
+  .wp-theme-kadence .timeline-animation-marker .tl-mark,
+  .wp-theme-hello-biz .timeline-animation-marker .tl-mark,
   .wp-theme-hello-elementor .timeline-animation-marker .tl-mark{
     left: calc(50% + 2px);
   }

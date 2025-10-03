@@ -32,6 +32,7 @@ export default function Edit({ attributes, setAttributes, clientId }) {
 		showMarker,
 		animationMarker,
 		markerUnique,
+		animationOtherSideSticky,
 	} = attributes;
 
 	const wrapperRef = useRef(null);
@@ -91,6 +92,7 @@ export default function Edit({ attributes, setAttributes, clientId }) {
 			showMarker,
 			markerUnique,
 			animationMarker,
+			animationOtherSideSticky,
 		});
 	}, [
 		showOtherSide,
@@ -103,6 +105,7 @@ export default function Edit({ attributes, setAttributes, clientId }) {
 		showMarker,
 		markerUnique,
 		animationMarker,
+		animationOtherSideSticky,
 		syncToChildren,
 	]);
 
@@ -220,6 +223,20 @@ export default function Edit({ attributes, setAttributes, clientId }) {
 								onChange: (val) =>
 									setAttributes({ showMarker: val }),
 							},
+							showOtherSide && {
+								label: __(
+									'Other Side Sticky',
+									'timeline-full-widget'
+								),
+								help: animationOtherSideSticky
+									? __('Yes', 'timeline-full-widget')
+									: __('No', 'timeline-full-widget'),
+								checked: animationOtherSideSticky,
+								onChange: (val) =>
+									setAttributes({
+										animationOtherSideSticky: val,
+									}),
+							},
 						]
 							.filter(Boolean)
 							.map((ctrl, i) => (
@@ -321,11 +338,14 @@ export default function Edit({ attributes, setAttributes, clientId }) {
 				)}
 
 				<ul
-					className={
-						animationMarker
-							? 'timeline-animation-marker timeline'
-							: 'timeline'
-					}
+					className={[
+						'timeline',
+						animationMarker && 'timeline-animation-marker',
+						animationOtherSideSticky &&
+							'timeline-animation-other-side-sticky',
+					]
+						.filter(Boolean)
+						.join(' ')}
 				>
 					<InnerBlocks
 						allowedBlocks={['za/timeline-item']}

@@ -54,6 +54,10 @@
 		"animationMarker": {
 			"type": "boolean",
 			"default": true
+		},
+		"animationOtherSideSticky": {
+			"type": "boolean",
+			"default": false
 		}
 	},
 	"supports": {

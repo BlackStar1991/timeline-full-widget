@@ -202,7 +202,7 @@ export function Edit({ clientId, attributes, setAttributes }) {
 			<PanelBody title={__('Media Settings', 'timeline-full-widget')}>
 				{isVideo ? (
 					<PanelBody
-						title={__('Video Poster', 'timeline-full-widget')}
+						title={__('Video poster', 'timeline-full-widget')}
 					>
 						{videoPoster ? (
 							<div className="video-poster-preview">

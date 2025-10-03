@@ -7,6 +7,7 @@ export default function Save({ attributes }) {
 		animationTimeline,
 		animationTimelineColor,
 		animationMarker,
+		animationOtherSideSticky,
 	} = attributes;
 
 	const marginStyle = convertMarginAttrToStyle(attributes.style);
@@ -27,11 +28,14 @@ export default function Save({ attributes }) {
 				)}
 
 				<ul
-					className={
-						animationMarker
-							? 'timeline-animation-marker timeline'
-							: 'timeline'
-					}
+					className={[
+						'timeline',
+						animationMarker && 'timeline-animation-marker',
+						animationOtherSideSticky &&
+							'timeline-animation-other-side-sticky',
+					]
+						.filter(Boolean)
+						.join(' ')}
 				>
 					<InnerBlocks.Content />
 				</ul>

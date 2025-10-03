@@ -97,10 +97,15 @@ export function initTimelineAnimation(scopeEl) {
 
 	// triggers for is-stuck classes
 	let triggers = Array.from(wrapper.querySelectorAll('.tl-trigger'));
+
+	// IntersectionObserver options (kept for other uses / debug)
 	const ioOptions = {
 		root: scrollParent === window ? null : scrollParent,
-		threshold: [0, 0.25, 0.5, 0.75, 1],
+		rootMargin: '-40% 0px -40% 0px',
+		threshold: 0,
 	};
+
+	// IO callback: no longer toggles is-stuck here — only logs / updates meta if needed.
 	const ioCallback = (entries) => {
 		entries.forEach((entry) => {
 			const trigger = entry.target;
@@ -110,9 +115,22 @@ export function initTimelineAnimation(scopeEl) {
 				trigger.closest('.wp-block') ||
 				trigger.closest('.elementor-widget');
 			if (!parentBlock) return;
-			parentBlock.classList.toggle('is-stuck', entry.isIntersecting);
+
+			// debug-only info
+			if (DEBUG) {
+				try {
+					console.log('[za-timeline][IO]', {
+						isIntersecting: entry.isIntersecting,
+						ratio: entry.intersectionRatio,
+						targetRect: entry.boundingClientRect,
+						triggerRect: trigger.getBoundingClientRect(),
+						parentBlock: parentBlock,
+					});
+				} catch (e) {}
+			}
 		});
 	};
+
 	let observer;
 	try {
 		observer = new IntersectionObserver(ioCallback, ioOptions);
@@ -137,6 +155,82 @@ export function initTimelineAnimation(scopeEl) {
 			} catch (e) {}
 		});
 	};
+
+	// -------- new logic: determine "stuck" element by center distance --------
+	let currentStuckEl = null;
+
+	function getRootMiddle() {
+		if (scrollParent === window) {
+			return window.innerHeight / 2;
+		}
+		try {
+			const r = scrollParent.getBoundingClientRect();
+			return r.top + r.height / 2;
+		} catch (e) {
+			return window.innerHeight / 2;
+		}
+	}
+
+	function updateStuckByCenter() {
+		const rootMiddle = getRootMiddle();
+		const items = Array.from(
+			wrapper.querySelectorAll('li.timeline-item, .timeline-item')
+		);
+		if (!items.length) return;
+
+		let best = null;
+		let bestDist = Infinity;
+
+		for (const it of items) {
+			const r = it.getBoundingClientRect();
+
+			const trigger = it.querySelector('.tl-trigger');
+			const triggerRect = trigger ? trigger.getBoundingClientRect() : r;
+
+			if (r.top <= rootMiddle && r.bottom >= rootMiddle) {
+				best = it;
+				bestDist = 0;
+				break;
+			}
+
+			const itemCenter = (r.top + r.bottom) / 2;
+			const dist = Math.abs(itemCenter - rootMiddle);
+			if (dist < bestDist) {
+				bestDist = dist;
+				best = it;
+			}
+		}
+
+		for (const it of items) {
+			const r = it.getBoundingClientRect();
+			const trigger = it.querySelector('.tl-trigger');
+			const triggerRect = trigger ? trigger.getBoundingClientRect() : r;
+
+			const passed = triggerRect.top <= rootMiddle;
+			const isCurrent = it === best;
+
+			if (passed || isCurrent) {
+				if (!it.classList.contains('is-stuck'))
+					it.classList.add('is-stuck');
+			} else {
+				if (it.classList.contains('is-stuck'))
+					it.classList.remove('is-stuck');
+			}
+		}
+
+		if (best !== currentStuckEl) {
+			currentStuckEl = best;
+			if (DEBUG) {
+				try {
+					console.log('[za-timeline][STUCK] best updated', {
+						currentStuckEl,
+						bestDist,
+					});
+				} catch (e) {}
+			}
+		}
+	}
+	// -------------------------------------------------------------------------
 
 	// compute progress (0..1)
 	function getTargetProgress() {
@@ -199,6 +293,8 @@ export function initTimelineAnimation(scopeEl) {
 		if (target === lastTarget && Math.abs(current - target) < 0.0005) {
 			current = target;
 			line.style.transform = `scaleY(${current})`;
+			// Ensure stuck state updated once even when not animating
+			updateStuckByCenter();
 			running = false;
 			return;
 		}
@@ -209,6 +305,9 @@ export function initTimelineAnimation(scopeEl) {
 
 		if (Math.abs(current - target) < 0.001) current = target;
 		line.style.transform = `scaleY(${current})`;
+
+		// update is-stuck every frame (cheap: only modifies DOM when element changes)
+		updateStuckByCenter();
 
 		if (running) {
 			rafId = requestAnimationFrame(frame);
@@ -313,6 +412,8 @@ export function initTimelineAnimation(scopeEl) {
 		} catch (e) {}
 		triggers = Array.from(wrapper.querySelectorAll('.tl-trigger'));
 		if (triggers.length) observeAllTriggers();
+		// recalc stuck candidate & animate once
+		updateStuckByCenter();
 		startLoop();
 	});
 	mo.observe(wrapper, { childList: true, subtree: true });
@@ -324,7 +425,11 @@ export function initTimelineAnimation(scopeEl) {
 			rect.bottom > 0 &&
 			rect.top <
 				(window.innerHeight || document.documentElement.clientHeight);
-		if (inViewport) startLoop();
+		if (inViewport) {
+			// initial selection
+			updateStuckByCenter();
+			startLoop();
+		}
 	})();
 
 	// destroy
@@ -351,6 +456,10 @@ export function initTimelineAnimation(scopeEl) {
 				});
 				window.removeEventListener('resize', onScrollOrResize);
 			}
+		} catch (e) {}
+		try {
+			// remove stuck class if present
+			if (currentStuckEl) currentStuckEl.classList.remove('is-stuck');
 		} catch (e) {}
 		try {
 			delete el.__zaTimelineDestroy;
