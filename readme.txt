@@ -43,6 +43,8 @@ Yes, but then the styles for the timeline may shift. To correct them, you will n
 3. Timeline block in Gutenberg.
 
 == Changelog ==
+= 1.1.0 =
+*
 
 = 1.0.1 =
 * Added sticky text settings on the opposite side of the timeline.

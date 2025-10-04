@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: timeline-full-widget 1.0\n"
-"POT-Creation-Date: 2025-10-02 16:28+0300\n"
-"PO-Revision-Date: 2025-10-02 16:28+0300\n"
+"POT-Creation-Date: 2025-10-03 18:53+0300\n"
+"PO-Revision-Date: 2025-10-03 18:54+0300\n"
 "Last-Translator: \n"
 "Language-Team: za\n"
 "Language: en\n"
@@ -31,179 +31,189 @@ msgstr ""
 msgid "Item background color"
 msgstr ""
 
-#: elementor-timeline-widget.php:92
+#: elementor-timeline-widget.php:93
 msgid "Media Type"
 msgstr ""
 
-#: elementor-timeline-widget.php:95 elementor-timeline-widget.php:105
+#: elementor-timeline-widget.php:96 elementor-timeline-widget.php:106
 msgid "Image"
 msgstr ""
 
-#: elementor-timeline-widget.php:96 elementor-timeline-widget.php:116
+#: elementor-timeline-widget.php:97 elementor-timeline-widget.php:117
 msgid "Video"
 msgstr ""
 
-#: elementor-timeline-widget.php:126
+#: elementor-timeline-widget.php:127
 msgid "Poster URL"
 msgstr ""
 
-#: elementor-timeline-widget.php:146
+#: elementor-timeline-widget.php:147
 msgid "Title"
 msgstr ""
 
-#: elementor-timeline-widget.php:148
+#: elementor-timeline-widget.php:149
 msgid "Timeline Title"
 msgstr ""
 
-#: elementor-timeline-widget.php:156
+#: elementor-timeline-widget.php:157
 msgid "Link"
 msgstr ""
 
-#: elementor-timeline-widget.php:166
+#: elementor-timeline-widget.php:167
 msgid "Content"
 msgstr ""
 
-#: elementor-timeline-widget.php:168
+#: elementor-timeline-widget.php:169
 msgid "Timeline content here..."
 msgstr ""
 
-#: elementor-timeline-widget.php:175
+#: elementor-timeline-widget.php:176
 msgid "Side Content"
 msgstr ""
 
-#: elementor-timeline-widget.php:184
+#: elementor-timeline-widget.php:185
 msgid "Marker Image"
 msgstr ""
 
-#: elementor-timeline-widget.php:196 src/item/edit.js:514
+#: elementor-timeline-widget.php:197 src/item/edit.js:514
 msgid ""
 "Note: this image will be used only when \"Unique Marker\" (Style) is set to "
 "Yes. Recommend width size <=30px"
 msgstr ""
 
-#: elementor-timeline-widget.php:210 src/edit.js:337
+#: elementor-timeline-widget.php:211 src/edit.js:357
 msgid "Timeline Item #1"
 msgstr ""
 
-#: elementor-timeline-widget.php:211
+#: elementor-timeline-widget.php:212
 msgid "Content for item #1"
 msgstr ""
 
-#: elementor-timeline-widget.php:214 src/edit.js:351
+#: elementor-timeline-widget.php:215 src/edit.js:371
 msgid "Timeline Item #2"
 msgstr ""
 
-#: elementor-timeline-widget.php:215
+#: elementor-timeline-widget.php:216
 msgid "Content for item #2"
 msgstr ""
 
-#: elementor-timeline-widget.php:229
+#: elementor-timeline-widget.php:230
 msgid "Style"
 msgstr ""
 
-#: elementor-timeline-widget.php:237
+#: elementor-timeline-widget.php:238
 msgid "Title HTML Tag"
 msgstr ""
 
-#: elementor-timeline-widget.php:249
+#: elementor-timeline-widget.php:250
 msgid "Blocks Color"
 msgstr ""
 
-#: elementor-timeline-widget.php:261 src/edit.js:241
+#: elementor-timeline-widget.php:262 src/edit.js:258
 msgid "Line & Marker Color"
 msgstr ""
 
-#: elementor-timeline-widget.php:274 src/edit.js:262
+#: elementor-timeline-widget.php:275 src/edit.js:279
 msgid "Animation Color"
 msgstr ""
 
-#: elementor-timeline-widget.php:290 src/edit.js:165
+#: elementor-timeline-widget.php:291 src/edit.js:168
 msgid "Timeline Direction"
 msgstr ""
 
-#: elementor-timeline-widget.php:292 src/edit.js:170
+#: elementor-timeline-widget.php:293 src/edit.js:173
 msgid "Left"
 msgstr ""
 
-#: elementor-timeline-widget.php:293 src/edit.js:169
+#: elementor-timeline-widget.php:294 src/edit.js:172
 msgid "Right"
 msgstr ""
 
-#: elementor-timeline-widget.php:301 src/edit.js:177
+#: elementor-timeline-widget.php:302 src/edit.js:180
 msgid "Single-Side Layout"
-msgstr ""
-
-#: elementor-timeline-widget.php:303 elementor-timeline-widget.php:314
-#: elementor-timeline-widget.php:326 elementor-timeline-widget.php:337
-#: elementor-timeline-widget.php:352 src/edit.js:181 src/edit.js:193
-#: src/edit.js:205 src/edit.js:217 src/edit.js:284 src/edit.js:298
-msgid "Yes"
 msgstr ""
 
 #: elementor-timeline-widget.php:304 elementor-timeline-widget.php:315
 #: elementor-timeline-widget.php:327 elementor-timeline-widget.php:338
-#: elementor-timeline-widget.php:353 src/edit.js:182 src/edit.js:194
-#: src/edit.js:206 src/edit.js:218 src/edit.js:285 src/edit.js:299
+#: elementor-timeline-widget.php:352 elementor-timeline-widget.php:363
+#: src/edit.js:184 src/edit.js:196 src/edit.js:208 src/edit.js:220
+#: src/edit.js:232 src/edit.js:301 src/edit.js:315
+msgid "Yes"
+msgstr ""
+
+#: elementor-timeline-widget.php:305 elementor-timeline-widget.php:316
+#: elementor-timeline-widget.php:328 elementor-timeline-widget.php:339
+#: elementor-timeline-widget.php:353 elementor-timeline-widget.php:364
+#: src/edit.js:185 src/edit.js:197 src/edit.js:209 src/edit.js:221
+#: src/edit.js:233 src/edit.js:302 src/edit.js:316
 msgid "No"
 msgstr ""
 
-#: elementor-timeline-widget.php:312 src/edit.js:201
+#: elementor-timeline-widget.php:313 src/edit.js:204
 msgid "Animate Timeline Line"
 msgstr ""
 
-#: elementor-timeline-widget.php:324
+#: elementor-timeline-widget.php:325
 msgid "Show Marker"
 msgstr ""
 
-#: elementor-timeline-widget.php:335 src/edit.js:294
-msgid "Unique Marker"
-msgstr ""
-
-#: elementor-timeline-widget.php:350
+#: elementor-timeline-widget.php:336
 msgid "Animate Markers"
 msgstr ""
 
-#: elementor-timeline-widget.php:504 src/item/edit.js:603
+#: elementor-timeline-widget.php:350
+msgid "Sticky Other Side"
+msgstr ""
+
+#: elementor-timeline-widget.php:361 src/edit.js:311
+msgid "Unique Marker"
+msgstr ""
+
+#: elementor-timeline-widget.php:527 src/item/edit.js:603
 msgid "Your browser does not support the video tag."
 msgstr ""
 
-#: src/edit.js:148
+#: src/edit.js:151
 msgid "Timeline Settings"
 msgstr ""
 
-#: src/edit.js:153
+#: src/edit.js:156
 msgid "Display Images"
 msgstr ""
 
-#: src/edit.js:157
+#: src/edit.js:160
 msgid "On"
 msgstr ""
 
-#: src/edit.js:158
+#: src/edit.js:161
 msgid "Off"
 msgstr ""
 
-#: src/edit.js:189
+#: src/edit.js:192
 msgid "Display Opposite Side"
 msgstr ""
 
-#: src/edit.js:213
+#: src/edit.js:216
 msgid "Show Timeline Marker"
 msgstr ""
 
-#: src/edit.js:234
-msgid "Timeline color"
+#: src/edit.js:228
+msgid "Other Side Sticky"
 msgstr ""
 
 #: src/edit.js:251
+msgid "Timeline color"
+msgstr ""
+
+#: src/edit.js:268
 msgid "Timeline Animation Color"
 msgstr ""
 
-#: src/edit.js:273
+#: src/edit.js:290
 msgid "Marker Settings"
 msgstr ""
 
-#: src/edit.js:280
+#: src/edit.js:297
 msgid "Sticky Markers"
 msgstr ""
 
@@ -211,11 +221,7 @@ msgstr ""
 msgid "Media Settings"
 msgstr ""
 
-#: src/item/edit.js:205
-msgid "Video Poster"
-msgstr ""
-
-#: src/item/edit.js:212
+#: src/item/edit.js:205 src/item/edit.js:212
 msgid "Video poster"
 msgstr ""
 

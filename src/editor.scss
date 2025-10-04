@@ -12,6 +12,12 @@
   text-align: inherit !important;
 }
 
+
+.components-font-size-picker{
+  display: block!important;
+  margin-bottom: 16px!important;
+}
+
 .timeline .block-editor-block-list__block {
   width: 100%;
 }
@@ -36,16 +42,5 @@
   .timeline-animation-marker .block-editor-block-list__block .timeline-panel {
     width: calc(50% - 30px);
   }
-
-
-
-
-
-
-
-
-
-
-
 
 }

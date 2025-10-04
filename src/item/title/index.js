@@ -122,7 +122,6 @@ export default function Title({
 						/>
 					</ToolbarGroup>
 				)}
-
 				{showAlignmentForTitle && (
 					<AlignmentToolbar
 						value={titleAlign}

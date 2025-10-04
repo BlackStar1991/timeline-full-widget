@@ -389,8 +389,8 @@ class Za_Pack_Widget_Timeline extends Widget_Base
         $animation_marker_enabled = $show_marker && (($settings['tl_animation_marker'] ?? '') === 'yes');
         $sticky_other_side = ($settings['tl_animation_other_side_sticky'] ?? '') === 'yes';
 
-        $wrapper_attr = esc_attr($settings['tl_animation_timeline'] ?? '');
-        echo '<div class="timeline-wrapper" data-animate-timeline="' . esc_attr($wrapper_attr) . '">';
+
+        echo '<div class="timeline-wrapper">';
 
         // animation line
         if (($settings['tl_animation_timeline'] ?? '') === 'yes') {
@@ -399,15 +399,12 @@ class Za_Pack_Widget_Timeline extends Widget_Base
 
         // ul open
         $ul_classes = ['timeline'];
-
         if ( $animation_marker_enabled ) {
             $ul_classes[] = 'timeline-animation-marker';
         }
-
         if ( $sticky_other_side ) {
             $ul_classes[] = 'timeline-animation-other-side-sticky';
         }
-
         echo '<ul class="' . esc_attr( implode( ' ', $ul_classes ) ) . '">';
 
         // iterate items

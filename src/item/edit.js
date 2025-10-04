@@ -418,6 +418,7 @@ export function Edit({ clientId, attributes, setAttributes }) {
 						min={0}
 						max={100}
 						__next40pxDefaultSize={true}
+                        __nextHasNoMarginBottom={true}
 					/>
 					<RangeControl
 						label={__('Margin Bottom (px)', 'timeline-full-widget')}
@@ -428,6 +429,7 @@ export function Edit({ clientId, attributes, setAttributes }) {
 						min={0}
 						max={100}
 						__next40pxDefaultSize={true}
+                        __nextHasNoMarginBottom={true}
 					/>
 					<RangeControl
 						label={__(
@@ -439,6 +441,7 @@ export function Edit({ clientId, attributes, setAttributes }) {
 							setAttributes({ titleLineHeight: String(value) })
 						}
 						__next40pxDefaultSize={true}
+                        __nextHasNoMarginBottom={true}
 					/>
 				</PanelBody>
 
