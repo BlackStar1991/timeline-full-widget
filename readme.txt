@@ -4,11 +4,11 @@ Donate link: https://www.paypal.com/donate/?hosted_button_id=TK9QQ5DE2K378
 Tags: timeline, Elementor, gutenberg blocks, editor, blocks
 Requires at least: 5.0
 Tested up to: 6.8
-Stable tag: 1.0.1
+Stable tag: 1.1.0
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
-Add a Timeline Widget easily to your WordPress site.
+Add a Timeline Widget easily to your WordPress site. Elementor Widget and Gutenberg Block for your site.
 
 == Description ==
 
@@ -19,12 +19,12 @@ You can also add a Timeline Gutenberg Block for modern WordPress sites, or a Tim
 
 1. Upload the plugin files to the `/wp-content/plugins/timeline-full-widget` directory, or install it through the WordPress plugins screen directly.
 2. Activate the plugin through the 'Plugins' screen in WordPress.
-3. Use the Elementor editor, Gutenberg editor, or classic widget to add a Timeline.
+3. Use the Elementor editor or Gutenberg editor.
 
 == Frequently Asked Questions ==
 
 = Does it work with the latest Elementor? =
-Yes, tested with Elementor 3.32.3 and WordPress 6.8.
+Yes, tested with Elementor 3.32.4 and WordPress 6.8.
 
 = Can I set a unique marker that is wider (width) than 30 px? =
 Yes, but then the styles for the timeline may shift. To correct them, you will need to specify the styles separately. For example:
@@ -44,7 +44,8 @@ Yes, but then the styles for the timeline may shift. To correct them, you will n
 
 == Changelog ==
 = 1.1.0 =
-*
+* Bug fixing
+* Add choosing font-family for Title element
 
 = 1.0.1 =
 * Added sticky text settings on the opposite side of the timeline.

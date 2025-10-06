@@ -151,6 +151,16 @@ export function buildStyleObject(attrs = {}) {
 		result.fontWeight = styleFromAttr.fontWeight;
 	}
 
+    if (attrs.titleFontFamily) {
+        const tf = String(attrs.titleFontFamily).trim();
+        const isSlug = /^[a-z0-9\-_]+$/i.test(tf);
+        if (isSlug) {
+            result.fontFamily = `var(--wp--preset--font-family--${tf}, sans-serif)`;
+        } else {
+            result.fontFamily = tf;
+        }
+    }
+
 	if (attrs.titleMarginTop)
 		result.marginTop = String(attrs.titleMarginTop).endsWith('px')
 			? String(attrs.titleMarginTop)

@@ -21,6 +21,7 @@ registerBlockType('za/timeline-full-widget', {
 		spacing: {
 			margin: true,
 		},
+
 	},
 	edit: Edit,
 	save: Save,

@@ -53,6 +53,7 @@ export function Edit({ clientId, attributes, setAttributes }) {
 		titleMarginTop,
 		titleMarginBottom,
 		titleColor,
+        titleFontFamily,
 		showMarker,
 		markerUnique,
 		markerUrl,
@@ -291,7 +292,108 @@ export function Edit({ clientId, attributes, setAttributes }) {
 		);
 	}, [showMedia, mediaUrl, onSelect, mediaId, imageAlt, setAttributes]);
 
-	return (
+
+    //  Font-family settings
+
+    function normalizeFontEntry( f ) {
+        const name = f?.name || f?.label || f?.title || '';
+        const slug = f?.slug || null;
+        const family = f?.fontFamily || null;
+
+        const cleanFamily = family ? family.replace(/^["']|["']$/g, '') : null;
+        const value = slug || cleanFamily || name;
+        return { name: name || value, slug, family: cleanFamily, value };
+    }
+
+    function getFontsFromSettings( settings ) {
+        if ( ! settings ) return [];
+
+        const candidates = [
+            settings.typography,
+            settings?.settings?.typography,
+            settings?.theme?.settings?.typography,
+            settings?.__experimentalFeatures?.typography,
+            settings?.settings?.__experimentalFeatures?.typography,
+            settings.fontFamilies,
+        ];
+
+        let found = [];
+
+        const pushFonts = ( maybe ) => {
+            if ( ! maybe ) return;
+            if ( Array.isArray( maybe ) ) {
+                found.push( ...maybe );
+                return;
+            }
+            if ( maybe.fontFamilies ) {
+                if ( Array.isArray( maybe.fontFamilies ) ) found.push( ...maybe.fontFamilies );
+                else if ( typeof maybe.fontFamilies === 'object' ) {
+                    Object.values( maybe.fontFamilies ).forEach( v => {
+                        if ( Array.isArray(v) ) found.push( ...v );
+                    } );
+                }
+            }
+            if ( maybe.fontFamilies?.theme && Array.isArray( maybe.fontFamilies.theme ) ) {
+                found.push( ...maybe.fontFamilies.theme );
+            }
+        };
+
+        candidates.forEach( pushFonts );
+
+        const normalized = ( found || [] ).filter(Boolean).map( normalizeFontEntry );
+        const map = new Map();
+        normalized.forEach( f => {
+            if ( f.value && ! map.has( f.value ) ) map.set( f.value, f );
+        } );
+        return Array.from( map.values() );
+    }
+    const fontsFromStore = useSelect((select) => {
+        const s = select('core/block-editor')?.getSettings?.() || select('core/editor')?.getEditorSettings?.() || {};
+        let found = [];
+
+        const map = new Map();
+        (found || []).forEach(f => {
+            const value = f.slug || f.fontFamily || f.label || f.name || '';
+            if (!map.has(value)) {
+                map.set(value, {
+                    name: f.name || f.label || value,
+                    slug: f.slug || null,
+                    family: f.fontFamily || null,
+                    value,
+                });
+            }
+        });
+        return Array.from(map.values());
+    }, []);
+
+    const [fonts, setFonts] = useState( fontsFromStore || [] );
+
+    useEffect(() => {
+        if ( fontsFromStore && fontsFromStore.length ) {
+            setFonts( fontsFromStore );
+            return;
+        }
+        // optional polling fallback (keep or remove)
+        let tries = 0;
+        const timer = setInterval( () => {
+            const raw = window?.wp?.data?.select
+                ? ( window.wp.data.select('core/block-editor')?.getSettings?.() || window.wp.data.select('core/editor')?.getEditorSettings?.() )
+                : null;
+            if ( raw ) {
+                const parsed = getFontsFromSettings( raw );
+                if ( parsed.length ) {
+                    setFonts( parsed );
+                    clearInterval( timer );
+                }
+            }
+            if ( ++tries > 30 ) clearInterval( timer );
+        }, 250 );
+        return () => clearInterval( timer );
+    }, [ fontsFromStore ] );
+
+
+
+    return (
 		<>
 			<InspectorControls>
 				<PanelBody title={__('Block Settings', 'timeline-full-widget')}>
@@ -409,7 +511,21 @@ export function Edit({ clientId, attributes, setAttributes }) {
 						__next40pxDefaultSize={true}
 					/>
 
-					<RangeControl
+
+
+                    <SelectControl
+                        label={ __( 'Title font family', 'timeline-full-widget' ) }
+                        value={ titleFontFamily || '' }
+                        options={[
+                            { label: __( 'Default', 'timeline-full-widget' ), value: '' },
+                            ...fonts.map( f => ( { label: f.name, value: f.value } ) ),
+                        ]}
+                        onChange={ ( val ) => setAttributes({ titleFontFamily: val }) }
+                    />
+
+
+
+                    <RangeControl
 						label={__('Margin Top (px)', 'timeline-full-widget')}
 						value={Number(titleMarginTop) || 0}
 						onChange={(value) =>
@@ -642,6 +758,7 @@ export function Edit({ clientId, attributes, setAttributes }) {
 								titleMarginBottom={titleMarginBottom}
 								titleLineHeight={titleLineHeight}
 								titleColor={titleColor}
+                                titleFontFamily={titleFontFamily}
 								linkUrl={linkUrl}
 								linkTarget={linkTarget}
 								rel={rel}
