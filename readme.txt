@@ -44,13 +44,13 @@ Yes, but then the styles for the timeline may shift. To correct them, you will n
 
 == Changelog ==
 = 1.1.0 =
-* Bug fixing
-* Add choosing font-family for Title element
+* Bug fixes.
+* Add choosing font-family for a Title element in the Gutenberg block.
 
 = 1.0.1 =
 * Added sticky text settings on the opposite side of the timeline.
-* Corrected animation for markers
+* Corrected animation for markers.
 
 = 1.0.0 =
-* Release Date - 25th September 2025
-* Initial Release
+* Release Date - 25th September 2025.
+* Initial Release.

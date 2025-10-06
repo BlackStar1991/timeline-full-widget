@@ -25,7 +25,7 @@ export default function Title({
 	titleMarginBottom,
 	titleLineHeight,
 	titleColor,
-    titleFontFamily,
+	titleFontFamily,
 	linkUrl,
 	linkTarget,
 	rel,
@@ -52,7 +52,7 @@ export default function Title({
 				titleMarginTop,
 				titleMarginBottom,
 				titleColor,
-                titleFontFamily,
+				titleFontFamily,
 			}),
 		[
 			titleInlineStyle,
@@ -62,7 +62,7 @@ export default function Title({
 			titleMarginBottom,
 			titleLineHeight,
 			titleColor,
-            titleFontFamily,
+			titleFontFamily,
 		]
 	);
 

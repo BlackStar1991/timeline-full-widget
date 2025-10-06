@@ -142,7 +142,8 @@ export default function Edit({ attributes, setAttributes, clientId }) {
 				ref={wrapperRef}
 				style={{
 					'--timeline-color': lineColor || '#F6F6F8',
-					'--timeline-color-animation': animationTimelineColor || '#F37321',
+					'--timeline-color-animation':
+						animationTimelineColor || '#F37321',
 				}}
 			>
 				<InspectorControls>

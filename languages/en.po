@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: timeline-full-widget 1.0\n"
-"POT-Creation-Date: 2025-10-03 18:53+0300\n"
-"PO-Revision-Date: 2025-10-03 18:54+0300\n"
+"POT-Creation-Date: 2025-10-06 18:12+0300\n"
+"PO-Revision-Date: 2025-10-06 18:12+0300\n"
 "Last-Translator: \n"
 "Language-Team: za\n"
 "Language: en\n"
@@ -27,7 +27,7 @@ msgstr ""
 msgid "Timeline Items"
 msgstr ""
 
-#: elementor-timeline-widget.php:81 src/item/edit.js:346
+#: elementor-timeline-widget.php:81 src/item/edit.js:268
 msgid "Item background color"
 msgstr ""
 
@@ -75,7 +75,7 @@ msgstr ""
 msgid "Marker Image"
 msgstr ""
 
-#: elementor-timeline-widget.php:197 src/item/edit.js:514
+#: elementor-timeline-widget.php:197
 msgid ""
 "Note: this image will be used only when \"Unique Marker\" (Style) is set to "
 "Yes. Recommend width size <=30px"
@@ -169,7 +169,7 @@ msgstr ""
 msgid "Unique Marker"
 msgstr ""
 
-#: elementor-timeline-widget.php:527 src/item/edit.js:603
+#: elementor-timeline-widget.php:524 src/item/edit.js:380
 msgid "Your browser does not support the video tag."
 msgstr ""
 
@@ -217,99 +217,89 @@ msgstr ""
 msgid "Sticky Markers"
 msgstr ""
 
-#: src/item/edit.js:202
-msgid "Media Settings"
+#: src/item/components/FontFamilySelect.js:11
+msgid "Title font family"
 msgstr ""
 
-#: src/item/edit.js:205 src/item/edit.js:212
-msgid "Video poster"
-msgstr ""
-
-#: src/item/edit.js:220
-msgid "Remove poster"
-msgstr ""
-
-#: src/item/edit.js:237
-msgid "Select video poster"
-msgstr ""
-
-#: src/item/edit.js:246
-msgid "Image Alt"
-msgstr ""
-
-#: src/item/edit.js:249
-msgid "Add alt text for the image."
-msgstr ""
-
-#: src/item/edit.js:266
-msgid "Replace Media File"
-msgstr ""
-
-#: src/item/edit.js:286 src/item/edit.js:288
-msgid "Remove Media File"
-msgstr ""
-
-#: src/item/edit.js:297
-msgid "Block Settings"
-msgstr ""
-
-#: src/item/edit.js:299
-msgid "Title Tag"
-msgstr ""
-
-#: src/item/edit.js:319
-msgid "Color settings"
-msgstr ""
-
-#: src/item/edit.js:326
-msgid "Title color"
-msgstr ""
-
-#: src/item/edit.js:335
-msgid "Description color"
-msgstr ""
-
-#: src/item/edit.js:357
-msgid "Title Typography"
-msgstr ""
-
-#: src/item/edit.js:388
-msgid "Title font weight"
-msgstr ""
-
-#: src/item/edit.js:392
+#: src/item/components/FontFamilySelect.js:14
+#: src/item/components/TitleTypographyPanel.js:49
 msgid "Default"
 msgstr ""
 
-#: src/item/edit.js:413
+#: src/item/components/MediaSettingsPanel.js:22
+msgid "Media Settings"
+msgstr ""
+
+#: src/item/components/MediaSettingsPanel.js:24
+#: src/item/components/MediaSettingsPanel.js:29
+msgid "Video poster"
+msgstr ""
+
+#: src/item/components/MediaSettingsPanel.js:35
+msgid "Remove poster"
+msgstr ""
+
+#: src/item/components/MediaSettingsPanel.js:52
+msgid "Select video poster"
+msgstr ""
+
+#: src/item/components/MediaSettingsPanel.js:61
+msgid "Image Alt"
+msgstr ""
+
+#: src/item/components/MediaSettingsPanel.js:64
+msgid "Add alt text for the image."
+msgstr ""
+
+#: src/item/components/TitleTypographyPanel.js:19
+msgid "Title Typography"
+msgstr ""
+
+#: src/item/components/TitleTypographyPanel.js:46
+msgid "Title font weight"
+msgstr ""
+
+#: src/item/components/TitleTypographyPanel.js:69
 msgid "Margin Top (px)"
 msgstr ""
 
-#: src/item/edit.js:423
+#: src/item/components/TitleTypographyPanel.js:78
 msgid "Margin Bottom (px)"
 msgstr ""
 
-#: src/item/edit.js:434
+#: src/item/components/TitleTypographyPanel.js:87
 msgid "Title Line Height (px)"
 msgstr ""
 
-#: src/item/edit.js:448
-msgid "Unique marker for this item"
+#: src/item/edit.js:185
+msgid "Replace Media File"
 msgstr ""
 
-#: src/item/edit.js:462
-msgid "Replace marker image"
+#: src/item/edit.js:205 src/item/edit.js:207
+msgid "Remove Media File"
 msgstr ""
 
-#: src/item/edit.js:488
-msgid "Remove marker"
+#: src/item/edit.js:221
+msgid "Block Settings"
 msgstr ""
 
-#: src/item/edit.js:506
-msgid "Select marker image"
+#: src/item/edit.js:223
+msgid "Title Tag"
 msgstr ""
 
-#: src/item/edit.js:550
+#: src/item/edit.js:241
+msgid "Color settings"
+msgstr ""
+
+#: src/item/edit.js:248
+msgid "Title color"
+msgstr ""
+
+#: src/item/edit.js:257
+msgid "Description color"
+msgstr ""
+
+#: src/item/edit.js:326
 msgid "Add other side text"
 msgstr ""
 
@@ -321,14 +311,14 @@ msgstr ""
 msgid "Timeline Item Description"
 msgstr ""
 
-#: src/item/title/index.js:83
+#: src/item/title/index.js:86
 msgid "Open in new tab"
 msgstr ""
 
-#: src/item/title/index.js:90
+#: src/item/title/index.js:93
 msgid "Add rel attribute"
 msgstr ""
 
-#: src/item/title/index.js:119
+#: src/item/title/index.js:122
 msgid "Edit link"
 msgstr ""
