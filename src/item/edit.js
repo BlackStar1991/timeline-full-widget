@@ -280,6 +280,10 @@ export function Edit({ clientId, attributes, setAttributes }) {
 					videoPoster={videoPoster}
 					imageAlt={imageAlt}
 					setAttributes={setAttributes}
+					markerUnique={markerUnique}
+					markerAlt={markerAlt}
+					markerUrl={markerUrl}
+					markerId={markerId}
 				/>
 
 				<TitleTypographyPanel
@@ -330,7 +334,6 @@ export function Edit({ clientId, attributes, setAttributes }) {
 					)}
 				</div>
 
-				<div className="tl-trigger" />
 				{showMarker && (
 					<div
 						className="tl-mark"

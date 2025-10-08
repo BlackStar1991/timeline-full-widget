@@ -18,10 +18,6 @@
   margin-bottom: 16px!important;
 }
 
-.timeline .block-editor-block-list__block {
-  width: 100%;
-}
-
 
 .timeline .block-editor-block-list__block:not(:first-child) {
   margin-top: 40px;
@@ -29,18 +25,4 @@
 
 .tl-title {
   margin-bottom: 20px;
-}
-
-@media (min-width: 701px) {
-
-  .block-editor-block-list__block .timeline-panel{
-    width: calc(50% - 30px);
-  }
-
-  // animation-marker
-
-  .timeline-animation-marker .block-editor-block-list__block .timeline-panel {
-    width: calc(50% - 30px);
-  }
-
 }

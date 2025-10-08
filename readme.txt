@@ -4,7 +4,7 @@ Donate link: https://www.paypal.com/donate/?hosted_button_id=TK9QQ5DE2K378
 Tags: timeline, Elementor, gutenberg blocks, editor, blocks
 Requires at least: 5.0
 Tested up to: 6.8
-Stable tag: 1.1.0
+Stable tag: 1.2.0
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -43,6 +43,9 @@ Yes, but then the styles for the timeline may shift. To correct them, you will n
 3. Timeline block in Gutenberg.
 
 == Changelog ==
+= 1.2.0 =
+* Add a Timeline Block for the classic WordPress editor.
+
 = 1.1.0 =
 * Bug fixes.
 * Add choosing font-family for a Title element in the Gutenberg block.

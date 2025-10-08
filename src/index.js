@@ -4,7 +4,7 @@ import './item';
 import Edit from './edit';
 import Save from './save';
 
-import './../assets/elementor/style.css';
+import '../assets/css/core/style.css';
 import './style.scss';
 import './editor.scss';
 

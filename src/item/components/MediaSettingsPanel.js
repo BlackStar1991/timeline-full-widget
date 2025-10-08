@@ -1,8 +1,14 @@
 // item/components/MediaSettingsPanel.js
-import { PanelBody, TextControl, ToolbarButton } from '@wordpress/components';
-import { MediaPlaceholder } from '@wordpress/block-editor';
+import {
+	PanelBody,
+	TextControl,
+	ToolbarButton,
+	Button,
+} from '@wordpress/components';
+import { MediaPlaceholder, MediaReplaceFlow } from '@wordpress/block-editor';
 import { isBlobURL } from '@wordpress/blob';
 import { __ } from '@wordpress/i18n';
+import React from 'react';
 
 export default function MediaSettingsPanel({
 	showMedia,
@@ -11,8 +17,13 @@ export default function MediaSettingsPanel({
 	videoPoster,
 	imageAlt,
 	setAttributes,
+	markerUnique,
+	markerUrl,
+	markerId,
+	markerAlt,
 }) {
-	if (!showMedia || !mediaUrl || isBlobURL(mediaUrl)) return null;
+	if (!showMedia && !markerUnique) return null;
+
 	const isVideo =
 		(typeof mediaMime === 'string' && mediaMime.indexOf('video/') === 0) ||
 		(typeof mediaUrl === 'string' &&
@@ -20,52 +31,136 @@ export default function MediaSettingsPanel({
 
 	return (
 		<PanelBody title={__('Media Settings', 'timeline-full-widget')}>
-			{isVideo ? (
-				<PanelBody title={__('Video poster', 'timeline-full-widget')}>
-					{videoPoster ? (
-						<div className="video-poster-preview">
+			{showMedia && mediaUrl && !isBlobURL(mediaUrl) && (
+				<>
+					{isVideo ? (
+						<PanelBody
+							title={__('Video poster', 'timeline-full-widget')}
+						>
+							{videoPoster ? (
+								<div className="video-poster-preview">
+									<img
+										src={videoPoster}
+										alt={__(
+											'Video poster',
+											'timeline-full-widget'
+										)}
+										style={{ maxWidth: '100%' }}
+									/>
+									<ToolbarButton
+										icon="trash"
+										label={__(
+											'Remove poster',
+											'timeline-full-widget'
+										)}
+										onClick={() =>
+											setAttributes({ videoPoster: '' })
+										}
+									/>
+								</div>
+							) : (
+								<MediaPlaceholder
+									onSelect={(poster) =>
+										setAttributes({
+											videoPoster: poster.url,
+										})
+									}
+									accept="image/*"
+									allowedTypes={['image']}
+									labels={{
+										title: __(
+											'Select video poster',
+											'timeline-full-widget'
+										),
+									}}
+								/>
+							)}
+						</PanelBody>
+					) : (
+						<TextControl
+							label={__('Image Alt', 'timeline-full-widget')}
+							value={imageAlt}
+							help={__(
+								'Add alt text for the image.',
+								'timeline-full-widget'
+							)}
+							onChange={(val) => setAttributes({ imageAlt: val })}
+						/>
+					)}
+				</>
+			)}
+
+			{markerUnique && (
+				<PanelBody
+					title={__(
+						'Unique marker for this item',
+						'timeline-full-widget'
+					)}
+					initialOpen={true}
+				>
+					{markerUrl ? (
+						<div style={{ display: 'grid', gap: 8 }}>
 							<img
-								src={videoPoster}
-								alt={__('Video poster', 'timeline-full-widget')}
-								style={{ maxWidth: '100%' }}
+								src={markerUrl}
+								alt={markerAlt || ''}
+								style={{ maxWidth: '100%', height: 'auto' }}
 							/>
-							<ToolbarButton
-								icon="trash"
-								label={__(
-									'Remove poster',
+							<MediaReplaceFlow
+								name={__(
+									'Replace marker image',
 									'timeline-full-widget'
 								)}
-								onClick={() =>
-									setAttributes({ videoPoster: '' })
+								onSelect={(media) =>
+									setAttributes({
+										markerUrl: media.url,
+										markerId: media.id,
+										markerAlt: media.alt || '',
+									})
 								}
+								accept="image/*"
+								allowedTypes={['image']}
+								mediaId={markerId}
+								mediaUrl={markerUrl}
 							/>
+							<Button
+								isDestructive
+								onClick={() =>
+									setAttributes({
+										markerUrl: '',
+										markerId: undefined,
+										markerAlt: '',
+									})
+								}
+							>
+								{__('Remove marker', 'timeline-full-widget')}
+							</Button>
 						</div>
 					) : (
 						<MediaPlaceholder
-							onSelect={(poster) =>
-								setAttributes({ videoPoster: poster.url })
+							onSelect={(media) =>
+								setAttributes({
+									markerUrl: media.url,
+									markerId: media.id,
+									markerAlt: media.alt || '',
+								})
 							}
 							accept="image/*"
 							allowedTypes={['image']}
 							labels={{
 								title: __(
-									'Select video poster',
+									'Select marker image',
 									'timeline-full-widget'
 								),
 							}}
 						/>
 					)}
+					<p>
+						{__(
+							'Note: this image will be used only when "Unique Marker" (Style) is set to Yes. Recommend width size <=30px',
+							'timeline-full-widget'
+						)}
+					</p>
 				</PanelBody>
-			) : (
-				<TextControl
-					label={__('Image Alt', 'timeline-full-widget')}
-					value={imageAlt}
-					help={__(
-						'Add alt text for the image.',
-						'timeline-full-widget'
-					)}
-					onChange={(val) => setAttributes({ imageAlt: val })}
-				/>
 			)}
 		</PanelBody>
 	);
