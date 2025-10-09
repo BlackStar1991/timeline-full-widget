@@ -166,6 +166,8 @@ ul.timeline {
     .timeline-animation-other-side-sticky .timeline-side {
         position: sticky;
         top: 0;
+        align-self: start;
+        z-index: 2;
     }
 
     .timeline-animation-marker .tl-mark {

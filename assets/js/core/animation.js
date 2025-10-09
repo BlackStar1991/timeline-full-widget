@@ -1,507 +1,313 @@
 const DEBUG = false;
-
 function log(...args) {
-	if (!DEBUG) return;
-	try {
-		console.log('[za-timeline]', ...args);
-	} catch (e) {}
+    if (!DEBUG) return;
+    try { console.log('[za-timeline]', ...args); } catch (e) {}
 }
 
 export function initTimelineAnimation(scopeEl) {
-	const el = scopeEl && scopeEl.jquery ? scopeEl[0] : scopeEl;
-	if (!el || el.nodeType !== 1) return null;
+    const el = scopeEl && scopeEl.jquery ? scopeEl[0] : scopeEl;
+    if (!el || el.nodeType !== 1) return null;
+    if (el.__zaTimelineDestroy) return el.__zaTimelineDestroy;
 
-	// Prevent double-init
-	if (el.__zaTimelineDestroy) return el.__zaTimelineDestroy;
+    // ---- helpers ----
+    const findWrapper = (node) => {
+        if (!node) return null;
+        if (node.classList && (node.classList.contains('timeline-wrapper') || node.classList.contains('timeline'))) return node;
+        if (node.querySelector) return node.querySelector('.timeline-wrapper') || node.querySelector('.timeline');
+        return null;
+    };
 
-	// find wrapper
-	function findWrapper(node) {
-		if (!node) return null;
-		if (
-			node.classList &&
-			(node.classList.contains('timeline-wrapper') ||
-				node.classList.contains('timeline'))
-		) {
-			return node;
-		}
-		if (node.querySelector) {
-			return (
-				node.querySelector('.timeline-wrapper') ||
-				node.querySelector('.timeline')
-			);
-		}
-		return null;
-	}
-	const wrapper = findWrapper(el);
-	if (!wrapper) return null;
+    const getScrollParent = (node) => {
+        if (!node) return window;
+        let p = node.parentElement;
+        while (p) {
+            const style = window.getComputedStyle(p);
+            const y = style.overflowY;
+            if (y === 'auto' || y === 'scroll' || y === 'overlay') return p;
+            p = p.parentElement;
+        }
+        return window;
+    };
 
-	// find line
-	const line =
-		wrapper.querySelector('.timeline-line-animation') ||
-		(el !== wrapper &&
-			el.querySelector &&
-			el.querySelector('.timeline-line-animation'));
-	if (!line) return null;
+    const wrapper = findWrapper(el);
+    if (!wrapper) return null;
 
-	// get scroll parent
-	function getScrollParent(node) {
-		if (!node) return window;
-		let parent = node.parentElement;
-		while (parent) {
-			const style = window.getComputedStyle(parent);
-			const overflowY = style.overflowY;
-			// include also auto/scroll/overlay
-			if (
-				overflowY === 'auto' ||
-				overflowY === 'scroll' ||
-				overflowY === 'overlay'
-			) {
-				return parent;
-			}
-			parent = parent.parentElement;
-		}
-		return window;
-	}
-	let scrollParent = getScrollParent(wrapper);
+    const line = wrapper.querySelector('.timeline-line-animation') || (el !== wrapper && el.querySelector && el.querySelector('.timeline-line-animation'));
+    if (!line) return null;
 
-	// QUICK SANITY: if scrollParent is an element, but it has 0 height or is same as wrapper offsetParent,
-	// fallback to window (some themes use weird layout or transform on container)
-	function shouldFallbackToWindow(rootEl) {
-		if (!rootEl || rootEl === window) return false;
-		try {
-			const rect = rootEl.getBoundingClientRect();
-			if (!rect || rect.height < 2) return true;
-			if (rootEl === document.body || rootEl === document.documentElement)
-				return true;
-		} catch (e) {
-			return true;
-		}
-		return false;
-	}
-	if (shouldFallbackToWindow(scrollParent)) {
-		log(
-			'fallback scrollParent => window (detected unsuitable element)',
-			scrollParent
-		);
-		scrollParent = window;
-	}
+    let scrollParent = getScrollParent(wrapper);
 
-	line.style.transform = 'scaleY(0)';
+    const shouldFallbackToWindow = (rootEl) => {
+        if (!rootEl || rootEl === window) return false;
+        try {
+            const r = rootEl.getBoundingClientRect();
+            if (!r || r.height < 2) return true;
+            if (rootEl === document.body || rootEl === document.documentElement) return true;
+        } catch (e) { return true; }
+        return false;
+    };
+    if (shouldFallbackToWindow(scrollParent)) {
+        log('fallback scrollParent => window (detected unsuitable element)', scrollParent);
+        scrollParent = window;
+    }
 
-	// state
-	let rafId = null;
-	let running = false;
-	let current = 0; // 0..1
-	let lastTarget = -1;
-	let resizeTimer = null;
+    // init visual state
+    line.style.transform = 'scaleY(0)';
 
-	// triggers for is-stuck classes
-	let triggers = Array.from(wrapper.querySelectorAll('.tl-trigger'));
+    // state
+    let rafId = null;
+    let running = false;
+    let current = 0;
+    let lastTarget = -1;
+    let resizeTimer = null;
 
-	// IntersectionObserver options (kept for other uses / debug)
-	const ioOptions = {
-		root: scrollParent === window ? null : scrollParent,
-		rootMargin: '-40% 0px -40% 0px',
-		threshold: 0,
-	};
+    // cache triggers and items (objects {el, mark})
+    let triggers = Array.from(wrapper.querySelectorAll('.tl-trigger'));
+    let items = Array.from(wrapper.querySelectorAll('li.timeline-item, .timeline-item'))
+        .map((it) => {
+            return {
+                el: it,
+                mark: it.querySelector('.tl-mark') || it.querySelector('.tl-trigger') || it
+            };
+        });
 
-	// IO callback: no longer toggles is-stuck here — only logs / updates meta if needed.
-	const ioCallback = (entries) => {
-		entries.forEach((entry) => {
-			const trigger = entry.target;
-			const parentBlock =
-				trigger.closest('li') ||
-				trigger.closest('.timeline-item') ||
-				trigger.closest('.wp-block') ||
-				trigger.closest('.elementor-widget');
-			if (!parentBlock) return;
+    // Intersection observer for debug/visibility (kept but lightweight)
+    let observer = null;
+    try {
+        const ioOptions = { root: scrollParent === window ? null : scrollParent, rootMargin: '-40% 0px -40% 0px', threshold: 0 };
+        observer = new IntersectionObserver((entries) => {
+            if (!DEBUG) return;
+            entries.forEach((entry) => {
+                const trg = entry.target;
+                const parentBlock = trg.closest('li') || trg.closest('.timeline-item') || trg.closest('.wp-block') || trg.closest('.elementor-widget');
+                if (!parentBlock) return;
+                try {
+                    console.log('[za-timeline][IO]', { isIntersecting: entry.isIntersecting, ratio: entry.intersectionRatio, triggerRect: trg.getBoundingClientRect(), parentBlock });
+                } catch (e) {}
+            });
+        }, ioOptions);
+    } catch (e) {
+        observer = null;
+        log('IO creation failed', e);
+    }
 
-			// debug-only info
-			if (DEBUG) {
-				try {
-					console.log('[za-timeline][IO]', {
-						isIntersecting: entry.isIntersecting,
-						ratio: entry.intersectionRatio,
-						targetRect: entry.boundingClientRect,
-						triggerRect: trigger.getBoundingClientRect(),
-						parentBlock: parentBlock,
-					});
-				} catch (e) {}
-			}
-		});
-	};
+    const observeTriggers = () => { if (!observer) return; for (let i = 0; i < triggers.length; i++) { try { observer.observe(triggers[i]); } catch (e) {} } };
+    const unobserveTriggers = () => { if (!observer) return; for (let i = 0; i < triggers.length; i++) { try { observer.unobserve(triggers[i]); } catch (e) {} } };
 
-	let observer;
-	try {
-		observer = new IntersectionObserver(ioCallback, ioOptions);
-	} catch (e) {
-		observer = null;
-		log('IntersectionObserver failed to construct', e);
-	}
+    // helper root middle
+    const getRootMiddle = () => {
+        if (scrollParent === window) return window.innerHeight / 2;
+        try {
+            const r = scrollParent.getBoundingClientRect();
+            return r.top + r.height / 2;
+        } catch (e) {
+            return window.innerHeight / 2;
+        }
+    };
 
-	const observeAllTriggers = () => {
-		if (!observer) return;
-		triggers.forEach((t) => {
-			try {
-				observer.observe(t);
-			} catch (e) {}
-		});
-	};
-	const unobserveAllTriggers = () => {
-		if (!observer) return;
-		triggers.forEach((t) => {
-			try {
-				observer.unobserve(t);
-			} catch (e) {}
-		});
-	};
+    let currentStuckEl = null;
 
-	// -------- new logic: determine "stuck" element by center distance --------
-	let currentStuckEl = null;
+    // main update: сравнение по видимому низа линии и центру mark
+    const EPS_ADD_PX = 6;
+    const EPS_REMOVE_PX = 10;
 
-	function getRootMiddle() {
-		if (scrollParent === window) {
-			return window.innerHeight / 2;
-		}
-		try {
-			const r = scrollParent.getBoundingClientRect();
-			return r.top + r.height / 2;
-		} catch (e) {
-			return window.innerHeight / 2;
-		}
-	}
+    function updateStuckByLine() {
+        if (!line || items.length === 0) return;
 
-	function updateStuckByCenter() {
-		const rootMiddle = getRootMiddle();
-		const items = Array.from(
-			wrapper.querySelectorAll('li.timeline-item, .timeline-item')
-		);
-		if (!items.length) return;
+        const lineRect = line.getBoundingClientRect();
+        const lineBottom = lineRect.top + lineRect.height;
+        const rootMiddle = getRootMiddle();
 
-		let best = null;
-		let bestDist = Infinity;
+        // find best (closest to center) once per frame
+        let best = null;
+        let bestDist = Infinity;
+        for (let i = 0; i < items.length; i++) {
+            const r = items[i].el.getBoundingClientRect();
+            const center = (r.top + r.bottom) / 2;
+            const d = Math.abs(center - rootMiddle);
+            if (d < bestDist) { bestDist = d; best = items[i].el; }
+        }
 
-		for (const it of items) {
-			const r = it.getBoundingClientRect();
+        // loop items, add/remove class only when needed
+        for (let i = 0; i < items.length; i++) {
+            const { el: it, mark } = items[i];
+            const markRect = mark.getBoundingClientRect();
+            const markCenter = (markRect.top + markRect.bottom) / 2;
+            const isCurrent = it === best;
+            const passed = markCenter <= lineBottom + EPS_ADD_PX;
+            const currently = it.classList.contains('is-stuck');
 
-			const trigger = it.querySelector('.tl-trigger');
-			const triggerRect = trigger ? trigger.getBoundingClientRect() : r;
+            if ((passed || isCurrent) && !currently) {
+                it.classList.add('is-stuck');
+            } else if (!passed && currently) {
+                if (markCenter > lineBottom + EPS_REMOVE_PX && !isCurrent) {
+                    it.classList.remove('is-stuck');
+                }
+            }
+        }
 
-			if (r.top <= rootMiddle && r.bottom >= rootMiddle) {
-				best = it;
-				bestDist = 0;
-				break;
-			}
+        if (best !== currentStuckEl) {
+            currentStuckEl = best;
+            if (DEBUG) console.log('[za-timeline][STUCK] best updated', { currentStuckEl, bestDist, lineBottom });
+        }
+    }
 
-			const itemCenter = (r.top + r.bottom) / 2;
-			const dist = Math.abs(itemCenter - rootMiddle);
-			if (dist < bestDist) {
-				bestDist = dist;
-				best = it;
-			}
-		}
+    // progress calc (kept identical)
+    function getTargetProgress() {
+        const rect = wrapper.getBoundingClientRect();
+        if (scrollParent === window) {
+            const middle = window.innerHeight / 2;
+            if (rect.top < middle && rect.bottom > 0) {
+                return Math.max(0, Math.min(1, (middle - rect.top) / rect.height));
+            }
+            return 0;
+        } else {
+            try {
+                const rootRect = scrollParent.getBoundingClientRect();
+                const rootMiddle = rootRect.top + rootRect.height / 2;
+                if (rect.top < rootMiddle && rect.bottom > rootRect.top) {
+                    return Math.max(0, Math.min(1, (rootMiddle - rect.top) / rect.height));
+                }
+            } catch (e) {
+                const middle = window.innerHeight / 2;
+                if (rect.top < middle && rect.bottom > 0) {
+                    return Math.max(0, Math.min(1, (middle - rect.top) / rect.height));
+                }
+            }
+            return 0;
+        }
+    }
 
-		for (const it of items) {
-			const r = it.getBoundingClientRect();
-			const trigger = it.querySelector('.tl-trigger');
-			const triggerRect = trigger ? trigger.getBoundingClientRect() : r;
+    // animation frame
+    function frame() {
+        rafId = null;
+        const target = getTargetProgress();
 
-			const passed = triggerRect.top <= rootMiddle;
-			const isCurrent = it === best;
+        if (target === lastTarget && Math.abs(current - target) < 0.0005) {
+            current = target;
+            line.style.transform = `scaleY(${current})`;
+            updateStuckByLine();
+            running = false;
+            return;
+        }
+        lastTarget = target;
 
-			if (passed || isCurrent) {
-				if (!it.classList.contains('is-stuck'))
-					it.classList.add('is-stuck');
-			} else {
-				if (it.classList.contains('is-stuck'))
-					it.classList.remove('is-stuck');
-			}
-		}
+        const LERP = 0.12;
+        current += (target - current) * LERP;
+        if (Math.abs(current - target) < 0.001) current = target;
+        line.style.transform = `scaleY(${current})`;
 
-		if (best !== currentStuckEl) {
-			currentStuckEl = best;
-			if (DEBUG) {
-				try {
-					console.log('[za-timeline][STUCK] best updated', {
-						currentStuckEl,
-						bestDist,
-					});
-				} catch (e) {}
-			}
-		}
-	}
-	// -------------------------------------------------------------------------
+        updateStuckByLine();
 
-	// compute progress (0..1)
-	function getTargetProgress() {
-		const rect = wrapper.getBoundingClientRect();
+        if (running) rafId = requestAnimationFrame(frame);
+        else if (Math.abs(current - target) > 0.0005) rafId = requestAnimationFrame(frame);
+    }
 
-		if (scrollParent === window) {
-			const middle = window.innerHeight / 2;
-			if (rect.top < middle && rect.bottom > 0) {
-				const progress = Math.min(1, (middle - rect.top) / rect.height);
-				return Math.max(0, progress);
-			}
-			return 0;
-		} else {
-			// when root is element, use its bounding rect
-			try {
-				const rootRect = scrollParent.getBoundingClientRect();
-				const rootMiddle = rootRect.top + rootRect.height / 2;
-				if (rect.top < rootMiddle && rect.bottom > rootRect.top) {
-					const progress = Math.min(
-						1,
-						(rootMiddle - rect.top) / rect.height
-					);
-					return Math.max(0, progress);
-				}
-			} catch (e) {
-				// if anything fails, fallback to window calculation
-				const middle = window.innerHeight / 2;
-				if (rect.top < middle && rect.bottom > 0) {
-					const progress = Math.min(
-						1,
-						(middle - rect.top) / rect.height
-					);
-					return Math.max(0, progress);
-				}
-			}
-			return 0;
-		}
-	}
+    function startLoop() {
+        if (running) return;
+        running = true;
+        lastTarget = -1;
+        if (!rafId) rafId = requestAnimationFrame(frame);
+    }
+    function stopLoop() {
+        running = false;
+        if (rafId) { cancelAnimationFrame(rafId); rafId = null; }
+    }
 
-	// animate frame
-	function frame() {
-		rafId = null;
-		const target = getTargetProgress();
+    function onScrollOrResize() {
+        startLoop();
+        clearTimeout(resizeTimer);
+        resizeTimer = setTimeout(() => stopLoop(), 700);
+    }
 
-		// Debug log of values to inspect behavior in Astra
-		if (DEBUG) {
-			try {
-				const r = wrapper.getBoundingClientRect();
-				const sp = scrollParent === window ? 'window' : scrollParent;
-				console.log('[za-timeline] frame', {
-					target,
-					current,
-					lastTarget,
-					rect: r,
-					scrollParent: sp,
-				});
-			} catch (e) {}
-		}
+    // observe triggers + visibility
+    if (triggers.length) observeTriggers();
+    let visObserver = null;
+    try {
+        visObserver = new IntersectionObserver((entries) => {
+            entries.forEach((entry) => {
+                if (entry.target !== wrapper) return;
+                if (entry.isIntersecting) startLoop(); else stopLoop();
+            });
+        }, { root: scrollParent === window ? null : scrollParent, threshold: 0 });
+        visObserver.observe(wrapper);
+    } catch (e) {
+        log('visObserver failed', e);
+        visObserver = null;
+    }
 
-		if (target === lastTarget && Math.abs(current - target) < 0.0005) {
-			current = target;
-			line.style.transform = `scaleY(${current})`;
-			// Ensure stuck state updated once even when not animating
-			updateStuckByCenter();
-			running = false;
-			return;
-		}
-		lastTarget = target;
+    // attach listeners (try once; fallback to window already handled)
+    try {
+        if (scrollParent === window) {
+            window.addEventListener('scroll', onScrollOrResize, { passive: true });
+            window.addEventListener('resize', onScrollOrResize);
+        } else {
+            scrollParent.addEventListener('scroll', onScrollOrResize, { passive: true });
+            window.addEventListener('resize', onScrollOrResize);
+        }
+    } catch (e) {
+        // fallback to window
+        window.addEventListener('scroll', onScrollOrResize, { passive: true });
+        window.addEventListener('resize', onScrollOrResize);
+        scrollParent = window;
+        log('fallback listeners => window', e);
+    }
 
-		const LERP = 0.12;
-		current += (target - current) * LERP;
+    // mutation observer: update cached triggers/items
+    const mo = new MutationObserver((mutations) => {
+        let changed = false;
+        for (let i = 0; i < mutations.length; i++) {
+            const m = mutations[i];
+            if (m.type === 'childList' && (m.addedNodes.length || m.removedNodes.length)) { changed = true; break; }
+        }
+        if (!changed) return;
+        unobserveTriggers();
+        triggers = Array.from(wrapper.querySelectorAll('.tl-trigger'));
+        items = Array.from(wrapper.querySelectorAll('li.timeline-item, .timeline-item')).map((it) => ({ el: it, mark: it.querySelector('.tl-mark') || it.querySelector('.tl-trigger') || it }));
+        if (triggers.length) observeTriggers();
+        updateStuckByLine();
+        startLoop();
+    });
+    mo.observe(wrapper, { childList: true, subtree: true });
 
-		if (Math.abs(current - target) < 0.001) current = target;
-		line.style.transform = `scaleY(${current})`;
+    // initial start if visible
+    (function startIfVisible() {
+        const rect = wrapper.getBoundingClientRect();
+        const inViewport = rect.bottom > 0 && rect.top < (window.innerHeight || document.documentElement.clientHeight);
+        if (inViewport) { updateStuckByLine(); startLoop(); }
+    })();
 
-		// update is-stuck every frame (cheap: only modifies DOM when element changes)
-		updateStuckByCenter();
-
-		if (running) {
-			rafId = requestAnimationFrame(frame);
-		} else {
-			if (Math.abs(current - target) > 0.0005) {
-				rafId = requestAnimationFrame(frame);
-			}
-		}
-	}
-
-	function startLoop() {
-		if (running) return;
-		running = true;
-		lastTarget = -1;
-		if (!rafId) rafId = requestAnimationFrame(frame);
-	}
-
-	function stopLoop() {
-		running = false;
-		if (rafId) {
-			cancelAnimationFrame(rafId);
-			rafId = null;
-		}
-	}
-
-	function onScrollOrResize() {
-		startLoop();
-		clearTimeout(resizeTimer);
-		resizeTimer = setTimeout(() => stopLoop(), 700);
-	}
-
-	// observe triggers and visibility
-	if (triggers.length) observeAllTriggers();
-
-	const visObserver = (function () {
-		try {
-			return new IntersectionObserver(
-				(entries) => {
-					entries.forEach((entry) => {
-						if (entry.target !== wrapper) return;
-						if (entry.isIntersecting) startLoop();
-						else stopLoop();
-					});
-				},
-				{
-					root: scrollParent === window ? null : scrollParent,
-					threshold: 0,
-				}
-			);
-		} catch (e) {
-			log('visObserver construction failed', e);
-			return null;
-		}
-	})();
-	try {
-		if (visObserver) visObserver.observe(wrapper);
-	} catch (e) {}
-
-	// attach listeners
-	try {
-		if (scrollParent === window) {
-			window.addEventListener('scroll', onScrollOrResize, {
-				passive: true,
-			});
-			window.addEventListener('resize', onScrollOrResize);
-		} else {
-			scrollParent.addEventListener('scroll', onScrollOrResize, {
-				passive: true,
-			});
-			window.addEventListener('resize', onScrollOrResize);
-		}
-	} catch (e) {
-		// If adding listeners to custom scrollParent fails, fallback to window listeners
-		try {
-			window.addEventListener('scroll', onScrollOrResize, {
-				passive: true,
-			});
-			window.addEventListener('resize', onScrollOrResize);
-			scrollParent = window;
-			log(
-				'fallback: using window listeners due to failure adding to scrollParent',
-				e
-			);
-		} catch (ee) {}
-	}
-
-	// MutationObserver for dynamic content
-	const mo = new MutationObserver((mutations) => {
-		let changed = false;
-		for (const m of mutations) {
-			if (
-				m.type === 'childList' &&
-				(m.addedNodes.length || m.removedNodes.length)
-			) {
-				changed = true;
-				break;
-			}
-		}
-		if (!changed) return;
-		try {
-			unobserveAllTriggers();
-		} catch (e) {}
-		triggers = Array.from(wrapper.querySelectorAll('.tl-trigger'));
-		if (triggers.length) observeAllTriggers();
-		// recalc stuck candidate & animate once
-		updateStuckByCenter();
-		startLoop();
-	});
-	mo.observe(wrapper, { childList: true, subtree: true });
-
-	// start if visible initially
-	(function startIfVisible() {
-		const rect = wrapper.getBoundingClientRect();
-		const inViewport =
-			rect.bottom > 0 &&
-			rect.top <
-				(window.innerHeight || document.documentElement.clientHeight);
-		if (inViewport) {
-			// initial selection
-			updateStuckByCenter();
-			startLoop();
-		}
-	})();
-
-	// destroy
-	function destroy() {
-		stopLoop();
-		try {
-			if (observer) observer.disconnect();
-		} catch (e) {}
-		try {
-			mo.disconnect();
-		} catch (e) {}
-		try {
-			if (visObserver) visObserver.disconnect();
-		} catch (e) {}
-		try {
-			if (scrollParent === window) {
-				window.removeEventListener('scroll', onScrollOrResize, {
-					passive: true,
-				});
-				window.removeEventListener('resize', onScrollOrResize);
-			} else {
-				scrollParent.removeEventListener('scroll', onScrollOrResize, {
-					passive: true,
-				});
-				window.removeEventListener('resize', onScrollOrResize);
-			}
-		} catch (e) {}
-		try {
-			// remove stuck class if present
-			if (currentStuckEl) currentStuckEl.classList.remove('is-stuck');
-		} catch (e) {}
-		try {
-			delete el.__zaTimelineDestroy;
-		} catch (e) {
-			el.__zaTimelineDestroy = undefined;
-		}
-	}
-
-	el.__zaTimelineDestroy = destroy;
-	return destroy;
+    // destroy
+    function destroy() {
+        stopLoop();
+        if (observer) try { observer.disconnect(); } catch (e) {}
+        if (visObserver) try { visObserver.disconnect(); } catch (e) {}
+        try { mo.disconnect(); } catch (e) {}
+        try {
+            if (scrollParent === window) {
+                window.removeEventListener('scroll', onScrollOrResize, { passive: true });
+                window.removeEventListener('resize', onScrollOrResize);
+            } else {
+                scrollParent.removeEventListener('scroll', onScrollOrResize, { passive: true });
+                window.removeEventListener('resize', onScrollOrResize);
+            }
+        } catch (e) {}
+        // remove stuck class if present
+        try { if (currentStuckEl) currentStuckEl.classList.remove('is-stuck'); } catch (e) {}
+        try { delete el.__zaTimelineDestroy; } catch (e) { el.__zaTimelineDestroy = undefined; }
+    }
+    el.__zaTimelineDestroy = destroy;
+    return destroy;
 }
 
-// init all on root
 export function initAllWidgets(root = document) {
-	const widgets = Array.from(
-		root.querySelectorAll(
-			'.wp-block-za-timeline-full-widget, .timeline-wrapper, .timeline'
-		)
-	);
-	const destroyers = widgets
-		.map((el) => {
-			try {
-				return initTimelineAnimation(el);
-			} catch (e) {
-				console.error('initTimelineAnimation error', e);
-				return null;
-			}
-		})
-		.filter(Boolean);
-
-	return function destroyAll() {
-		destroyers.forEach((d) => {
-			try {
-				d && d();
-			} catch (e) {}
-		});
-	};
+    const widgets = Array.from(root.querySelectorAll('.wp-block-za-timeline-full-widget, .timeline-wrapper, .timeline'));
+    const destroyers = widgets.map((w) => { try { return initTimelineAnimation(w); } catch (e) { console.error('initTimelineAnimation error', e); return null; } }).filter(Boolean);
+    return function destroyAll() { for (let i = 0; i < destroyers.length; i++) { try { destroyers[i] && destroyers[i](); } catch (e) {} } };
 }
 
-// Auto-expose on window for legacy usage
 if (typeof window !== 'undefined') {
-	if (!window.zaTimeline) window.zaTimeline = {};
-	window.zaTimeline.initTimelineAnimation = initTimelineAnimation;
-	window.zaTimeline.initAllWidgets = initAllWidgets;
+    if (!window.zaTimeline) window.zaTimeline = {};
+    window.zaTimeline.initTimelineAnimation = initTimelineAnimation;
+    window.zaTimeline.initAllWidgets = initAllWidgets;
 }
