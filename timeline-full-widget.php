@@ -68,6 +68,9 @@ final class TimelinePlugin {
         add_action( 'enqueue_block_editor_assets', [ $this, 'enqueue_block_editor_assets' ] );
         add_action( 'wp_enqueue_scripts', [ $this, 'maybe_enqueue_frontend_assets' ] );
 
+        add_action( 'admin_head', [ $this, 'maybe_register_classic_mce_late' ] );
+
+
         // always make core styles available (front + admin)
         add_action( 'wp_enqueue_scripts', [ $this, 'enqueue_core_style_everywhere' ] );
         add_action( 'admin_enqueue_scripts', [ $this, 'enqueue_core_style_everywhere' ] );
@@ -280,6 +283,61 @@ final class TimelinePlugin {
         if ( wp_style_is( 'za-timeline-block-editor-style', 'registered' ) ) {
             wp_enqueue_style( 'za-timeline-block-editor-style' );
         }
+    }
+
+
+    // register Classic Editor Button in admin redactor TinyMCE
+    private bool $mce_registered = false;
+    public function maybe_register_classic_mce_late(): void {
+
+        if ( ! current_user_can( 'edit_posts' ) && ! current_user_can( 'edit_pages' ) ) {
+            return;
+        }
+
+        $rich = get_user_option( 'rich_editing' );
+        if ( $rich !== 'true' && $rich !== true ) {
+            return;
+        }
+
+        $screen = function_exists( 'get_current_screen' ) ? get_current_screen() : null;
+        if ( $screen ) {
+            $allowed_bases = [ 'post', 'post-new', 'page', 'edit', 'dashboard', 'edit-tags', 'term' ];
+            if ( ! in_array( $screen->base, $allowed_bases, true ) ) {
+                return;
+            }
+        }
+
+        if ( $this->mce_registered ) {
+            return;
+        }
+        $this->mce_registered = true;
+
+        $plugin_url = esc_url_raw( TIMELINE_ELEMENTOR_URL . 'assets/js/adapters/classic-adapters.js' );
+
+
+        add_filter( 'mce_external_plugins', function( $plugins ) use ( $plugin_url ) {
+            $plugins['za_timeline_button'] = $plugin_url;
+            return $plugins;
+        } );
+
+        add_filter( 'mce_buttons', function( $buttons ) {
+            $buttons[] = 'za_timeline_button';
+            return $buttons;
+        } );
+
+        /// add css to editor
+        add_filter( 'tiny_mce_before_init', function( $init ) {
+            $css_url = TIMELINE_ELEMENTOR_URL . 'assets/css/core/style.css';
+
+            if ( ! empty( $init['content_css'] ) ) {
+                $init['content_css'] .= ',' . esc_url_raw( $css_url );
+            } else {
+                $init['content_css'] = esc_url_raw( $css_url );
+            }
+
+            return $init;
+        } );
+
     }
 
     /**
