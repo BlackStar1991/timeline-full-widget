@@ -107,7 +107,6 @@ export function initTimelineAnimation(scopeEl) {
 
     let currentStuckEl = null;
 
-    // main update: сравнение по видимому низа линии и центру mark
     const EPS_ADD_PX = 6;
     const EPS_REMOVE_PX = 10;
 
@@ -270,6 +269,9 @@ export function initTimelineAnimation(scopeEl) {
     });
     mo.observe(wrapper, { childList: true, subtree: true });
 
+
+    console.debug('[ZA] animation.js executed in iframe, zaTimeline set?', !!window.zaTimeline);
+
     // initial start if visible
     (function startIfVisible() {
         const rect = wrapper.getBoundingClientRect();
@@ -300,14 +302,32 @@ export function initTimelineAnimation(scopeEl) {
     return destroy;
 }
 
-export function initAllWidgets(root = document) {
-    const widgets = Array.from(root.querySelectorAll('.wp-block-za-timeline-full-widget, .timeline-wrapper, .timeline'));
-    const destroyers = widgets.map((w) => { try { return initTimelineAnimation(w); } catch (e) { console.error('initTimelineAnimation error', e); return null; } }).filter(Boolean);
-    return function destroyAll() { for (let i = 0; i < destroyers.length; i++) { try { destroyers[i] && destroyers[i](); } catch (e) {} } };
+/**
+ * Initialize all timeline widgets in a document
+ */
+export function initAllWidgets(doc = document) {
+    console.log('[ZA animation.js] initAllWidgets called', doc);
+
+    const wrappers = doc.querySelectorAll('.timeline-wrapper');
+    console.log('[ZA animation.js] Found wrappers:', wrappers.length);
+
+    wrappers.forEach((wrapper, index) => {
+        console.log('[ZA animation.js] Initializing wrapper #' + index, wrapper);
+        const destroy = initTimelineAnimation(wrapper);
+        console.log('[ZA animation.js] Wrapper #' + index + ' initialized, destroy fn:', typeof destroy);
+    });
 }
 
+// Также выставляем в глобальный объект (для совместимости)
 if (typeof window !== 'undefined') {
-    if (!window.zaTimeline) window.zaTimeline = {};
+    window.zaTimeline = window.zaTimeline || {};
     window.zaTimeline.initTimelineAnimation = initTimelineAnimation;
     window.zaTimeline.initAllWidgets = initAllWidgets;
+    console.log('[ZA animation.js] Global zaTimeline object created');
 }
+
+// Дополнительный лог для проверки, что модуль загружен
+console.log('[ZA animation.js] Module loaded, exports:', {
+    initTimelineAnimation: typeof initTimelineAnimation,
+    initAllWidgets: typeof initAllWidgets
+});
