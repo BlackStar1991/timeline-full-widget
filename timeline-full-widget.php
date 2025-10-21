@@ -194,20 +194,6 @@ final class TimelinePlugin
         }
 
 
-        $classic_loader = $base_path . 'adapters/classic-adapter-loader.js';
-        if (file_exists($classic_loader)) {
-            $ver = $use_filemtime ? filemtime($classic_loader) : $ver_base;
-            wp_register_script(
-                'za-timeline-classic-adapter',
-                $base_url . 'adapters/classic-adapter-loader.js',
-                [], // no deps
-                $ver,
-                false
-            );
-
-        }
-
-
 
         /**
          * NEW: register block build assets (script + styles)
@@ -319,7 +305,6 @@ final class TimelinePlugin
     // register Classic Editor Button in admin redactor TinyMCE
     public function maybe_register_classic_mce_late(): void
     {
-
         if (!current_user_can('edit_posts') && !current_user_can('edit_pages')) {
             return;
         }
@@ -337,31 +322,74 @@ final class TimelinePlugin
             }
         }
 
+        // Если текущий пост/экран использует блочный редактор — не регистрируем classic MCE hooks.
+        // пытаемся получить post id из нескольких источников
+        $post_id = 0;
+        if ($screen && !empty($screen->post_id)) {
+            $post_id = (int)$screen->post_id;
+        } elseif (!empty($_GET['post'])) {
+            $post_id = (int)$_GET['post'];
+        } elseif (function_exists('get_the_ID') && get_the_ID()) {
+            $post_id = (int)get_the_ID();
+        } else {
+            $post_id = (int)get_queried_object_id();
+        }
+
+        if ($post_id && function_exists('use_block_editor_for_post')) {
+            try {
+                if (use_block_editor_for_post(get_post($post_id))) {
+                    // пост использует блочный редактор — пропускаем
+                    return;
+                }
+            } catch (\Throwable $e) {
+                // в редких случаях get_post может вернуть null — просто игнорируем и продолжаем
+            }
+        }
+
         if ($this->mce_registered) {
             return;
         }
         $this->mce_registered = true;
 
-        // Получаем URL из зарегистрированного скрипта
-        if (!wp_script_is('za-timeline-classic-adapter', 'registered')) {
-            return; // если скрипт не зарегистрирован, выходим
+        // Формируем путь к файлу classic-adapter-loader.js прямо в плагине
+        $classic_path = TIMELINE_ELEMENTOR_PATH . 'assets/js/adapters/classic-adapter-loader.js';
+        $classic_url  = TIMELINE_ELEMENTOR_URL  . 'assets/js/adapters/classic-adapter-loader.js';
+
+        if (!file_exists($classic_path)) {
+            // нет файла — ничего не делаем
+            return;
         }
 
-        $plugin_url = wp_scripts()->registered['za-timeline-classic-adapter']->src;
+        $classic_loader_rel = 'assets/js/adapters/classic-adapter-loader.js';
+        $classic_loader_url = plugins_url( $classic_loader_rel, __FILE__ ); // absolute URL to loader
 
-        // 1) Tell TinyMCE to load plugin inside iframe
-        add_filter('mce_external_plugins', function ($plugins) use ($plugin_url) {
-            $plugins['za_timeline_button'] = $plugin_url;
+// base JS folder and animation.js absolute URL (used by the iframe script)
+        $base_js_url   = plugins_url( 'assets/js/', __FILE__ ); // e.g. https://site/wp-content/plugins/timeline-full-widget/assets/js/
+        $animation_url = plugins_url( 'assets/js/core/animation.js', __FILE__ ); // e.g. https://site/.../core/animation.js
+
+// build URL with query args that iframe can read via document.currentScript.src
+        $classic_url_with_q = add_query_arg(
+            [
+                'za_base_js' => rawurlencode( $base_js_url ),
+                'za_anim'    => rawurlencode( $animation_url ),
+                // optionally add debug flag: 'za_debug' => '1'
+            ],
+            $classic_loader_url
+        );
+
+// 1) Tell TinyMCE to load plugin inside iframe using that URL (with query params)
+        add_filter('mce_external_plugins', function ($plugins) use ($classic_url_with_q) {
+            $plugins['za_timeline_button'] = $classic_url_with_q;
             return $plugins;
         });
 
-        // 2) Add button name to TinyMCE toolbar
+// 2) Add button name to TinyMCE toolbar (unchanged)
         add_filter('mce_buttons', function ($buttons) {
             $buttons[] = 'za_timeline_button';
             return $buttons;
         });
 
-        // 3) Add content CSS into iframe
+// 3) Add content CSS into iframe (unchanged)
         add_filter('tiny_mce_before_init', function ($init) {
             $css_url = TIMELINE_ELEMENTOR_URL . 'assets/css/core/style.css';
             if (!empty($init['content_css'])) {
@@ -371,13 +399,7 @@ final class TimelinePlugin
             }
             return $init;
         });
-
-
-
     }
-
-
-
 
     public function enqueue_classic_adapter_admin(): void
     {
@@ -396,8 +418,34 @@ final class TimelinePlugin
             }
         }
 
+        // получить post_id безопасно
+        $post_id = 0;
+        if ($screen && !empty($screen->post_id)) {
+            $post_id = (int)$screen->post_id;
+        } elseif (!empty($_GET['post'])) {
+            $post_id = (int)$_GET['post'];
+        } elseif (function_exists('get_the_ID') && get_the_ID()) {
+            $post_id = (int)get_the_ID();
+        } else {
+            $post_id = (int)get_queried_object_id();
+        }
+
+        // если пост использует блочный редактор — ничего не подключаем
+        if ($post_id && function_exists('use_block_editor_for_post')) {
+            try {
+                if (use_block_editor_for_post(get_post($post_id))) {
+                    return;
+                }
+            } catch (\Throwable $e) {
+                // ignore
+            }
+        }
 
         $base_js_url = TIMELINE_ELEMENTOR_URL . 'assets/js/';
+        $classic_path = TIMELINE_ELEMENTOR_PATH . 'assets/js/adapters/classic-adapter-loader.js';
+        $classic_url  = $base_js_url . 'adapters/classic-adapter-loader.js';
+
+        // prepare config and print inline before script (attach to classic adapter when we enqueue it)
         $config = [
             'baseJsUrl' => esc_url_raw($base_js_url),
             'animationUrl' => esc_url_raw($base_js_url . 'core/animation.js'),
@@ -405,8 +453,25 @@ final class TimelinePlugin
         ];
         $json = wp_json_encode($config);
 
-        wp_add_inline_script('jquery', "window.zaTimelineConfig = {$json};", 'before');
+        // register + enqueue only when file exists
+        if (file_exists($classic_path)) {
+            $ver = (defined('WP_DEBUG') && WP_DEBUG) ? filemtime($classic_path) : TIMELINE_VERSION;
 
+            // Register the loader script (non-module, executed in admin top frame)
+            wp_register_script(
+                'za-timeline-classic-adapter',
+                $classic_url,
+                [], // no deps
+                $ver,
+                false // in header (TinyMCE iframe injection expects it available early)
+            );
+
+            // Add inline config *before* our script so it is available to it
+            wp_add_inline_script('za-timeline-classic-adapter', "window.zaTimelineConfig = {$json};", 'before');
+
+            // Enqueue only in admin where classic editor is used (this function already checks)
+            wp_enqueue_script('za-timeline-classic-adapter');
+        }
     }
 
 

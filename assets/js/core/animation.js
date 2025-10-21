@@ -1,9 +1,6 @@
-/* animation.js — ZA timeline
-   Поддержка: внутри iframe (если родитель доступен) и вне iframe.
-   Оптимизации: минимальные DOM reads/locks, rAF loop только при необходимости.
-*/
+/* animation.js — ZA timeline */
 
-const DEBUG = true;
+const DEBUG = false;
 function log(...args) {
     if (!DEBUG) return;
     try { console.log('[za-timeline]', ...args); } catch (e) {}
@@ -60,7 +57,6 @@ export function initTimelineAnimation(scopeEl) {
         scrollParent = window;
     }
 
-    // Проверяем, находимся ли мы внутри iframe и доступен ли parent
     const isInIframe = window.self !== window.top;
     let parentWindow = null;
     try {
@@ -213,11 +209,6 @@ export function initTimelineAnimation(scopeEl) {
                     it.classList.remove('is-stuck');
                 }
             }
-        }
-
-        if (best !== currentStuckEl) {
-            currentStuckEl = best;
-            if (DEBUG) console.log('[za-timeline][STUCK] best updated', { currentStuckEl, bestDist, lineBottom });
         }
     }
 
@@ -423,6 +414,7 @@ export function initTimelineAnimation(scopeEl) {
     el.__zaTimelineDestroy = destroy;
     return destroy;
 }
+
 
 /**
  * Initialize all timeline widgets in a document
