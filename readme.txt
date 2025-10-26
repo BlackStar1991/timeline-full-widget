@@ -45,6 +45,7 @@ Yes, but then the styles for the timeline may shift. To correct them, you will n
 == Changelog ==
 = 1.2.0 =
 * Add a Timeline Block for the classic WordPress editor.
+* Corrected styles for the timeline block.
 
 = 1.1.0 =
 * Bug fixes.
