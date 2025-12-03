@@ -1,6 +1,6 @@
 {
 	"name": "timeline-full-widget",
-	"version": "1.5.0",
+	"version": "1.2.0",
 	"description": "A versatile Timeline plugin for Elementor and Gutenberg WordPress themes — add beautiful Timelines anywhere!",
 	"homepage": "https://github.com/BlackStar1991/timeline-full-widget#readme",
 	"bugs": {
@@ -34,7 +34,7 @@
 		"@wordpress/data": "^10.9.0",
 		"@wordpress/eslint-plugin": "^22.0.0",
 		"@wordpress/prettier-config": "^4.30.0",
-		"@wordpress/scripts": "^30.26.0",
+		"@wordpress/scripts": "^19.2.4",
 		"@wordpress/stylelint-config": "^23.22.0",
 		"cssnano": "^7.1.1",
 		"eslint-config-prettier": "^10.1.8",

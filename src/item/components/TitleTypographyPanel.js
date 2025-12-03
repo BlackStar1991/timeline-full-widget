@@ -58,7 +58,8 @@ export default function TitleTypographyPanel({ attrs = {}, setAttributes }) {
 					{ label: '900', value: '900' },
 				]}
 				onChange={(value) => setAttributes({ titleFontWeight: value })}
-			/>
+                __next40pxDefaultSize={true}
+            />
 
 			<FontFamilySelect
 				value={titleFontFamily}
@@ -73,6 +74,7 @@ export default function TitleTypographyPanel({ attrs = {}, setAttributes }) {
 				}
 				min={0}
 				max={100}
+                __nextHasNoMarginBottom={true}
 			/>
 			<RangeControl
 				label={__('Margin Bottom (px)', 'timeline-full-widget')}
@@ -82,6 +84,7 @@ export default function TitleTypographyPanel({ attrs = {}, setAttributes }) {
 				}
 				min={0}
 				max={100}
+                __nextHasNoMarginBottom={true}
 			/>
 			<RangeControl
 				label={__('Title Line Height (px)', 'timeline-full-widget')}
@@ -89,6 +92,7 @@ export default function TitleTypographyPanel({ attrs = {}, setAttributes }) {
 				onChange={(value) =>
 					setAttributes({ titleLineHeight: String(value) })
 				}
+                __nextHasNoMarginBottom={true}
 			/>
 		</PanelBody>
 	);

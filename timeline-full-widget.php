@@ -1,5 +1,4 @@
 <?php
-
 /**
  * Plugin Name: Timeline Full Widget
  * Description: A powerful and flexible Timeline plugin compatible with Elementor, Gutenberg, and Classic WordPress themes. Easily add beautiful timelines anywhere!
@@ -14,140 +13,140 @@
  * Elementor tested up to: 3.31.4
  */
 
-if (!defined('ABSPATH')) {
+if ( ! defined( 'ABSPATH' ) ) {
     exit;
 }
 
-if (!defined('TIMELINE_ELEMENTOR_URL')) {
-    define('TIMELINE_ELEMENTOR_URL', plugin_dir_url(__FILE__));
+if ( ! defined( 'TIMELINE_ELEMENTOR_URL' ) ) {
+    define( 'TIMELINE_ELEMENTOR_URL', plugin_dir_url( __FILE__ ) );
 }
-if (!defined('TIMELINE_ELEMENTOR_PATH')) {
-    define('TIMELINE_ELEMENTOR_PATH', plugin_dir_path(__FILE__));
+if ( ! defined( 'TIMELINE_ELEMENTOR_PATH' ) ) {
+    define( 'TIMELINE_ELEMENTOR_PATH', plugin_dir_path( __FILE__ ) );
 }
 
-
-if (!defined('TIMELINE_VERSION')) {
+if ( ! defined( 'TIMELINE_VERSION' ) ) {
     $version = '1.2.0';
 
-    if (function_exists('get_file_data')) {
-        $data = get_file_data(__FILE__, ['Version' => 'Version']);
-        if (!empty($data['Version'])) {
+    if ( function_exists( 'get_file_data' ) ) {
+        $data = get_file_data( __FILE__, [ 'Version' => 'Version' ] );
+        if ( ! empty( $data['Version'] ) ) {
             $version = $data['Version'];
         }
     } else {
-
-        $file_contents = @file_get_contents(__FILE__);
-        if ($file_contents && preg_match('/^\s*\*\s*Version:\s*(.+)$/mi', $file_contents, $m)) {
-            $version = trim($m[1]);
+        $file_contents = @file_get_contents( __FILE__ );
+        if ( $file_contents && preg_match( '/^\s*\*\s*Version:\s*(.+)$/mi', $file_contents, $m ) ) {
+            $version = trim( $m[1] );
         }
     }
-    define('TIMELINE_VERSION', $version);
+    define( 'TIMELINE_VERSION', $version );
 }
 
-
-final class TimelinePlugin
-{
+final class TimelinePlugin {
 
     private static $instance = null;
 
-    public static function get_instance(): TimelinePlugin
-    {
-        if (null === self::$instance) {
+    public static function get_instance(): TimelinePlugin {
+        if ( null === self::$instance ) {
             self::$instance = new self();
         }
         return self::$instance;
     }
 
-    public function init(): void
-    {
-        add_action('init', [$this, 'register_assets']);
+    public function init(): void {
+        // Registering shared assets (js for Elementor/Gutenberg, core script)
+        add_action( 'init', [ $this, 'register_assets' ] );
 
-        add_action('elementor/widgets/widgets_registered', [$this, 'widgets_registered']);
-        add_action('elementor/editor/after_enqueue_scripts', [$this, 'enqueue_elementor_editor_assets']);
+        // Elementor
+        add_action( 'elementor/widgets/widgets_registered', [ $this, 'widgets_registered' ] );
+        add_action( 'elementor/editor/after_enqueue_scripts', [ $this, 'enqueue_elementor_editor_assets' ] );
 
-        add_action('init', [$this, 'register_gutenberg_block']);
-        add_action('enqueue_block_editor_assets', [$this, 'enqueue_block_editor_assets']);
-        add_action('wp_enqueue_scripts', [$this, 'maybe_enqueue_frontend_assets']);
+        // Gutenberg (via block.json)
+        add_action( 'init', [ $this, 'register_gutenberg_block' ] );
 
-        add_action('admin_init', [$this, 'maybe_register_classic_mce_late']);
-        add_action('admin_enqueue_scripts', [$this, 'enqueue_classic_adapter_admin']);
+        // Frontend: only include animation scripts if the block is on the page
+        add_action( 'wp_enqueue_scripts', [ $this, 'maybe_enqueue_frontend_assets' ] );
 
-        // always make core styles available (front + admin)
-        add_action('wp_enqueue_scripts', [$this, 'enqueue_core_style_everywhere']);
-        add_action('admin_enqueue_scripts', [$this, 'enqueue_core_style_everywhere']);
+        // Classic Editor (TinyMCE button)
+        add_action( 'admin_init', [ $this, 'maybe_register_classic_mce_late' ] );
+        add_action( 'admin_enqueue_scripts', [ $this, 'enqueue_classic_adapter_admin' ] );
 
-        add_filter('script_loader_tag', [$this, 'add_module_type_attribute'], 10, 3);
+        // Core styles (both in the admin panel and on the front end)
+        add_action( 'wp_enqueue_scripts', [ $this, 'enqueue_core_style_everywhere' ] );
+        add_action( 'admin_enqueue_scripts', [ $this, 'enqueue_core_style_everywhere' ] );
+
+        // Module type for the required scripts
+        add_filter( 'script_loader_tag', [ $this, 'add_module_type_attribute' ], 10, 3 );
     }
 
-    public function enqueue_core_style_everywhere(): void
-    {
-        if (wp_style_is('timeline-core-style', 'registered')) {
-            wp_enqueue_style('timeline-core-style');
+    /**
+     * Global core styles (for all environments).
+     */
+    public function enqueue_core_style_everywhere(): void {
+        if ( wp_style_is( 'timeline-core-style', 'registered' ) ) {
+            wp_enqueue_style( 'timeline-core-style' );
             return;
         }
 
-
         $style_path = TIMELINE_ELEMENTOR_PATH . 'assets/css/core/style.css';
-        if (file_exists($style_path)) {
-            $ver = (defined('WP_DEBUG') && WP_DEBUG) ? filemtime($style_path) : TIMELINE_VERSION;
+        if ( file_exists( $style_path ) ) {
+            $ver = ( defined( 'WP_DEBUG' ) && WP_DEBUG ) ? filemtime( $style_path ) : TIMELINE_VERSION;
             wp_register_style(
                 'timeline-core-style',
                 TIMELINE_ELEMENTOR_URL . 'assets/css/core/style.css',
                 [],
                 $ver
             );
-            wp_enqueue_style('timeline-core-style');
+            wp_enqueue_style( 'timeline-core-style' );
         }
     }
 
-    public function add_module_type_attribute($tag, $handle, $src)
-    {
+    public function add_module_type_attribute( $tag, $handle, $src ) {
         $module_handles = [
             'za-timeline-elementor',
             'za-timeline-gutenberg',
             'za-timeline-core',
             'za-timeline-classic-adapter',
         ];
-        if (in_array($handle, $module_handles, true)) {
-            if (false !== strpos($tag, 'type="module"')) {
+
+        if ( in_array( $handle, $module_handles, true ) ) {
+            if ( false !== strpos( $tag, 'type="module"' ) ) {
                 return $tag;
             }
-            return '<script type="module" src="' . esc_url($src) . '"></script>';
+            return '<script type="module" src="' . esc_url( $src ) . '"></script>';
         }
+
         return $tag;
     }
 
-    public function register_assets(): void
-    {
-        $base_path = TIMELINE_ELEMENTOR_PATH . 'assets/js/';
-        $base_url = TIMELINE_ELEMENTOR_URL . 'assets/js/';
+    /**
+     * Register JS assets (Elementor/Gutenberg adapters + core animation).
+     * * No need to register build/index.js and the CSS block—block.json now handles this.
+     */
+    public function register_assets(): void {
+        $base_path   = TIMELINE_ELEMENTOR_PATH . 'assets/js/';
+        $base_url    = TIMELINE_ELEMENTOR_URL . 'assets/js/';
+        $ver_base    = TIMELINE_VERSION;
+        $use_filemtime = defined( 'WP_DEBUG' ) && WP_DEBUG === true;
 
-        $ver_base = TIMELINE_VERSION;
-        $use_filemtime = defined('WP_DEBUG') && WP_DEBUG === true;
-
-
+        // Elementor media preview helper
         $preview = TIMELINE_ELEMENTOR_PATH . 'assets/elementor/elementor-media-preview.js';
-        if (file_exists($preview)) {
-            $ver = $use_filemtime ? filemtime($preview) : $ver_base;
-            // register preview as a normal script (depends on jQuery)
+        if ( file_exists( $preview ) ) {
+            $ver = $use_filemtime ? filemtime( $preview ) : $ver_base;
             wp_register_script(
                 'za-elementor-media-preview',
                 TIMELINE_ELEMENTOR_URL . 'assets/elementor/elementor-media-preview.js',
-                ['jquery'],
+                [ 'jquery' ],
                 $ver,
                 true
             );
-            // Note: do NOT wp_enqueue_script here
         }
 
-        // ELEMENTOR ADAPTER (module) — make it depend on preview helper
+        // Elementor adapter (module)
         $elementor_adapter = $base_path . 'adapters/elementor-adapter.js';
-        if (file_exists($elementor_adapter)) {
-            $ver = $use_filemtime ? filemtime($elementor_adapter) : $ver_base;
-
-            // set dependency: if preview helper is registered, include it; otherwise no dependency
+        if ( file_exists( $elementor_adapter ) ) {
+            $ver  = $use_filemtime ? filemtime( $elementor_adapter ) : $ver_base;
             $deps = [];
-            if (wp_script_is('za-elementor-media-preview', 'registered')) {
+            if ( wp_script_is( 'za-elementor-media-preview', 'registered' ) ) {
                 $deps[] = 'za-elementor-media-preview';
             }
 
@@ -158,13 +157,13 @@ final class TimelinePlugin
                 $ver,
                 true
             );
-            wp_script_add_data('za-timeline-elementor', 'type', 'module');
+            wp_script_add_data( 'za-timeline-elementor', 'type', 'module' );
         }
 
-        // GUTENBERG ADAPTER (module)
+        // Gutenberg adapter
         $gutenberg_adapter = $base_path . 'adapters/gutenberg-adapter.js';
-        if (file_exists($gutenberg_adapter)) {
-            $ver = $use_filemtime ? filemtime($gutenberg_adapter) : $ver_base;
+        if ( file_exists( $gutenberg_adapter ) ) {
+            $ver = $use_filemtime ? filemtime( $gutenberg_adapter ) : $ver_base;
             wp_register_script(
                 'za-timeline-gutenberg',
                 $base_url . 'adapters/gutenberg-adapter.js',
@@ -172,17 +171,13 @@ final class TimelinePlugin
                 $ver,
                 true
             );
-            wp_script_add_data('za-timeline-gutenberg', 'type', 'module');
+            wp_script_add_data( 'za-timeline-gutenberg', 'type', 'module' );
         }
 
-
-
-
-
-        // CORE
+        // Core animation
         $core_anim = $base_path . 'core/animation.js';
-        if (file_exists($core_anim)) {
-            $ver = $use_filemtime ? filemtime($core_anim) : $ver_base;
+        if ( file_exists( $core_anim ) ) {
+            $ver = $use_filemtime ? filemtime( $core_anim ) : $ver_base;
             wp_register_script(
                 'za-timeline-core',
                 $base_url . 'core/animation.js',
@@ -190,253 +185,220 @@ final class TimelinePlugin
                 $ver,
                 true
             );
-            wp_script_add_data('za-timeline-core', 'type', 'module');
-        }
-
-
-
-        /**
-         * NEW: register block build assets (script + styles)
-         */
-        $block_build_dir = TIMELINE_ELEMENTOR_PATH . 'build';
-        $block_build_url = TIMELINE_ELEMENTOR_URL . 'build';
-
-// editor script (build/index.js)
-        if (file_exists($block_build_dir . '/index.js')) {
-            $ver = $use_filemtime ? filemtime($block_build_dir . '/index.js') : $ver_base;
-            wp_register_script(
-                'za-timeline-block-script',
-                $block_build_url . '/index.js',
-                ['wp-blocks', 'wp-element', 'wp-i18n', 'wp-editor'],
-                $ver,
-                true
-            );
-        }
-
-// frontend style (build/style-index.css) — MUST depend on core style so it's loaded after
-        if (file_exists($block_build_dir . '/style-index.css')) {
-            $ver = $use_filemtime ? filemtime($block_build_dir . '/style-index.css') : $ver_base;
-            wp_register_style(
-                'za-timeline-block-style',
-                $block_build_url . '/style-index.css',
-                ['timeline-core-style'],
-                $ver
-            );
-        }
-
-// editor-only style (build/index.css) — also depend on core style
-        if (file_exists($block_build_dir . '/index.css')) {
-            $ver = $use_filemtime ? filemtime($block_build_dir . '/index.css') : $ver_base;
-            wp_register_style(
-                'za-timeline-block-editor-style',
-                $block_build_url . '/index.css',
-                ['timeline-core-style'],
-                $ver
-            );
+            wp_script_add_data( 'za-timeline-core', 'type', 'module' );
         }
     }
 
-    public function enqueue_elementor_editor_assets(): void
-    {
+    public function enqueue_elementor_editor_assets(): void {
         $preview = TIMELINE_ELEMENTOR_PATH . 'assets/elementor/elementor-media-preview.js';
-        if (file_exists($preview)) {
-            $ver = (defined('WP_DEBUG') && WP_DEBUG) ? filemtime($preview) : TIMELINE_VERSION;
+        if ( file_exists( $preview ) ) {
+            $ver = ( defined( 'WP_DEBUG' ) && WP_DEBUG ) ? filemtime( $preview ) : TIMELINE_VERSION;
             wp_register_script(
                 'za-elementor-media-preview',
                 TIMELINE_ELEMENTOR_URL . 'assets/elementor/elementor-media-preview.js',
-                ['jquery'],
+                [ 'jquery' ],
                 $ver,
                 true
             );
-            wp_enqueue_script('za-elementor-media-preview');
+            wp_enqueue_script( 'za-elementor-media-preview' );
         }
 
-        if (wp_script_is('za-timeline-elementor', 'registered')) {
-            wp_enqueue_script('za-timeline-elementor');
-        }
-
-    }
-
-    public function register_gutenberg_block(): void
-    {
-        $dir = TIMELINE_ELEMENTOR_PATH;
-        if (function_exists('register_block_type')) {
-
-            // prepare args only when our registered handles exist
-            $args = [];
-
-            if (wp_script_is('za-timeline-block-script', 'registered')) {
-                $args['editor_script'] = 'za-timeline-block-script';
-            }
-
-            if (wp_style_is('za-timeline-block-style', 'registered')) {
-                // frontend style handle (will be loaded on frontend pages where block exists)
-                $args['style'] = 'za-timeline-block-style';
-            }
-
-            if (wp_style_is('za-timeline-block-editor-style', 'registered')) {
-                // editor style handle (will be loaded in block editor)
-                $args['editor_style'] = 'za-timeline-block-editor-style';
-            }
-
-            // Remove empty values
-            $args = array_filter($args);
-
-            register_block_type($dir . '/block.json', $args);
+        if ( wp_script_is( 'za-timeline-elementor', 'registered' ) ) {
+            wp_enqueue_script( 'za-timeline-elementor' );
         }
     }
 
-    public function enqueue_block_editor_assets(): void
-    {
-        // editor script for block (if you need to ensure it's present in editor)
-        if (wp_script_is('za-timeline-block-script', 'registered')) {
-            wp_enqueue_script('za-timeline-block-script');
+    /**
+     * Gutenberg block registration is only possible via block.json.
+     *  The block's JS/CSS will be automatically loaded based on editorScript/style/editorStyle.
+     */
+    public function register_gutenberg_block(): void {
+        if ( ! function_exists( 'register_block_type_from_metadata' ) ) {
+            return;
         }
 
-        // editor-only style (this keeps editor styles within the block editor, not on all admin pages)
-        if (wp_style_is('za-timeline-block-editor-style', 'registered')) {
-            wp_enqueue_style('za-timeline-block-editor-style');
+        register_block_type_from_metadata( TIMELINE_ELEMENTOR_PATH );
+    }
+
+    /**
+     * Front-end: We only include the animation script for Gutenberg if the block actually exists on the page.
+     *  Block styles are automatically taken from block.json (style).
+     */
+    public function maybe_enqueue_frontend_assets(): void {
+        if ( is_admin() || wp_doing_ajax() || ( defined( 'REST_REQUEST' ) && REST_REQUEST ) ) {
+            return;
+        }
+
+        $post_id = (int) get_queried_object_id();
+
+        // If the content is collected in Elementor, we exit (it has its own logic).
+        if ( $post_id && $this->is_built_with_elementor( $post_id ) ) {
+            return;
+        }
+
+        if ( ! $post_id || ! has_block( 'za/timeline-full-widget', $post_id ) ) {
+            return;
+        }
+
+        // Adapter/animation script only for Gutenberg
+        if ( wp_script_is( 'za-timeline-gutenberg', 'registered' ) ) {
+            wp_enqueue_script( 'za-timeline-gutenberg' );
         }
     }
 
+    /**
+     * Elementor widget.
+     */
+    public function widgets_registered(): void {
+        if ( ! defined( 'ELEMENTOR_PATH' ) || ! class_exists( '\Elementor\Widget_Base' ) ) {
+            return;
+        }
+
+        $template_file = locate_template( 'elementor-timeline/elementor-timeline-widget.php' );
+        if ( ! $template_file || ! is_readable( $template_file ) ) {
+            $template_file = TIMELINE_ELEMENTOR_PATH . 'elementor-timeline-widget.php';
+        }
+
+        if ( $template_file && is_readable( $template_file ) ) {
+            require_once $template_file;
+        }
+    }
+
+    // ===== Classic Editor (TinyMCE) =====
 
     private bool $mce_registered = false;
 
-    // register Classic Editor Button in admin redactor TinyMCE
-    public function maybe_register_classic_mce_late(): void
-    {
-        if (!current_user_can('edit_posts') && !current_user_can('edit_pages')) {
+    public function maybe_register_classic_mce_late(): void {
+        if ( ! current_user_can( 'edit_posts' ) && ! current_user_can( 'edit_pages' ) ) {
             return;
         }
 
-        $rich = get_user_option('rich_editing');
-        if ($rich !== 'true' && $rich !== true) {
+        $rich = get_user_option( 'rich_editing' );
+        if ( $rich !== 'true' && $rich !== true ) {
             return;
         }
 
-        $screen = function_exists('get_current_screen') ? get_current_screen() : null;
-        if ($screen) {
-            $allowed_bases = ['post', 'post-new', 'page', 'edit', 'dashboard', 'edit-tags', 'term'];
-            if (!in_array($screen->base, $allowed_bases, true)) {
+        $screen = function_exists( 'get_current_screen' ) ? get_current_screen() : null;
+        if ( $screen ) {
+            $allowed_bases = [ 'post', 'post-new', 'page', 'edit', 'dashboard', 'edit-tags', 'term' ];
+            if ( ! in_array( $screen->base, $allowed_bases, true ) ) {
                 return;
             }
         }
 
-        // Если текущий пост/экран использует блочный редактор — не регистрируем classic MCE hooks.
-        // пытаемся получить post id из нескольких источников
+        // If the post uses a block editor, do not register Classic MCE hooks.
         $post_id = 0;
-        if ($screen && !empty($screen->post_id)) {
-            $post_id = (int)$screen->post_id;
-        } elseif (!empty($_GET['post'])) {
-            $post_id = (int)$_GET['post'];
-        } elseif (function_exists('get_the_ID') && get_the_ID()) {
-            $post_id = (int)get_the_ID();
+        if ( $screen && ! empty( $screen->post_id ) ) {
+            $post_id = (int) $screen->post_id;
+        } elseif ( ! empty( $_GET['post'] ) ) { // phpcs:ignore
+            $post_id = (int) $_GET['post']; // phpcs:ignore
+        } elseif ( function_exists( 'get_the_ID' ) && get_the_ID() ) {
+            $post_id = (int) get_the_ID();
         } else {
-            $post_id = (int)get_queried_object_id();
+            $post_id = (int) get_queried_object_id();
         }
 
-        if ($post_id && function_exists('use_block_editor_for_post')) {
+        if ( $post_id && function_exists( 'use_block_editor_for_post' ) ) {
             try {
-                if (use_block_editor_for_post(get_post($post_id))) {
-                    // пост использует блочный редактор — пропускаем
+                if ( use_block_editor_for_post( get_post( $post_id ) ) ) {
                     return;
                 }
-            } catch (\Throwable $e) {
-                // в редких случаях get_post может вернуть null — просто игнорируем и продолжаем
+            } catch ( \Throwable $e ) {
+                // ignore
             }
         }
 
-        if ($this->mce_registered) {
+        if ( $this->mce_registered ) {
             return;
         }
         $this->mce_registered = true;
 
-        // Формируем путь к файлу classic-adapter-loader.js прямо в плагине
         $classic_path = TIMELINE_ELEMENTOR_PATH . 'assets/js/adapters/classic-adapter-loader.js';
-        $classic_url  = TIMELINE_ELEMENTOR_URL  . 'assets/js/adapters/classic-adapter-loader.js';
-
-        if (!file_exists($classic_path)) {
-            // нет файла — ничего не делаем
+        if ( ! file_exists( $classic_path ) ) {
             return;
         }
 
         $classic_loader_rel = 'assets/js/adapters/classic-adapter-loader.js';
-        $classic_loader_url = plugins_url( $classic_loader_rel, __FILE__ ); // absolute URL to loader
+        $classic_loader_url = plugins_url( $classic_loader_rel, __FILE__ );
 
-// base JS folder and animation.js absolute URL (used by the iframe script)
-        $base_js_url   = plugins_url( 'assets/js/', __FILE__ ); // e.g. https://site/wp-content/plugins/timeline-full-widget/assets/js/
-        $animation_url = plugins_url( 'assets/js/core/animation.js', __FILE__ ); // e.g. https://site/.../core/animation.js
+        $base_js_url   = plugins_url( 'assets/js/', __FILE__ );
+        $animation_url = plugins_url( 'assets/js/core/animation.js', __FILE__ );
 
-// build URL with query args that iframe can read via document.currentScript.src
         $classic_url_with_q = add_query_arg(
             [
                 'za_base_js' => rawurlencode( $base_js_url ),
                 'za_anim'    => rawurlencode( $animation_url ),
-                // optionally add debug flag: 'za_debug' => '1'
             ],
             $classic_loader_url
         );
 
-// 1) Tell TinyMCE to load plugin inside iframe using that URL (with query params)
-        add_filter('mce_external_plugins', function ($plugins) use ($classic_url_with_q) {
-            $plugins['za_timeline_button'] = $classic_url_with_q;
-            return $plugins;
-        });
-
-// 2) Add button name to TinyMCE toolbar (unchanged)
-        add_filter('mce_buttons', function ($buttons) {
-            $buttons[] = 'za_timeline_button';
-            return $buttons;
-        });
-
-// 3) Add content CSS into iframe (unchanged)
-        add_filter('tiny_mce_before_init', function ($init) {
-            $css_url = TIMELINE_ELEMENTOR_URL . 'assets/css/core/style.css';
-            if (!empty($init['content_css'])) {
-                $init['content_css'] .= ',' . esc_url_raw($css_url);
-            } else {
-                $init['content_css'] = esc_url_raw($css_url);
+        // 1) TinyMCE plugin url
+        add_filter(
+            'mce_external_plugins',
+            function ( $plugins ) use ( $classic_url_with_q ) {
+                $plugins['za_timeline_button'] = $classic_url_with_q;
+                return $plugins;
             }
-            return $init;
-        });
+        );
+
+        // 2) Button in toolbar
+        add_filter(
+            'mce_buttons',
+            function ( $buttons ) {
+                $buttons[] = 'za_timeline_button';
+                return $buttons;
+            }
+        );
+
+        // 3) content_css в iframe
+        add_filter(
+            'tiny_mce_before_init',
+            function ( $init ) {
+                $css_url = TIMELINE_ELEMENTOR_URL . 'assets/css/core/style.css';
+                if ( ! empty( $init['content_css'] ) ) {
+                    $init['content_css'] .= ',' . esc_url_raw( $css_url );
+                } else {
+                    $init['content_css'] = esc_url_raw( $css_url );
+                }
+                return $init;
+            }
+        );
     }
 
-    public function enqueue_classic_adapter_admin(): void
-    {
-        if (!current_user_can('edit_posts') && !current_user_can('edit_pages')) {
+    public function enqueue_classic_adapter_admin(): void {
+        if ( ! current_user_can( 'edit_posts' ) && ! current_user_can( 'edit_pages' ) ) {
             return;
         }
-        $rich = get_user_option('rich_editing');
-        if ($rich !== 'true' && $rich !== true) {
+        $rich = get_user_option( 'rich_editing' );
+        if ( $rich !== 'true' && $rich !== true ) {
             return;
         }
-        $screen = function_exists('get_current_screen') ? get_current_screen() : null;
-        if ($screen) {
-            $allowed_bases = ['post', 'post-new', 'page', 'edit', 'edit-tags', 'term'];
-            if (!in_array($screen->base, $allowed_bases, true)) {
+        $screen = function_exists( 'get_current_screen' ) ? get_current_screen() : null;
+        if ( $screen ) {
+            $allowed_bases = [ 'post', 'post-new', 'page', 'edit', 'edit-tags', 'term' ];
+            if ( ! in_array( $screen->base, $allowed_bases, true ) ) {
                 return;
             }
         }
 
-        // получить post_id безопасно
         $post_id = 0;
-        if ($screen && !empty($screen->post_id)) {
-            $post_id = (int)$screen->post_id;
-        } elseif (!empty($_GET['post'])) {
-            $post_id = (int)$_GET['post'];
-        } elseif (function_exists('get_the_ID') && get_the_ID()) {
-            $post_id = (int)get_the_ID();
+        if ( $screen && ! empty( $screen->post_id ) ) {
+            $post_id = (int) $screen->post_id;
+        } elseif ( ! empty( $_GET['post'] ) ) { // phpcs:ignore
+            $post_id = (int) $_GET['post']; // phpcs:ignore
+        } elseif ( function_exists( 'get_the_ID' ) && get_the_ID() ) {
+            $post_id = (int) get_the_ID();
         } else {
-            $post_id = (int)get_queried_object_id();
+            $post_id = (int) get_queried_object_id();
         }
 
-        // если пост использует блочный редактор — ничего не подключаем
-        if ($post_id && function_exists('use_block_editor_for_post')) {
+        // If the post uses a block editor, don't enable anything.
+        if ( $post_id && function_exists( 'use_block_editor_for_post' ) ) {
             try {
-                if (use_block_editor_for_post(get_post($post_id))) {
+                if ( use_block_editor_for_post( get_post( $post_id ) ) ) {
                     return;
                 }
-            } catch (\Throwable $e) {
+            } catch ( \Throwable $e ) {
                 // ignore
             }
         }
@@ -445,101 +407,48 @@ final class TimelinePlugin
         $classic_path = TIMELINE_ELEMENTOR_PATH . 'assets/js/adapters/classic-adapter-loader.js';
         $classic_url  = $base_js_url . 'adapters/classic-adapter-loader.js';
 
-        // prepare config and print inline before script (attach to classic adapter when we enqueue it)
-        $config = [
-            'baseJsUrl' => esc_url_raw($base_js_url),
-            'animationUrl' => esc_url_raw($base_js_url . 'core/animation.js'),
-            'i18nDomain' => 'timeline-full-widget',
-        ];
-        $json = wp_json_encode($config);
-
-        // register + enqueue only when file exists
-        if (file_exists($classic_path)) {
-            $ver = (defined('WP_DEBUG') && WP_DEBUG) ? filemtime($classic_path) : TIMELINE_VERSION;
-
-            // Register the loader script (non-module, executed in admin top frame)
-            wp_register_script(
-                'za-timeline-classic-adapter',
-                $classic_url,
-                [], // no deps
-                $ver,
-                false // in header (TinyMCE iframe injection expects it available early)
-            );
-
-            // Add inline config *before* our script so it is available to it
-            wp_add_inline_script('za-timeline-classic-adapter', "window.zaTimelineConfig = {$json};", 'before');
-
-            // Enqueue only in admin where classic editor is used (this function already checks)
-            wp_enqueue_script('za-timeline-classic-adapter');
+        if ( ! file_exists( $classic_path ) ) {
+            return;
         }
-    }
 
+        $config = [
+            'baseJsUrl'    => esc_url_raw( $base_js_url ),
+            'animationUrl' => esc_url_raw( $base_js_url . 'core/animation.js' ),
+            'i18nDomain'   => 'timeline-full-widget',
+        ];
+        $json = wp_json_encode( $config );
+
+        $ver = ( defined( 'WP_DEBUG' ) && WP_DEBUG ) ? filemtime( $classic_path ) : TIMELINE_VERSION;
+
+        wp_register_script(
+            'za-timeline-classic-adapter',
+            $classic_url,
+            [],
+            $ver,
+            false
+        );
+
+        wp_add_inline_script(
+            'za-timeline-classic-adapter',
+            "window.zaTimelineConfig = {$json};",
+            'before'
+        );
+
+        wp_enqueue_script( 'za-timeline-classic-adapter' );
+    }
 
     /**
-     * Frontend: enqueue assets only on pages/posts that actually contain the block.
-     * If page created with Classic Editor and has no block, styles are not enqueued.
+     * Check: Is the page built in Elementor?
      */
-    public function maybe_enqueue_frontend_assets(): void
-    {
-        if (is_admin() || wp_doing_ajax() || (defined('REST_REQUEST') && REST_REQUEST)) {
-            return;
-        }
-
-        $post_id = (int)get_queried_object_id();
-
-        // If using Elementor-built content — do not enqueue Gutenberg block assets here
-        if ($post_id && $this->is_built_with_elementor($post_id)) {
-            return;
-        }
-
-        $should_enqueue = false;
-        if ($post_id && has_block('za/timeline-full-widget', $post_id)) {
-            $should_enqueue = true;
-        }
-
-        if (!$should_enqueue) {
-            return;
-        }
-
-        // enqueue block frontend style (this one depends on timeline-core-style and thus will be loaded after it)
-        if (wp_style_is('za-timeline-block-style', 'registered')) {
-            wp_enqueue_style('za-timeline-block-style');
-        } else if (wp_style_is('za-timeline-frontend-style', 'registered')) {
-            // fallback to older frontend style if present
-            wp_enqueue_style('za-timeline-frontend-style');
-        }
-
-        // enqueue frontend script if exists
-        if (wp_script_is('za-timeline-gutenberg', 'registered')) {
-            wp_enqueue_script('za-timeline-gutenberg');
-        }
-    }
-
-    public function widgets_registered(): void
-    {
-        if (!defined('ELEMENTOR_PATH') || !class_exists('\Elementor\Widget_Base')) {
-            return;
-        }
-
-        $template_file = locate_template('elementor-timeline/elementor-timeline-widget.php');
-        if (!$template_file || !is_readable($template_file)) {
-            $template_file = TIMELINE_ELEMENTOR_PATH . 'elementor-timeline-widget.php';
-        }
-
-        if ($template_file && is_readable($template_file)) {
-            require_once $template_file;
-        }
-    }
-
-    private function is_built_with_elementor(int $post_id): bool
-    {
-        if (class_exists('\Elementor\Plugin')) {
+    private function is_built_with_elementor( int $post_id ): bool {
+        if ( class_exists( '\Elementor\Plugin' ) ) {
             try {
                 $elementor = \Elementor\Plugin::instance();
-                if (isset($elementor->db) && method_exists($elementor->db, 'is_built_with_elementor')) {
-                    return (bool)$elementor->db->is_built_with_elementor($post_id);
+                if ( isset( $elementor->db ) && method_exists( $elementor->db, 'is_built_with_elementor' ) ) {
+                    return (bool) $elementor->db->is_built_with_elementor( $post_id );
                 }
-            } catch (\Throwable $e) {
+            } catch ( \Throwable $e ) {
+                // ignore
             }
         }
         return false;

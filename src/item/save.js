@@ -1,4 +1,5 @@
-import { RichText, InnerBlocks } from '@wordpress/block-editor';
+// item/save.js
+import { RichText, InnerBlocks, useBlockProps } from '@wordpress/block-editor';
 import { isBlobURL } from '@wordpress/blob';
 import { getSafeLinkAttributes, buildStyleObject } from './utils';
 import { createElement as el } from '@wordpress/element';
@@ -73,9 +74,11 @@ export default function Save({ attributes }) {
 			if (ext === 'ogv' || ext === 'ogg') sourceType = 'video/ogg';
 		}
 	}
-
+    const blockProps = useBlockProps.save({
+        className,
+    });
 	return (
-		<li className={className}>
+        <li {...blockProps}>
 			<div className="timeline-side">
 				{showOtherSide && (
 					<RichText.Content

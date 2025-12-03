@@ -3,7 +3,7 @@ Contributors: Blackstar1991
 Donate link: https://www.paypal.com/donate/?hosted_button_id=TK9QQ5DE2K378
 Tags: timeline, Elementor, gutenberg blocks, editor, blocks
 Requires at least: 5.0
-Tested up to: 6.8
+Tested up to: 6.9
 Stable tag: 1.2.0
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
@@ -24,7 +24,7 @@ You can also add a Timeline Gutenberg Block for modern WordPress sites, or a Tim
 == Frequently Asked Questions ==
 
 = Does it work with the latest Elementor? =
-Yes, tested with Elementor 3.32.4 and WordPress 6.8.
+Yes, tested with Elementor 3.33.2 and WordPress 6.8.
 
 = Can I set a unique marker that is wider (width) than 30 px? =
 Yes, but then the styles for the timeline may shift. To correct them, you will need to specify the styles separately. For example:
@@ -44,8 +44,8 @@ Yes, but then the styles for the timeline may shift. To correct them, you will n
 
 == Changelog ==
 = 1.2.0 =
-* Add a Timeline Block for the classic WordPress editor.
 * Corrected styles for the timeline block.
+* Bug fixes.
 
 = 1.1.0 =
 * Bug fixes.

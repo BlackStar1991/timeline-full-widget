@@ -150,10 +150,7 @@ export function Edit({ clientId, attributes, setAttributes }) {
 		[position, computedFallbackPosition]
 	);
 
-	const blockProps = useBlockProps({
-		tagName: 'li',
-		className: editorClassName,
-	});
+    const blockProps = useBlockProps({ className: editorClassName });
 
 	const onSelect = useCallback(
 		(media) =>
@@ -235,7 +232,8 @@ export function Edit({ clientId, attributes, setAttributes }) {
 							{ label: 'Link (a)', value: 'a' },
 						]}
 						onChange={(val) => setAttributes({ titleTag: val })}
-					/>
+                        __next40pxDefaultSize={true}
+                    />
 
 					<PanelColorSettings
 						title={__('Color settings', 'timeline-full-widget')}
@@ -434,7 +432,9 @@ export function Edit({ clientId, attributes, setAttributes }) {
 									? { style: { color: descriptionColor } }
 									: {})}
 							>
-								<InnerBlocks template={[['core/freeform']]} />
+                                <InnerBlocks
+                                    allowedBlocks={['core/paragraph', 'core/heading', 'core/list']}
+                                />
 							</div>
 						</div>
 					</div>

@@ -1,7 +1,7 @@
 # Timeline Full Widget
 
 ## 1.2.0 (October 6, 2025)
-* Add a Timeline Block for the classic WordPress editor.
+* Corrected styles for the timeline in the Gutenberg block.
 
 ## 1.1.0 (October 6, 2025)
 

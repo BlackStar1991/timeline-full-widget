@@ -57,6 +57,7 @@ function extractFontsFromSettings(settings) {
 	return Array.from(map.values());
 }
 
+
 export default function useFontsFromSettings() {
 	const fontsFromStore = useSelect((select) => {
 		const s1 = select('core/block-editor')?.getSettings?.() || null;
