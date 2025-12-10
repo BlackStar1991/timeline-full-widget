@@ -74,11 +74,11 @@ export default function Save({ attributes }) {
 			if (ext === 'ogv' || ext === 'ogg') sourceType = 'video/ogg';
 		}
 	}
-    const blockProps = useBlockProps.save({
-        className,
-    });
+	const blockProps = useBlockProps.save({
+		className,
+	});
 	return (
-        <li {...blockProps}>
+		<li {...blockProps}>
 			<div className="timeline-side">
 				{showOtherSide && (
 					<RichText.Content

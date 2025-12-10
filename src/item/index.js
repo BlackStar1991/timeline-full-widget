@@ -5,27 +5,27 @@ import { Edit } from './edit';
 import Save from './save';
 
 registerBlockType('za/timeline-item', {
-    apiVersion: 3,
-    title: __('Timeline Item', 'timeline-full-widget'),
-    description: __('Timeline Item Description', 'timeline-full-widget'),
-    icon: 'universal-access',
-    parent: ['za/timeline-full-widget'],
-    supports: {
-        html: false,
-        reusable: false,
-        spacing: {
-            margin: true,
-        },
-        color: {
-            text: true,
-            background: true,
-            link: true,
-        },
-        typography: {
-            fontSize: true,
-            lineHeight: true,
-        },
-    },
+	apiVersion: 3,
+	title: __('Timeline Item', 'timeline-full-widget'),
+	description: __('Timeline Item Description', 'timeline-full-widget'),
+	icon: 'universal-access',
+	parent: ['za/timeline-full-widget'],
+	supports: {
+		html: false,
+		reusable: false,
+		spacing: {
+			margin: true,
+		},
+		color: {
+			text: true,
+			background: true,
+			link: true,
+		},
+		typography: {
+			fontSize: true,
+			lineHeight: true,
+		},
+	},
 	attributes: {
 		title: {
 			type: 'string',

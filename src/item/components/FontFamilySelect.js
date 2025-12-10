@@ -17,7 +17,7 @@ export default function FontFamilySelect({ value, onChange }) {
 					: []),
 			]}
 			onChange={onChange}
-            __next40pxDefaultSize={true}
+			__next40pxDefaultSize={true}
 		/>
 	);
 }

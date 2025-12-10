@@ -11,6 +11,7 @@ use Elementor\Controls_Manager;
 use Elementor\Repeater;
 use Elementor\Utils;
 use Elementor\Group_Control_Image_Size;
+use Elementor\Group_Control_Typography;
 
 if (!defined('ABSPATH')) {
     exit;
@@ -244,6 +245,36 @@ class Za_Pack_Widget_Timeline extends Widget_Base
                         'default' => 'h2',
                 ]
         );
+        $this->add_group_control(
+                Group_Control_Typography::get_type(),
+                [
+                        'name' => 'title_typography',
+                        'label' => __('Title Typography', 'timeline-full-widget'),
+                        'selector' => '{{WRAPPER}} .tl-title',
+                        'fields_options' => [
+                                'typography' => [
+                                        'default' => 'custom',
+                                ],
+                                'font_size' => [
+                                        'default' => [
+                                                'size' => 24,
+                                                'unit' => 'px',
+                                        ],
+                                ],
+                        ],
+                ]
+        );
+        $this->add_control(
+                'title_color',
+                [
+                        'label' => __('Title color', 'timeline-full-widget'),
+                        'type' => Controls_Manager::COLOR,
+                        'selectors' => [
+                                '{{WRAPPER}} .tl-title' => 'color: {{VALUE}};',
+                        ],
+                ]
+        );
+
         $this->add_control(
                 'blocks_color',
                 [

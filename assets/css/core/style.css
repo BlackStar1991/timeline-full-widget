@@ -11,7 +11,6 @@
     transform-origin: top;
     transform: scaleY(0);
     will-change: transform;
-    background-color: #F6F6F8;
     z-index: 1;
 }
 
@@ -73,7 +72,7 @@ ul.timeline {
 
     align-self: self-start;
     transition: background 0.2s;
-    min-width: 26px;
+    width: 26px;
     height: 26px;
     border-radius: 50%;
     box-sizing: border-box;
@@ -145,11 +144,10 @@ ul.timeline {
 
     .timeline-item {
         grid-template-columns: 1fr 1fr;
-        gap: 26px;
     }
 
     .timeline-animation-marker .timeline-item {
-        grid-template-columns: 1fr  30px 1fr;
+        grid-template-columns: 1fr 42px 1fr;
     }
 
 
@@ -176,7 +174,7 @@ ul.timeline {
 
     .timeline-animation-marker .tl-mark {
         position: sticky;
-        left: calc(50% - 13px);
+        /*left: calc(50% - 13px);*/
     }
 
     .timeline-left .timeline-side {
