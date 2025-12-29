@@ -90,7 +90,9 @@ ul.timeline {
 }
 
 .tl-mark img {
-    object-fit: contain;
+    max-width: initial !important;
+    position: absolute;
+    left: -50%;
 }
 
 .is-stuck .tl-mark {
@@ -147,9 +149,9 @@ ul.timeline {
     }
 
     .timeline-animation-marker .timeline-item {
-        grid-template-columns: 1fr 42px 1fr;
+        grid-template-columns: 1fr 26px 1fr;
+        grid-gap: 20px;
     }
-
 
     .timeline-inverted {
         direction: rtl;

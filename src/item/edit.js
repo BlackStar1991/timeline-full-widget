@@ -432,14 +432,14 @@ export function Edit({ clientId, attributes, setAttributes }) {
 									? { style: { color: descriptionColor } }
 									: {})}
 							>
-								<InnerBlocks
-									allowedBlocks={[
-										'core/paragraph',
-										'core/heading',
-										'core/list',
-									]}
-								/>
-                                {/*<InnerBlocks template={[['core/freeform']]} />*/}
+								{/*<InnerBlocks*/}
+								{/*	allowedBlocks={[*/}
+								{/*		'core/paragraph',*/}
+								{/*		'core/heading',*/}
+								{/*		'core/list',*/}
+								{/*	]}*/}
+								{/*/>*/}
+                                <InnerBlocks template={[['core/freeform']]} />
 							</div>
 						</div>
 					</div>

@@ -449,7 +449,7 @@ class Za_Pack_Widget_Timeline extends Widget_Base
                 $li_class = ($count % 2 === 0) ? 'timeline-inverted' : 'timeline-left';
             }
             // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
-            echo $this->render_item_html($li_class, $item, $tag, $show_marker);
+            echo $this->render_item_html($li_class, $item, $tag, $show_marker, $settings);
         }
 
         echo '</ul></div>';
@@ -465,7 +465,7 @@ class Za_Pack_Widget_Timeline extends Widget_Base
     /**
      * Render single <li>
      */
-    private function render_item_html($li_class, $item, $tag, $show_marker = false)
+    private function render_item_html($li_class, $item, $tag, $show_marker, $settings)
     {
         $title = isset($item['list_title']) ? sanitize_text_field($item['list_title']) : '';
         $side_content = isset($item['side_content']) ? wp_kses_post($item['side_content']) : '';
@@ -483,10 +483,10 @@ class Za_Pack_Widget_Timeline extends Widget_Base
 
             <?php if ($show_marker) : ?>
                 <?php
-                $unique_marker_enabled = ($this->get_settings_for_display('tl_is_marker_unique') === 'yes');
+                $unique_marker_enabled = ($settings['tl_is_marker_unique'] ?? '') === 'yes';
                 $marker_img = $item['marker_image']['url'] ?? '';
 
-                if ($unique_marker_enabled && $marker_img) {
+                if ( $show_marker && !empty($marker_img) && !empty($settings['tl_is_marker_unique']) ) {
                     echo '<div class="tl-mark"><img src="' . esc_url($marker_img) . '" alt="marker" loading="lazy" decoding="async" /></div>';
                 } else {
                     echo '<div class="tl-mark"></div>';
@@ -671,8 +671,8 @@ class Za_Pack_Widget_Timeline extends Widget_Base
                 <div class="tl-trigger"></div>
 
                 <# if ( showMarker ) { #>
-                    <# if ( settings.tl_is_marker_unique === 'yes' && item.marker_image && item.marker_image.url ) { #>
-                         <div class="tl-mark"><img src="{{ item.marker_image.url }}" alt="marker" loading="lazy" decoding="async" /></div>
+                    <# if ( settings.tl_is_marker_unique && item.marker_image && item.marker_image.url ) { #>
+                         <div class="tl-mark"><img src="{{ item.marker_image.url }}" alt="marker" /></div>
                     <# } else { #>
                         <div class="tl-mark"></div>
                     <# } #>
