@@ -195,7 +195,7 @@ class Za_Pack_Widget_Timeline extends Widget_Base
                         'type' => Controls_Manager::RAW_HTML,
                         'raw' => sprintf(
                                 '<div class="elementor-control-description">%s</div>',
-                                esc_html__('Note: this image will be used only when "Unique Marker" (Style) is set to Yes. Recommend width size <=30px', 'timeline-full-widget')
+                                esc_html__('Note: this image will be used only when "Unique Marker" (Style) is set to Yes. Recommend width size <=50px', 'timeline-full-widget')
                         ),
                         'content_classes' => 'elementor-control-descriptor',
                 ]
@@ -483,9 +483,7 @@ class Za_Pack_Widget_Timeline extends Widget_Base
 
             <?php if ($show_marker) : ?>
                 <?php
-                $unique_marker_enabled = ($settings['tl_is_marker_unique'] ?? '') === 'yes';
                 $marker_img = $item['marker_image']['url'] ?? '';
-
                 if ( $show_marker && !empty($marker_img) && !empty($settings['tl_is_marker_unique']) ) {
                     echo '<div class="tl-mark"><img src="' . esc_url($marker_img) . '" alt="marker" loading="lazy" decoding="async" /></div>';
                 } else {

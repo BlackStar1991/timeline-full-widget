@@ -25,6 +25,7 @@ export default function TitleTypographyPanel({ attrs = {}, setAttributes }) {
 					{ name: 'Normal', size: 16, slug: 'normal' },
 					{ name: 'Big', size: 26, slug: 'big' },
 				]}
+				__next40pxDefaultSize
 				value={titleFontSize ? parseFloat(titleFontSize) : undefined}
 				onChange={(newSize) => {
 					if (newSize === undefined) {
@@ -59,6 +60,7 @@ export default function TitleTypographyPanel({ attrs = {}, setAttributes }) {
 				]}
 				onChange={(value) => setAttributes({ titleFontWeight: value })}
 				__next40pxDefaultSize={true}
+				__nextHasNoMarginBottom={true}
 			/>
 
 			<FontFamilySelect
@@ -75,6 +77,7 @@ export default function TitleTypographyPanel({ attrs = {}, setAttributes }) {
 				min={0}
 				max={100}
 				__nextHasNoMarginBottom={true}
+				__next40pxDefaultSize={true}
 			/>
 			<RangeControl
 				label={__('Margin Bottom (px)', 'timeline-full-widget')}
@@ -85,6 +88,7 @@ export default function TitleTypographyPanel({ attrs = {}, setAttributes }) {
 				min={0}
 				max={100}
 				__nextHasNoMarginBottom={true}
+				__next40pxDefaultSize={true}
 			/>
 			<RangeControl
 				label={__('Title Line Height (px)', 'timeline-full-widget')}
@@ -93,6 +97,7 @@ export default function TitleTypographyPanel({ attrs = {}, setAttributes }) {
 					setAttributes({ titleLineHeight: String(value) })
 				}
 				__nextHasNoMarginBottom={true}
+				__next40pxDefaultSize={true}
 			/>
 		</PanelBody>
 	);

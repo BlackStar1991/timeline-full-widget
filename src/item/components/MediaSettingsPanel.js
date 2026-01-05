@@ -17,6 +17,7 @@ export default function MediaSettingsPanel({
 	videoPoster,
 	imageAlt,
 	setAttributes,
+	showMarker,
 	markerUnique,
 	markerUrl,
 	markerId,
@@ -156,7 +157,7 @@ export default function MediaSettingsPanel({
 					)}
 					<p>
 						{__(
-							'Note: this image will be used only when "Unique Marker" (Style) is set to Yes. Recommend width size <=30px',
+							'Note: this image will be used only when "Unique Marker" (Style) is set to Yes. Recommend width size <=50px',
 							'timeline-full-widget'
 						)}
 					</p>

@@ -233,6 +233,7 @@ export function Edit({ clientId, attributes, setAttributes }) {
 						]}
 						onChange={(val) => setAttributes({ titleTag: val })}
 						__next40pxDefaultSize={true}
+						__nextHasNoMarginBottom={true}
 					/>
 
 					<PanelColorSettings
@@ -270,7 +271,6 @@ export function Edit({ clientId, attributes, setAttributes }) {
 						]}
 					/>
 				</PanelBody>
-
 				<MediaSettingsPanel
 					showMedia={showMedia}
 					mediaUrl={mediaUrl}
@@ -278,6 +278,7 @@ export function Edit({ clientId, attributes, setAttributes }) {
 					videoPoster={videoPoster}
 					imageAlt={imageAlt}
 					setAttributes={setAttributes}
+					showMarker={showMarker}
 					markerUnique={markerUnique}
 					markerAlt={markerAlt}
 					markerUrl={markerUrl}
@@ -432,14 +433,14 @@ export function Edit({ clientId, attributes, setAttributes }) {
 									? { style: { color: descriptionColor } }
 									: {})}
 							>
-								{/*<InnerBlocks*/}
-								{/*	allowedBlocks={[*/}
-								{/*		'core/paragraph',*/}
-								{/*		'core/heading',*/}
-								{/*		'core/list',*/}
-								{/*	]}*/}
-								{/*/>*/}
-                                <InnerBlocks template={[['core/freeform']]} />
+								<InnerBlocks
+									allowedBlocks={[
+										'core/paragraph',
+										'core/heading',
+										'core/list',
+									]}
+								/>
+								{/*<InnerBlocks template={[['core/freeform']]} />*/}
 							</div>
 						</div>
 					</div>

@@ -1,6 +1,6 @@
 /* animation.js — ZA timeline */
 
-const DEBUG = true;
+const DEBUG = false;
 function log(...args) {
 	if (!DEBUG) return;
 	try {
@@ -586,7 +586,6 @@ export function initTimelineAnimation(scopeEl) {
 		} catch (e) {
 			el.__zaTimelineDestroy = undefined;
 		}
-		log('destroyed timeline instance');
 	}
 
 	el.__zaTimelineDestroy = destroy;

@@ -25,20 +25,20 @@ if ( ! defined( 'TIMELINE_ELEMENTOR_PATH' ) ) {
 }
 
 if ( ! defined( 'TIMELINE_VERSION' ) ) {
-    $version = '1.2.0';
+    $timeline_version = '1.2.0';
 
     if ( function_exists( 'get_file_data' ) ) {
-        $data = get_file_data( __FILE__, [ 'Version' => 'Version' ] );
-        if ( ! empty( $data['Version'] ) ) {
-            $version = $data['Version'];
+        $timeline_data = get_file_data( __FILE__, [ 'Version' => 'Version' ] );
+        if ( ! empty( $timeline_data['Version'] ) ) {
+            $timeline_version = $timeline_data['Version'];
         }
     } else {
-        $file_contents = @file_get_contents( __FILE__ );
-        if ( $file_contents && preg_match( '/^\s*\*\s*Version:\s*(.+)$/mi', $file_contents, $m ) ) {
-            $version = trim( $m[1] );
+        $timeline_file_contents = @file_get_contents( __FILE__ );
+        if ( $timeline_file_contents && preg_match( '/^\s*\*\s*Version:\s*(.+)$/mi', $timeline_file_contents, $m ) ) {
+            $timeline_version = trim( $m[1] );
         }
     }
-    define( 'TIMELINE_VERSION', $version );
+    define( 'TIMELINE_VERSION', $timeline_version );
 }
 
 final class TimelinePlugin {
