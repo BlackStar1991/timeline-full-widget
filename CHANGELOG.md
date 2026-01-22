@@ -1,6 +1,6 @@
 # Timeline Full Widget
 
-## 1.2.0 (October 6, 2025)
+## 1.2.0 (Januery 23, 2026)
 * Corrected styles for the timeline in the Gutenberg block.
 
 ## 1.1.0 (October 6, 2025)

@@ -48,4 +48,10 @@ li.is-stuck .tl-mark {
   .timeline-animation-marker .timeline-item {
     gap: 26px;
   }
+
+  .wp-theme-kadence .timeline-line-animation,
+  .wp-theme-kadence .timeline:before {
+    left: calc(50% + 15px);
+  }
+
 }

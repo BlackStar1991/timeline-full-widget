@@ -7,10 +7,6 @@ import { initTimelineAnimation, initAllWidgets } from '../core/animation.js';
  *   1) Running inside preview iframe (Elementor editor preview) => initInsideIframe()
  *   2) Running in parent editor window => try to inject adapter into preview iframe
  *   3) Running on frontend (non-editor) => initAllWidgets(document) + listen to elementorFrontend hooks
- *
- * Notes:
- * - adapter must be registered/enqueued with type="module"
- * - animation core exposes initTimelineAnimation and initAllWidgets
  */
 
 const DEBUG = false;
@@ -146,9 +142,7 @@ async function injectAdapterIntoIframe(iframe) {
 	try {
 		// Wait for iframe ready (best-effort)
 		await waitForIframeReady(iframe).catch(() => null);
-
 		const { doc } = ctx;
-
 		// Avoid duplicates: check module scripts with same src
 		const existing = Array.from(
 			doc.querySelectorAll('script[type="module"][src]')

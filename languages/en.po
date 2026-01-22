@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: timeline-full-widget 1.0\n"
-"POT-Creation-Date: 2026-01-06 00:09+0200\n"
-"PO-Revision-Date: 2026-01-06 00:09+0200\n"
+"POT-Creation-Date: 2026-01-23 00:16+0200\n"
+"PO-Revision-Date: 2026-01-23 00:16+0200\n"
 "Last-Translator: \n"
 "Language-Team: za\n"
 "Language: en\n"
@@ -19,14 +19,13 @@ msgstr ""
 "X-Poedit-SearchPathExcluded-1: .wordpress-org\n"
 "X-Poedit-SearchPathExcluded-2: .git\n"
 
-#: assets/js/adapters/classic-adapters.js:383
-#: assets/js/adapters/classic-adapters.js:393 elementor-timeline-widget.php:30
+#: assets/js/adapters/classic-adapters.js:150
+#: assets/js/adapters/classic-adapters.js:156 elementor-timeline-widget.php:30
 msgid "Timeline"
 msgstr ""
 
-#: assets/js/adapters/classic-adapters.js:384
-#: assets/js/adapters/classic-adapters.js:395
-msgid "Insert Timeline HTML"
+#: assets/js/adapters/classic-adapters.js:151
+msgid "Insert Timeline"
 msgstr ""
 
 #: elementor-timeline-widget.php:72

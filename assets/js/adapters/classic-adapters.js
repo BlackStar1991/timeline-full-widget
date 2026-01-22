@@ -1,434 +1,175 @@
-// assets/js/adapters/classic-adapters.js (admin classic editor loader)
 (function () {
 	'use strict';
 
-	// DEBUG = true для отладки (в девелопе включи)
-	var DEBUG = false;
-	function log() {
-		if (!DEBUG) return;
-		try {
-			console.log.apply(console, ['[ZA]'].concat(Array.from(arguments)));
-		} catch (e) {}
-	}
-	function err() {
-		try {
-			console.error.apply(
-				console,
-				['[ZA]'].concat(Array.from(arguments))
-			);
-		} catch (e) {}
-	}
+	/* CONFIG */
 
-	// прочитать конфиг: сначала из document.currentScript (query params), затем parent/top config как fallback
-	var cfg = {};
-	(function readCfg() {
-		try {
-			var curSrc = '';
-			try {
-				if (document.currentScript && document.currentScript.src) {
-					curSrc = String(document.currentScript.src);
-				} else {
-					var scripts = document.getElementsByTagName('script');
-					for (var i = scripts.length - 1; i >= 0; i--) {
-						var s = scripts[i];
-						if (!s || !s.src) continue;
-						var lower = s.src.toLowerCase();
-						if (
-							lower.indexOf('classic-adapter-loader') !== -1 ||
-							lower.indexOf('classic-adapters') !== -1
-						) {
-							curSrc = s.src;
-							break;
-						}
-					}
-				}
-			} catch (e) {
-				curSrc = '';
-			}
+	const cfg = (function () {
+		const out = {};
 
-			if (curSrc) {
-				try {
-					var u = new URL(
-						curSrc,
-						document.baseURI || window.location.href
-					);
-					var sp = u.searchParams;
-					var za_base =
-						sp.get('za_base_js') || sp.get('baseJsUrl') || null;
-					var za_anim =
-						sp.get('za_anim') || sp.get('animationUrl') || null;
-					if (za_base) cfg.baseJsUrl = decodeURIComponent(za_base);
-					if (za_anim) cfg.animationUrl = decodeURIComponent(za_anim);
-					cfg._loaderScript = curSrc;
-					log('cfg from script params', cfg);
-				} catch (e) {
-					log('cannot parse currentScript URL', e);
-				}
-			}
-
-			// fallback: try parent/top config (same-origin only)
-			if (!cfg.baseJsUrl || !cfg.animationUrl) {
-				try {
-					if (
-						window.parent &&
-						window.parent.zaTimelineConfig &&
-						Object.keys(window.parent.zaTimelineConfig).length
-					) {
-						cfg = Object.assign(
-							{},
-							window.parent.zaTimelineConfig,
-							cfg
-						);
-						log('merged cfg from parent', cfg);
-					} else if (
-						window.zaTimelineConfig &&
-						Object.keys(window.zaTimelineConfig).length
-					) {
-						cfg = Object.assign({}, window.zaTimelineConfig, cfg);
-						log('cfg from top window', cfg);
-					}
-				} catch (e) {
-					log('cannot access parent config (maybe cross-origin)', e);
-				}
-			}
-		} catch (e) {
-			err('readCfg failed', e);
-			cfg = cfg || {};
+		if (document.currentScript?.src) {
+			const url = new URL(document.currentScript.src, location.href);
+			out.baseJsUrl = url.searchParams.get('za_base_js') || '';
+			out.animationUrl = url.searchParams.get('za_anim') || '';
 		}
+
+		if (window.zaTimelineConfig) {
+			Object.assign(out, window.zaTimelineConfig);
+		}
+
+		return out;
 	})();
 
-	// i18n helper
-	var __ = function (text) {
-		try {
-			if (
-				window.parent &&
-				window.parent.wp &&
-				window.parent.wp.i18n &&
-				typeof window.parent.wp.i18n.__ === 'function'
-			) {
-				return window.parent.wp.i18n.__.call(
-					window.parent.wp.i18n,
-					text,
-					'timeline-full-widget'
-				);
-			}
-		} catch (e) {}
-		return text;
-	};
+	const __ = (text) =>
+		window.parent?.wp?.i18n?.__(text, 'timeline-full-widget') || text;
 
-	// utils
-	function ensureSlash(u) {
-		return u && !u.endsWith('/') ? u + '/' : u || '';
-	}
-	function isAbsolute(u) {
-		return typeof u === 'string' && u.indexOf('://') !== -1;
-	}
-	function stripQueryHash(u) {
-		return String(u || '').replace(/(\?|#).*$/, '');
-	}
+	/* URL RESOLVE */
 
-	// Resolve final absolute animation.js URL
 	function resolveAnimationUrl() {
-		// 1) explicit absolute animationUrl from cfg
-		if (cfg && cfg.animationUrl && isAbsolute(cfg.animationUrl)) {
-			return cfg.animationUrl;
+		if (cfg.animationUrl) {
+			return new URL(cfg.animationUrl, location.href).href;
 		}
 
-		// 2) if animationUrl present but relative, try resolve relative to loader script
-		if (cfg && cfg.animationUrl && cfg.animationUrl.length) {
-			try {
-				if (cfg._loaderScript) {
-					return new URL(cfg.animationUrl, cfg._loaderScript).href;
-				}
-				return new URL(
-					cfg.animationUrl,
-					document.baseURI || window.location.href
-				).href;
-			} catch (e) {
-				log('cannot resolve relative cfg.animationUrl', e);
-			}
-		}
-
-		// 3) baseJsUrl provided: join with core/animation.js
-		if (cfg && cfg.baseJsUrl && cfg.baseJsUrl.length) {
-			try {
-				if (isAbsolute(cfg.baseJsUrl)) {
-					return (
-						ensureSlash(cfg.baseJsUrl.replace(/\/+$/, '')) +
-						'core/animation.js'
-					);
-				} else if (cfg._loaderScript) {
-					return new URL(
-						ensureSlash(cfg.baseJsUrl.replace(/\/+$/, '')) +
-							'core/animation.js',
-						cfg._loaderScript
-					).href;
-				}
-			} catch (e) {
-				log('cannot resolve baseJsUrl', e);
-			}
-		}
-
-		// 4) last-resort: try typical WP plugin location
-		try {
-			var origin =
-				window.location && window.location.origin
-					? window.location.origin
-					: window.location.protocol + '//' + window.location.host;
+		if (cfg.baseJsUrl) {
 			return (
-				origin.replace(/\/$/, '') +
-				'/wp-content/plugins/timeline-full-widget/assets/js/core/animation.js'
+				new URL(cfg.baseJsUrl, location.href).href.replace(/\/$/, '') +
+				'/core/animation.js'
 			);
-		} catch (e) {
-			return '../core/animation.js';
 		}
+
+		return (
+			location.origin +
+			'/wp-content/plugins/timeline-full-widget/assets/js/core/animation.js'
+		);
 	}
 
-	// Inject module into iframe and let it attach itself to iframe window
-	function injectModuleIntoDoc(doc) {
+	/* TIMELINE LOADER */
+
+	function ensureTimeline(doc) {
 		if (!doc) return;
-		try {
-			// If module already loaded in this doc window, just call its init and return
-			try {
-				var w = doc.defaultView || doc.parentWindow;
-				if (
-					w &&
-					w.zaTimelineModule &&
-					typeof w.zaTimelineModule.initAllWidgets === 'function'
-				) {
-					try {
-						w.zaTimelineModule.initAllWidgets(doc);
-						log('called existing zaTimelineModule.initAllWidgets');
-					} catch (e) {
-						log('existing module init failed', e);
-					}
-					return;
-				}
-			} catch (e) {
-				// cannot access doc window for some reason, continue to inject
-			}
 
-			// resolve URL
-			var animationModuleUrl = resolveAnimationUrl();
-			if (!animationModuleUrl)
-				throw new Error('animationModuleUrl not resolved');
+		const win = doc.defaultView || window;
 
-			// ensure absolute if possible
-			try {
-				if (
-					animationModuleUrl.indexOf('://') === -1 &&
-					window.location &&
-					window.location.origin
-				) {
-					animationModuleUrl = new URL(
-						animationModuleUrl,
-						window.location.origin + '/'
-					).href;
-				}
-			} catch (e) {
-				/* ignore */
-			}
-
-			animationModuleUrl = String(animationModuleUrl || '');
-			var safeUrl = animationModuleUrl.replace(/'/g, "\\'");
-
-			// create module script that attaches module to iframe window
-			var moduleScript = doc.createElement('script');
-			moduleScript.type = 'module';
-			moduleScript.textContent =
-				"import('" +
-				safeUrl +
-				"').then(function(mod){\n" +
-				'  try {\n' +
-				'    // attach module object so we can re-run init later\n' +
-				'    try { window.zaTimelineModule = mod; } catch (e) {}\n' +
-				"    if (mod && typeof mod.initAllWidgets === 'function') { try { mod.initAllWidgets(document); } catch(e) { console.error('[ZA] initAllWidgets error', e); } }\n" +
-				"    else if (mod && typeof mod.default === 'function') { try { mod.default(document); } catch(e) { console.error('[ZA] default init error', e); } }\n" +
-				'    // mark doc as inited (useful guard)\n' +
-				'    try { window._zaTimelineInited = true; } catch (e) {}\n' +
-				"  } catch(e) { console.error('[ZA] error in injected module', e); }\n" +
-				"}).catch(function(err){ console.error('[ZA] dynamic import failed for animation module', err); });";
-
-			var head =
-				doc.head ||
-				doc.getElementsByTagName('head')[0] ||
-				doc.documentElement;
-			head.appendChild(moduleScript);
-
-			// also set marker on document itself (parent side)
-			try {
-				doc._zaTimelineInited = true;
-			} catch (e) {}
-			log('injected module into iframe document');
-		} catch (e) {
-			err('injectModuleIntoDoc failed', e);
+		// already loaded
+		if (win.zaTimelineModule?.initAllWidgets) {
+			win.zaTimelineModule.initAllWidgets(doc);
+			return;
 		}
+		// loading guard
+		if (win._zaTimelineLoading) return;
+		win._zaTimelineLoading = true;
+
+		const script = doc.createElement('script');
+		script.type = 'module';
+		script.textContent = `
+			import('${resolveAnimationUrl()}')
+				.then(m => {
+					window.zaTimelineModule = m;
+					m.initAllWidgets?.(document);
+					m.default?.(document);
+				})
+				.catch(e => console.error('[ZA Timeline]', e))
+				.finally(() => {
+					window._zaTimelineLoading = false;
+				});`;
+
+		(doc.head || doc.documentElement).appendChild(script);
 	}
 
-	// Higher-level initializer used from editor events
-	function initTimelineInEditor(doc) {
-		if (!doc) return;
-		try {
-			// Prefer calling existing module's init if available (handles re-init after content change)
-			try {
-				var win = doc.defaultView || doc.parentWindow;
-				if (
-					win &&
-					win.zaTimelineModule &&
-					typeof win.zaTimelineModule.initAllWidgets === 'function'
-				) {
-					try {
-						win.zaTimelineModule.initAllWidgets(doc);
-						log('re-used existing zaTimelineModule.initAllWidgets');
-						return;
-					} catch (e) {
-						log('existing module initAllWidgets threw', e);
-					}
-				}
-			} catch (e) {
-				/* continue to injection */
-			}
-
-			// Else inject module (will attach itself and run init)
-			injectModuleIntoDoc(doc);
-		} catch (e) {
-			err('initTimelineInEditor failed', e);
-		}
+	function hasTimeline(doc) {
+		return !!doc.querySelector('.wp-block-za-timeline-full-widget');
 	}
 
-	// TinyMCE plugin registration (guard)
+	/* HTML TEMPLATE */
+
+	function getTimelineItem(index, inverted = false) {
+		return `<!-- wp:za/timeline-item ${inverted ? '{"position":"timeline-inverted"}' : ''} -->
+<li class="wp-block-za-timeline-item timeline-item ${inverted ? 'timeline-inverted' : 'timeline-left'}">
+	<div class="timeline-side">
+		<p class="t-text-align-left">&nbsp;</p>
+	</div>
+	<div class="tl-trigger">&nbsp;</div>
+	<div class="tl-mark">&nbsp;</div>
+	<div class="timeline-panel">
+		<div class="tl-content">
+			<div class="tl-desc">
+				<h3 class="t-text-align-left tl-title" style="margin-top:10px;">Timeline Item #${index}</h3>
+				<div class="tl-desc-short">&nbsp;</div>
+			</div>
+		</div>
+	</div>
+</li>
+<!-- /wp:za/timeline-item -->`;
+	}
+
+	function getTimelineTemplate({ items = 2 } = {}) {
+		let list = '';
+		for (let i = 1; i <= items; i++) {
+			list += getTimelineItem(i, i % 2 === 0);
+		}
+
+		return `<!-- wp:za/timeline-full-widget --><div class="wp-block-za-timeline-full-widget"><div class="timeline-wrapper" data-theme="default">
+		<div class="timeline-line-animation">&nbsp;</div>
+		<ul class="timeline timeline-animation-marker">${list}</ul>
+	</div></div><!-- /wp:za/timeline-full-widget -->`;
+	}
+
+	/* INSERT HANDLER */
+
+	function insertTimeline(editor) {
+		const html = getTimelineTemplate({ items: 2 });
+		editor.insertContent(html);
+		ensureTimeline(editor.getDoc());
+	}
+
+	/* DEBOUNCED INIT */
+
+	let debounceTimer = null;
+
+	function scheduleInit(editor) {
+		clearTimeout(debounceTimer);
+		debounceTimer = setTimeout(() => {
+			const doc = editor.getDoc();
+			if (doc && hasTimeline(doc)) {
+				ensureTimeline(doc);
+			}
+		}, 150);
+	}
+
+	/* TINYMCE PLUGIN */
+
 	function registerPlugin() {
-		if (window._zaTimelinePluginRegistered) return;
-		window._zaTimelinePluginRegistered = true;
+		if (window._zaTimelineRegistered) return;
+		window._zaTimelineRegistered = true;
 
-		try {
-			tinymce.PluginManager.add('za_timeline_button', function (editor) {
-				// on editor init always ensure module is injected (new editor/iframe)
-				editor.on('init', function () {
-					try {
-						var d = editor.getDoc();
-						if (d) initTimelineInEditor(d);
-					} catch (e) {
-						log('init handler error', e);
-					}
+		tinymce.PluginManager.add('za_timeline_button', function (editor) {
+			editor.on('init SetContent', () => scheduleInit(editor));
+			editor.on('NodeChange', () => scheduleInit(editor));
+
+			if (editor.ui?.registry?.addButton) {
+				editor.ui.registry.addButton('za_timeline_button', {
+					text: __('Timeline'),
+					tooltip: __('Insert Timeline'),
+					onAction: () => insertTimeline(editor),
 				});
-
-				// SetContent: try to re-run init on existing module; if not present, inject
-				editor.on('SetContent', function () {
-					try {
-						var d = editor.getDoc();
-						if (!d) return;
-						// attempt to call existing module inside iframe
-						var win = d.defaultView || d.parentWindow;
-						if (
-							win &&
-							win.zaTimelineModule &&
-							typeof win.zaTimelineModule.initAllWidgets ===
-								'function'
-						) {
-							try {
-								win.zaTimelineModule.initAllWidgets(d);
-								log('SetContent: re-ran module init');
-								return;
-							} catch (e) {
-								log(
-									'SetContent: existing module init failed',
-									e
-								);
-							}
-						}
-						// if module not present, inject one
-						initTimelineInEditor(d);
-					} catch (e) {
-						log('SetContent handler failed', e);
-					}
+			} else {
+				editor.addButton('za_timeline_button', {
+					text: __('Timeline'),
+					onclick: () => insertTimeline(editor),
 				});
-
-				// NodeChange: similar behaviour
-				editor.on('NodeChange', function () {
-					try {
-						var d = editor.getDoc();
-						if (!d) return;
-						var win = d.defaultView || d.parentWindow;
-						if (
-							win &&
-							win.zaTimelineModule &&
-							typeof win.zaTimelineModule.initAllWidgets ===
-								'function'
-						) {
-							try {
-								win.zaTimelineModule.initAllWidgets(d);
-								log('NodeChange: re-ran module init');
-								return;
-							} catch (e) {
-								log(
-									'NodeChange: existing module init failed',
-									e
-								);
-							}
-						}
-						initTimelineInEditor(d);
-					} catch (e) {
-						log('NodeChange handler failed', e);
-					}
-				});
-
-				// UI button registration (unchanged)
-				if (
-					editor.ui &&
-					editor.ui.registry &&
-					typeof editor.ui.registry.addButton === 'function'
-				) {
-					editor.ui.registry.addButton('za_timeline_button', {
-						text: __('Timeline'),
-						tooltip: __('Insert Timeline HTML'),
-						onAction: function () {
-							editor.insertContent(
-								'<p>Timeline widget placeholder</p>'
-							);
-						},
-					});
-				} else {
-					editor.addButton('za_timeline_button', {
-						text: __('Timeline'),
-						icon: false,
-						tooltip: __('Insert Timeline HTML'),
-						onclick: function () {
-							editor.insertContent(
-								'<p>Timeline widget placeholder</p>'
-							);
-						},
-					});
-				}
-
-				return {
-					getMetadata: function () {
-						return {
-							name: 'Timeline',
-							url: 'https://wordpress.org/plugins/timeline-full-widget',
-						};
-					},
-				};
-			});
-		} catch (e) {
-			err('registerPlugin failed', e);
-		}
+			}
+		});
 	}
 
-	// wait for tinymce
-	if (typeof tinymce === 'undefined') {
-		var attempts = 0;
-		var checkInterval = setInterval(function () {
-			attempts++;
-			if (typeof tinymce !== 'undefined') {
-				clearInterval(checkInterval);
+	/* BOOTSTRAP */
+
+	if (window.tinymce) {
+		registerPlugin();
+	} else {
+		const wait = setInterval(() => {
+			if (window.tinymce) {
+				clearInterval(wait);
 				registerPlugin();
-			} else if (attempts > 50) {
-				clearInterval(checkInterval);
-				err('tinymce never became available');
 			}
 		}, 100);
-	} else {
-		registerPlugin();
 	}
 })();

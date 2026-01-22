@@ -10,6 +10,9 @@
     height: 100%;
     transform-origin: top;
     transform: scaleY(0);
+
+    background-color: var(--timeline-color-animation, #f37321);
+
     will-change: transform;
     z-index: 1;
 }
@@ -33,6 +36,10 @@ ul.timeline {
     bottom: 0;
     width: 4px;
     left: 50%;
+}
+
+.timeline:before, .tl-mark {
+    background-color: var(--timeline-color, #f6f6f8);
 }
 
 .timeline-panel {
@@ -97,6 +104,7 @@ ul.timeline {
 
 .is-stuck .tl-mark {
     transition: background 0.2s;
+    background-color: var(--timeline-color-animation, #f37321);
 }
 
 .tl-trigger {
@@ -151,6 +159,7 @@ ul.timeline {
     .timeline-animation-marker .timeline-item {
         grid-template-columns: 1fr 26px 1fr;
         grid-gap: 20px;
+        padding-left: 0;
     }
 
     .timeline-inverted {
