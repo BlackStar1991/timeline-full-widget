@@ -3,10 +3,13 @@ import { PanelBody, SelectControl, RangeControl } from '@wordpress/components';
 import { FontSizePicker } from '@wordpress/block-editor';
 import FontFamilySelect from './FontFamilySelect';
 import { __ } from '@wordpress/i18n';
+import useViewport from '../hooks/useViewport';
+import { normalizeResponsive } from '../utils/normalizeResponsive';
 
 export default function TitleTypographyPanel({ attrs = {}, setAttributes }) {
 	const {
 		titleFontSize,
+		titleFontUnit,
 		titleFontWeight,
 		titleMarginTop,
 		titleMarginBottom,
@@ -14,32 +17,34 @@ export default function TitleTypographyPanel({ attrs = {}, setAttributes }) {
 		titleFontFamily,
 	} = attrs;
 
+	const device = useViewport();
+
+	const normalizedFontSize = normalizeResponsive(titleFontSize, {
+		desktop: 22,
+	});
+
+	const currentValue =
+		normalizedFontSize[device] != null
+			? normalizedFontSize[device]
+			: undefined;
+
 	return (
 		<PanelBody
 			title={__('Title Typography', 'timeline-full-widget')}
 			initialOpen={true}
 		>
 			<FontSizePicker
-				fontSizes={[
-					{ name: 'Small', size: 12, slug: 'small' },
-					{ name: 'Normal', size: 16, slug: 'normal' },
-					{ name: 'Big', size: 26, slug: 'big' },
-				]}
-				__next40pxDefaultSize
-				value={titleFontSize ? parseFloat(titleFontSize) : undefined}
+				value={currentValue}
 				onChange={(newSize) => {
-					if (newSize === undefined) {
-						setAttributes({
-							titleFontSize: '22',
-							titleFontUnit: 'px',
-						});
-						return;
-					}
 					setAttributes({
-						titleFontSize: String(newSize),
-						titleFontUnit: 'px',
+						titleFontSize: {
+							...normalizedFontSize,
+							[device]: newSize ?? null,
+						},
 					});
 				}}
+				__next40pxDefaultSize={true}
+				__nextHasNoMarginBottom={true}
 				withSlider
 			/>
 
@@ -100,5 +105,7 @@ export default function TitleTypographyPanel({ attrs = {}, setAttributes }) {
 				__next40pxDefaultSize={true}
 			/>
 		</PanelBody>
+
+
 	);
 }

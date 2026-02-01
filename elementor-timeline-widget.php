@@ -171,6 +171,7 @@ class Za_Pack_Widget_Timeline extends Widget_Base
                 ]
         );
 
+
         $repeater->add_control(
                 'side_content',
                 [
@@ -189,6 +190,7 @@ class Za_Pack_Widget_Timeline extends Widget_Base
 
                 ]
         );
+
         $repeater->add_control(
                 'marker_image_notice',
                 [
@@ -401,6 +403,57 @@ class Za_Pack_Widget_Timeline extends Widget_Base
                 ]
         );
 
+        $this->add_group_control(
+                Group_Control_Typography::get_type(),
+                [
+                        'name' => 'list_content_typography',
+                        'label' => __('Content Typography', 'timeline-full-widget'),
+                        'selector' => '{{WRAPPER}} .tl-desc-short',
+                        'fields_options' => [
+                                'font_size' => [
+                                        'responsive' => true,
+                                        'default' => [
+                                                'size' => 16,
+                                                'unit' => 'px',
+                                        ],
+                                        'tablet_default' => [
+                                                'size' => 15,
+                                                'unit' => 'px',
+                                        ],
+                                        'mobile_default' => [
+                                                'size' => 14,
+                                                'unit' => 'px',
+                                        ],
+                                ],
+                        ],
+                ]
+        );
+
+        $this->add_group_control(
+                Group_Control_Typography::get_type(),
+                [
+                        'name' => 'side_content_typography',
+                        'label' => __('Side Content Typography', 'timeline-full-widget'),
+                        'selector' => '{{WRAPPER}} .timeline-side',
+                        'fields_options' => [
+                                'font_size' => [
+                                        'responsive' => true,
+                                        'default' => [
+                                                'size' => 14,
+                                                'unit' => 'px',
+                                        ],
+                                        'tablet_default' => [
+                                                'size' => 13,
+                                                'unit' => 'px',
+                                        ],
+                                        'mobile_default' => [
+                                                'size' => 12,
+                                                'unit' => 'px',
+                                        ],
+                                ],
+                        ],
+                ]
+        );
 
 
         $this->end_controls_section();

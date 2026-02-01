@@ -147,8 +147,10 @@ ul.timeline {
 }
 
 .tl-content p {
+    margin-top: 0;
     margin-bottom: 5px
 }
+
 
 @media (min-width: 701px) {
 

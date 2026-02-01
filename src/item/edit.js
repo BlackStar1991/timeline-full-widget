@@ -48,6 +48,7 @@ export function Edit({ clientId, attributes, setAttributes }) {
 		onTheOneSide,
 		titleInlineStyle,
 		titleFontSize,
+		titleFontUnit,
 		titleFontWeight,
 		titleLineHeight,
 		titleMarginTop,
@@ -288,6 +289,7 @@ export function Edit({ clientId, attributes, setAttributes }) {
 				<TitleTypographyPanel
 					attrs={{
 						titleFontSize,
+						titleFontUnit,
 						titleFontWeight,
 						titleMarginTop,
 						titleMarginBottom,

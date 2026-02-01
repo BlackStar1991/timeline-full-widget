@@ -1,3 +1,4 @@
+// title/index.js
 import {
 	RichText,
 	BlockControls,
@@ -12,6 +13,8 @@ import { useState, useMemo } from '@wordpress/element';
 import { __ } from '@wordpress/i18n';
 
 import { getSafeLinkAttributes, buildStyleObject } from '../utils';
+import useViewport from '../hooks/useViewport';
+import {normalizeResponsive, resolveResponsiveValue} from '../utils/normalizeResponsive';
 
 export default function Title({
 	clientId,
@@ -20,6 +23,7 @@ export default function Title({
 	titleAlign,
 	titleInlineStyle,
 	titleFontSize,
+	titleFontUnit,
 	titleFontWeight,
 	titleMarginTop,
 	titleMarginBottom,
@@ -34,6 +38,16 @@ export default function Title({
 	setActiveField,
 }) {
 	const [isLinkPickerOpen, setIsLinkPickerOpen] = useState(false);
+	const device = useViewport();
+	const normalizedFontSize = useMemo(
+		() => normalizeResponsive(titleFontSize),
+		[titleFontSize]
+	);
+	const resolvedFontSize = useMemo(
+		() => resolveResponsiveValue(normalizedFontSize, device),
+		[normalizedFontSize, device]
+	);
+
 
 	const selectedBlockClientId = useSelect(
 		(select) => select('core/block-editor').getSelectedBlockClientId(),
@@ -46,7 +60,8 @@ export default function Title({
 		() =>
 			buildStyleObject({
 				titleInlineStyle,
-				titleFontSize,
+				titleFontSize: resolvedFontSize,
+				titleFontUnit,
 				titleFontWeight,
 				titleLineHeight,
 				titleMarginTop,
@@ -56,7 +71,8 @@ export default function Title({
 			}),
 		[
 			titleInlineStyle,
-			titleFontSize,
+			resolvedFontSize,
+			titleFontUnit,
 			titleFontWeight,
 			titleMarginTop,
 			titleMarginBottom,
@@ -65,6 +81,9 @@ export default function Title({
 			titleFontFamily,
 		]
 	);
+
+
+
 
 	const linkPopover = useMemo(() => {
 		if (!isLinkPickerOpen) return null;

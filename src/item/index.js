@@ -48,8 +48,16 @@ registerBlockType('za/timeline-item', {
 			default: '',
 		},
 		titleFontSize: {
-			type: 'string',
-			default: '',
+			type: "object",
+			default: {
+				desktop: 22,
+				tablet: null,
+				mobile: null
+			}
+		},
+		titleFontUnit: {
+			type: "string",
+			default: "px"
 		},
 		titleFontWeight: {
 			type: 'string',

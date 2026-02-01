@@ -1,5 +1,9 @@
 # Timeline Full Widget
 
+## 1.2.1
+* Add media query for the timeline in the Gutenberg block.
+* Add media query for the timeline in the Elementor widget.
+
 ## 1.2.0 (Januery 23, 2026)
 * Corrected styles for the timeline in the Gutenberg block.
 
