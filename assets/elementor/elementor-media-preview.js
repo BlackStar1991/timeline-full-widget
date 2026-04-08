@@ -1,6 +1,8 @@
 (function ($) {
 	function patchFrame(frame) {
-		if (!frame || frame._zaPatched) return;
+		if (!frame || frame._zaPatched) {
+			return;
+		}
 		frame._zaPatched = true;
 		try {
 			frame.on('open', function () {
@@ -8,7 +10,7 @@
 					if (frame.options && frame.options.library) {
 						frame.options.library.type = '';
 					}
-					var state = frame.state && frame.state();
+					const state = frame.state && frame.state();
 					if (
 						state &&
 						state.props &&
@@ -30,8 +32,10 @@
 		function () {
 			setTimeout(function () {
 				try {
-					var frame = elementor.media && elementor.media.frame;
-					if (frame) patchFrame(frame);
+					const frame = elementor.media && elementor.media.frame;
+					if (frame) {
+						patchFrame(frame);
+					}
 				} catch (e) {}
 			}, 50);
 		}
@@ -43,9 +47,9 @@
 				elementor.media &&
 				typeof elementor.media.create === 'function'
 			) {
-				var origCreate = elementor.media.create;
+				const origCreate = elementor.media.create;
 				elementor.media.create = function () {
-					var f = origCreate.apply(this, arguments);
+					const f = origCreate.apply(this, arguments);
 					try {
 						patchFrame(f);
 					} catch (e) {}

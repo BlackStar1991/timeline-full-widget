@@ -45,7 +45,9 @@
 	/* TIMELINE LOADER */
 
 	function ensureTimeline(doc) {
-		if (!doc) return;
+		if (!doc) {
+			return;
+		}
 
 		const win = doc.defaultView || window;
 
@@ -55,7 +57,9 @@
 			return;
 		}
 		// loading guard
-		if (win._zaTimelineLoading) return;
+		if (win._zaTimelineLoading) {
+			return;
+		}
 		win._zaTimelineLoading = true;
 
 		const script = doc.createElement('script');
@@ -138,7 +142,9 @@
 	/* TINYMCE PLUGIN */
 
 	function registerPlugin() {
-		if (window._zaTimelineRegistered) return;
+		if (window._zaTimelineRegistered) {
+			return;
+		}
 		window._zaTimelineRegistered = true;
 
 		tinymce.PluginManager.add('za_timeline_button', function (editor) {

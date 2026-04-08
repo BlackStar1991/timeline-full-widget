@@ -29,6 +29,7 @@ export default function Save({ attributes }) {
 		mediaId,
 		mediaUrl,
 		imageAlt,
+		mediaWidth,
 		videoPoster,
 		mediaType,
 		mediaMime,
@@ -42,18 +43,20 @@ export default function Save({ attributes }) {
 	} = attributes;
 
 	const classes = ['timeline-item', position];
-	if (textAlignClass) classes.push(`t-text-align-${textAlignClass}`);
+	if (textAlignClass) {
+		classes.push(`t-text-align-${textAlignClass}`);
+	}
 	const className = Array.from(new Set(classes)).join(' ');
 	const linkProps = getSafeLinkAttributes(linkUrl, rel, linkTarget);
 	const styleObj = buildStyleObject({
-		titleInlineStyle: titleInlineStyle,
-		titleFontSize: titleFontSize,
-		titleFontWeight: titleFontWeight,
-		titleMarginTop: titleMarginTop,
-		titleMarginBottom: titleMarginBottom,
-		titleLineHeight: titleLineHeight,
-		titleFontFamily: titleFontFamily,
-		titleColor: titleColor,
+		titleInlineStyle,
+		titleFontSize,
+		titleFontWeight,
+		titleMarginTop,
+		titleMarginBottom,
+		titleLineHeight,
+		titleFontFamily,
+		titleColor,
 	});
 
 	const isVideoByMime =
@@ -69,9 +72,15 @@ export default function Save({ attributes }) {
 		const extMatch = mediaUrl.match(/\.([0-9a-z]+)(?:[\?#]|$)/i);
 		if (extMatch) {
 			const ext = extMatch[1].toLowerCase();
-			if (ext === 'mp4') sourceType = 'video/mp4';
-			if (ext === 'webm') sourceType = 'video/webm';
-			if (ext === 'ogv' || ext === 'ogg') sourceType = 'video/ogg';
+			if (ext === 'mp4') {
+				sourceType = 'video/mp4';
+			}
+			if (ext === 'webm') {
+				sourceType = 'video/webm';
+			}
+			if (ext === 'ogv' || ext === 'ogg') {
+				sourceType = 'video/ogg';
+			}
 		}
 	}
 	const blockProps = useBlockProps.save({
@@ -133,7 +142,7 @@ export default function Save({ attributes }) {
 											playsInline: true,
 											preload: 'metadata',
 											style: {
-												width: '100%',
+												width: mediaWidth || '100%',
 												height: 'auto',
 											},
 										},
@@ -153,6 +162,13 @@ export default function Save({ attributes }) {
 												? `img_${mediaId}`
 												: undefined
 										}
+										{...(mediaWidth
+											? {
+													style: {
+														width: mediaWidth,
+													},
+												}
+											: {})}
 										src={mediaUrl}
 										alt={imageAlt || ''}
 									/>

@@ -1,7 +1,9 @@
 {
 	"name": "timeline-full-widget",
-	"version": "1.2.0",
+	"version": "1.2.1",
 	"description": "A versatile Timeline plugin for Elementor and Gutenberg WordPress themes — add beautiful Timelines anywhere!",
+	"license": "GPL-2.0-or-later",
+	"author": "Andry Zirka",
 	"homepage": "https://github.com/BlackStar1991/timeline-full-widget#readme",
 	"bugs": {
 		"url": "https://github.com/BlackStar1991/timeline-full-widget/issues"
@@ -10,44 +12,30 @@
 		"type": "git",
 		"url": "git+https://github.com/BlackStar1991/timeline-full-widget.git"
 	},
-	"license": "GPL-2.0-or-later",
-	"author": "Andry Zirka",
-	"main": "index.js",
 	"scripts": {
 		"start": "wp-scripts start",
-		"build": "wp-scripts build && npm run minify:css",
-		"minify:css": "postcss build/*.css --dir build --ext .min.css",
+		"build": "wp-scripts build",
 		"format": "wp-scripts format",
-		"lint:js": "wp-scripts lint-js --max-warnings=0",
-		"format:js": "wp-scripts lint-js --fix",
-		"lint:css": "stylelint \"**/*.scss\" --max-warnings=0",
-		"format:css": "stylelint \"**/*.scss\" --fix"
-	},
-	"stylelint": {
-		"extends": [
-			"@wordpress/stylelint-config/stylistic"
-		]
+		"lint:js": "wp-scripts lint-js",
+		"lint:css": "wp-scripts lint-style",
+		"fix:js": "wp-scripts lint-js --fix",
+		"fix:css": "wp-scripts lint-style --fix",
+		"check": "npm run lint:js && npm run lint:css",
+		"fix": "npm run fix:js && npm run fix:css"
 	},
 	"devDependencies": {
-		"@wordpress/blob": "^4.9.0",
-		"@wordpress/components": "^28.9.0",
-		"@wordpress/data": "^10.9.0",
-		"@wordpress/eslint-plugin": "^22.0.0",
-		"@wordpress/prettier-config": "^4.30.0",
-		"@wordpress/scripts": "^31.2.0",
-		"@wordpress/stylelint-config": "^23.22.0",
-		"cssnano": "^7.1.1",
-		"eslint-config-prettier": "^10.1.8",
-		"postcss": "^8.5.6",
-		"postcss-cli": "^11.0.1",
-		"stylelint": "^16.24.0",
-		"stylelint-scss": "^6.12.1"
-	},
-	"dependencies": {
-		"@wordpress/block-editor": "^14.4.0",
-		"@wordpress/blocks": "^13.9.0",
-		"@wordpress/element": "^6.9.0",
-		"@wordpress/i18n": "^5.9.0",
-		"package-name": "^0.1.0"
+		"@wordpress/blob": "^4.43.0",
+		"@wordpress/block-editor": "^15.16.0",
+		"@wordpress/blocks": "^15.16.0",
+		"@wordpress/components": "^32.5.0",
+		"@wordpress/data": "^10.43.0",
+		"@wordpress/element": "^6.43.0",
+		"@wordpress/eslint-plugin": "^24.5.0",
+		"@wordpress/i18n": "^6.16.0",
+		"@wordpress/prettier-config": "^4.43.0",
+		"@wordpress/scripts": "^31.8.0",
+		"@wordpress/stylelint-config": "^23.35.0",
+		"stylelint": "^16.8.2",
+		"stylelint-scss": "^6.4.0"
 	}
 }

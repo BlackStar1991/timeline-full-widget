@@ -42,6 +42,7 @@ export function Edit({ clientId, attributes, setAttributes }) {
 		markerAlt,
 		videoPoster,
 		imageAlt,
+		mediaWidth,
 		mediaType,
 		mediaMime,
 		mediaId,
@@ -72,7 +73,9 @@ export function Edit({ clientId, attributes, setAttributes }) {
 		(select) => {
 			const editor = select('core/block-editor');
 			const parentId = editor.getBlockRootClientId(clientId);
-			if (!parentId) return { blockIndex: 0, parentDirection: undefined };
+			if (!parentId) {
+				return { blockIndex: 0, parentDirection: undefined };
+			}
 			const innerBlocks = editor.getBlocks(parentId);
 			const idx = innerBlocks.findIndex((b) => b.clientId === clientId);
 			const parent = editor.getBlock(parentId);
@@ -90,7 +93,9 @@ export function Edit({ clientId, attributes, setAttributes }) {
 			: attributes.direction;
 
 	const computedFallbackPosition = useMemo(() => {
-		if (typeof direction === 'undefined') return 'timeline-left';
+		if (typeof direction === 'undefined') {
+			return 'timeline-left';
+		}
 		const even = blockIndex % 2 === 0;
 		return direction
 			? even
@@ -108,7 +113,9 @@ export function Edit({ clientId, attributes, setAttributes }) {
 				? 'timeline-inverted'
 				: 'timeline-left'
 			: computedFallbackPosition;
-		if (position !== computedPosition) updates.position = computedPosition;
+		if (position !== computedPosition) {
+			updates.position = computedPosition;
+		}
 
 		// pull inline style values once
 		const parsed = parseStyleString(titleInlineStyle || '');
@@ -116,17 +123,25 @@ export function Edit({ clientId, attributes, setAttributes }) {
 			const m = parsed.fontSize.match(/^([\d.]+)(px|rem|em|%)?$/);
 			updates.titleFontSize = m ? m[1] : parsed.fontSize;
 		}
-		if (parsed.fontWeight && !titleFontWeight)
+		if (parsed.fontWeight && !titleFontWeight) {
 			updates.titleFontWeight = parsed.fontWeight;
-		if (parsed.marginTop && !titleMarginTop)
+		}
+		if (parsed.marginTop && !titleMarginTop) {
 			updates.titleMarginTop = parsed.marginTop.replace(/px$/, '');
-		if (parsed.marginBottom && !titleMarginBottom)
+		}
+		if (parsed.marginBottom && !titleMarginBottom) {
 			updates.titleMarginBottom = parsed.marginBottom.replace(/px$/, '');
-		if (parsed.lineHeight && !titleLineHeight)
+		}
+		if (parsed.lineHeight && !titleLineHeight) {
 			updates.titleLineHeight = parsed.lineHeight;
-		if (parsed.color && !titleColor) updates.titleColor = parsed.color;
+		}
+		if (parsed.color && !titleColor) {
+			updates.titleColor = parsed.color;
+		}
 
-		if (Object.keys(updates).length) setAttributes(updates);
+		if (Object.keys(updates).length) {
+			setAttributes(updates);
+		}
 	}, [
 		blockIndex,
 		direction,
@@ -176,7 +191,9 @@ export function Edit({ clientId, attributes, setAttributes }) {
 	);
 
 	const blockToolbarForMedia = useMemo(() => {
-		if (!showMedia || !mediaUrl) return null;
+		if (!showMedia || !mediaUrl) {
+			return null;
+		}
 		return (
 			<BlockControls>
 				<MediaReplaceFlow
@@ -200,10 +217,9 @@ export function Edit({ clientId, attributes, setAttributes }) {
 					}
 					isDisabled={!mediaUrl}
 					icon="trash"
+					aria-label={__('Remove Media File', 'timeline-full-widget')}
 					title={__('Remove Media File', 'timeline-full-widget')}
-				>
-					{__('Remove Media File', 'timeline-full-widget')}
-				</ToolbarButton>
+				/>
 			</BlockControls>
 		);
 	}, [showMedia, mediaUrl, onSelect, mediaId, imageAlt, setAttributes]);
@@ -216,7 +232,10 @@ export function Edit({ clientId, attributes, setAttributes }) {
 	return (
 		<>
 			<InspectorControls>
-				<PanelBody title={__('Block Settings', 'timeline-full-widget')}>
+				<PanelBody
+					title={__('Block Settings', 'timeline-full-widget')}
+					initialOpen={false}
+				>
 					<SelectControl
 						label={__('Title Tag', 'timeline-full-widget')}
 						value={titleTag}
@@ -278,8 +297,8 @@ export function Edit({ clientId, attributes, setAttributes }) {
 					mediaMime={mediaMime}
 					videoPoster={videoPoster}
 					imageAlt={imageAlt}
+					mediaWidth={mediaWidth}
 					setAttributes={setAttributes}
-					showMarker={showMarker}
 					markerUnique={markerUnique}
 					markerAlt={markerAlt}
 					markerUrl={markerUrl}
@@ -372,7 +391,7 @@ export function Edit({ clientId, attributes, setAttributes }) {
 											preload="metadata"
 											poster={videoPoster || undefined}
 											style={{
-												width: '100%',
+												width: mediaWidth || '100%',
 												height: 'auto',
 											}}
 										>
@@ -394,6 +413,10 @@ export function Edit({ clientId, attributes, setAttributes }) {
 											}
 											src={mediaUrl}
 											alt={imageAlt || ''}
+											style={{
+												width: mediaWidth || undefined,
+												height: 'auto',
+											}}
 										/>
 									)}
 									{isBlobURL(mediaUrl) && <Spinner />}

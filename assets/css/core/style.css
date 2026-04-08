@@ -11,7 +11,7 @@
     transform-origin: top;
     transform: scaleY(0);
 
-    background-color: var(--timeline-color-animation, #f37321);
+    background-color: #F37321;
 
     will-change: transform;
     z-index: 1;
@@ -19,6 +19,7 @@
 
 .timeline img {
     border: 0;
+    margin: 0 auto;
     max-width: 100%;
 }
 
@@ -38,25 +39,23 @@ ul.timeline {
     left: 50%;
 }
 
-.timeline:before, .tl-mark {
-    background-color: var(--timeline-color, #f6f6f8);
+.timeline:before {
+    background-color: #F6F6F8;
 }
 
 .timeline-panel {
-
-    border: 1px solid #F6F6F8;
-    border-radius: 5px;
-
-    padding: 15px;
     position: relative;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
+
 }
+
+
 
 .timeline-item {
     position: relative;
     display: grid;
     grid-template-columns:1fr;
     justify-content: center;
+    margin: 0;
 }
 
 
@@ -70,6 +69,21 @@ ul.timeline {
 
 .tl-desc-short strong {
     font-weight: bold;
+}
+.tl-desc-short a {
+    text-decoration: underline;
+}
+
+
+.tl-content{
+    border: 1px solid #F6F6F8;
+    border-radius: 5px;
+    padding: 15px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
+}
+
+.tl-content .tl-desc-short p{
+    margin-bottom: 10px;
 }
 
 .tl-mark {
@@ -102,9 +116,10 @@ ul.timeline {
     left: -50%;
 }
 
-.is-stuck .tl-mark {
+.timeline.timeline-animation-marker .is-stuck .tl-mark,
+.timeline.timeline-animation-marker li.is-stuck .tl-mark {
     transition: background 0.2s;
-    background-color: var(--timeline-color-animation, #f37321);
+    background-color: #F37321;
 }
 
 .tl-trigger {
@@ -118,13 +133,21 @@ ul.timeline {
 .timeline-side {
     width: 100%;
     line-height: 1.3em;
-    text-align: center;
+}
+
+.timeline-side b,
+.timeline-side strong{
+    font-weight: 700;
 }
 
 .timeline-side p {
     margin-top: 0;
-    margin-bottom: 0;
 }
+
+.timeline-side li:not(:last-child){
+    margin-bottom: 8px;
+}
+
 
 .tl-body p,
 .tl-body ul {
@@ -143,6 +166,7 @@ ul.timeline {
 }
 
 .tl-title {
+    display: block;
     margin: 0;
 }
 
@@ -182,6 +206,7 @@ ul.timeline {
         position: sticky;
         top: 0;
         align-self: start;
+        conteiner-type: scroll-snape;
         z-index: 2;
     }
 

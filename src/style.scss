@@ -21,29 +21,26 @@
   opacity: 0.3;
 }
 
-.timeline::before {
-  background-color: var(--timeline-color, #f6f6f8);
+.wp-block-za-timeline-full-widget .timeline::before {
+  background-color: var(--timeline-line-color, #f6f6f8);
 }
 
-.tl-mark {
-  background-color: var(--timeline-color, #f6f6f8);
+.wp-block-za-timeline-full-widget .tl-mark {
+  background-color: var(--timeline-marker-color, #f6f6f8);
 }
 
-.timeline-line-animation {
-  background-color: var(--timeline-color-animation, #f37321);
+.wp-block-za-timeline-full-widget .timeline-line-animation {
+  background-color: var(--timeline-line-active-color, #f37321);
 }
 
-li.is-stuck .tl-mark {
-  background-color: var(--timeline-color-animation, #f37321);
+.wp-block-za-timeline-full-widget .timeline.timeline-animation-marker li.is-stuck .tl-mark {
+  background-color: var(--timeline-marker-active-color, #f37321);
 }
-
-
 
 @media (min-width: 701px) {
-
   .timeline-item {
     grid-template-columns: calc(50% - 37px) calc(50% - 37px);
-    gap:64px;
+    gap: 64px;
   }
 
   .timeline-animation-marker .timeline-item {
@@ -51,12 +48,7 @@ li.is-stuck .tl-mark {
   }
 
   .wp-theme-kadence .timeline-line-animation,
-  .wp-theme-kadence .timeline:before{
+  .wp-theme-kadence .timeline:before {
     left: calc(50% + 15px);
   }
-  .wp-theme-twentytwenty .timeline-line-animation,
-  .wp-theme-twentytwenty .timeline:before {
-    left: calc(50% + 8px);
-  }
-
 }

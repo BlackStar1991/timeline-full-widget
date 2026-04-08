@@ -26,14 +26,19 @@ export default function Edit({ attributes, setAttributes, clientId }) {
 		direction = false,
 		onTheOneSide,
 		lineColor,
+		markerColor,
 		showOtherSide,
 		animationTimeline,
-		animationTimelineColor,
+		animationLineColor,
 		showMarker,
 		animationMarker,
 		markerUnique,
+		animationMarkerColor,
 		animationOtherSideSticky,
 	} = attributes;
+
+	const hasAnimatedMarkers =
+		showMarker && animationTimeline && animationMarker;
 
 	const wrapperRef = useRef(null);
 	const { updateBlockAttributes } = useDispatch('core/block-editor');
@@ -45,7 +50,9 @@ export default function Edit({ attributes, setAttributes, clientId }) {
 
 	const syncToChildren = useCallback(
 		(attrs = {}) => {
-			if (!innerBlocks.length) return;
+			if (!innerBlocks.length) {
+				return;
+			}
 
 			const parentDirection = attrs.direction ?? direction;
 			const parentOneSide = attrs.onTheOneSide ?? onTheOneSide;
@@ -85,35 +92,43 @@ export default function Edit({ attributes, setAttributes, clientId }) {
 			showOtherSide,
 			showMedia,
 			lineColor,
+			markerColor,
 			direction,
 			onTheOneSide,
 			animationTimeline,
-			animationTimelineColor,
+			animationLineColor,
 			showMarker,
 			markerUnique,
 			animationMarker,
+			animationMarkerColor,
 			animationOtherSideSticky,
 		});
 	}, [
 		showOtherSide,
 		showMedia,
 		lineColor,
+		markerColor,
 		direction,
 		onTheOneSide,
 		animationTimeline,
-		animationTimelineColor,
+		animationLineColor,
 		showMarker,
 		markerUnique,
 		animationMarker,
+		animationMarkerColor,
 		animationOtherSideSticky,
 		syncToChildren,
 	]);
 
 	useEffect(() => {
-		if (!animationTimeline || !wrapperRef.current) return;
 		if (!showMarker && animationMarker) {
 			setAttributes({ animationMarker: false });
 		}
+
+		if (!animationTimeline || !wrapperRef.current) {
+			return undefined;
+		}
+
 		let destroyFn;
 
 		try {
@@ -128,9 +143,17 @@ export default function Edit({ attributes, setAttributes, clientId }) {
 		}
 
 		return () => {
-			if (typeof destroyFn === 'function') destroyFn();
+			if (typeof destroyFn === 'function') {
+				destroyFn();
+			}
 		};
-	}, [animationTimeline, innerBlocks.length, showMarker]);
+	}, [
+		animationTimeline,
+		innerBlocks.length,
+		showMarker,
+		animationMarker,
+		setAttributes,
+	]);
 
 	const marginStyle = convertMarginAttrToStyle(attributes.style);
 	const outerProps = useBlockProps({ style: marginStyle });
@@ -141,9 +164,12 @@ export default function Edit({ attributes, setAttributes, clientId }) {
 				className="timeline-wrapper"
 				ref={wrapperRef}
 				style={{
-					'--timeline-color': lineColor || '#F6F6F8',
-					'--timeline-color-animation':
-						animationTimelineColor || '#F37321',
+					'--timeline-line-color': lineColor || '#F6F6F8',
+					'--timeline-marker-color': markerColor || '#F6F6F8',
+					'--timeline-line-active-color':
+						animationLineColor || '#F37321',
+					'--timeline-marker-active-color':
+						animationMarkerColor || '#F37321',
 				}}
 			>
 				<InspectorControls>
@@ -177,7 +203,7 @@ export default function Edit({ attributes, setAttributes, clientId }) {
 							},
 							{
 								label: __(
-									'Single-Side Layout',
+									'Single Side Layout',
 									'timeline-full-widget'
 								),
 								help: onTheOneSide
@@ -248,39 +274,71 @@ export default function Edit({ attributes, setAttributes, clientId }) {
 							))}
 
 						<PanelColorSettings
-							title={__('Timeline color', 'timeline-full-widget')}
+							title={__(
+								'Timeline Colors',
+								'timeline-full-widget'
+							)}
 							colorSettings={[
 								{
 									value: lineColor,
 									onChange: (color) =>
 										setAttributes({ lineColor: color }),
 									label: __(
-										'Line & Marker Color',
+										'Line Color',
 										'timeline-full-widget'
 									),
 								},
-							]}
+								showMarker && !markerUnique
+									? {
+											value: markerColor,
+											onChange: (color) =>
+												setAttributes({
+													markerColor: color,
+												}),
+											label: __(
+												'Marker Color',
+												'timeline-full-widget'
+											),
+										}
+									: null,
+							].filter(Boolean)}
 						/>
 
 						{animationTimeline && (
 							<PanelColorSettings
 								title={__(
-									'Timeline Animation Color',
+									'Timeline Animation Colors',
 									'timeline-full-widget'
 								)}
 								colorSettings={[
 									{
-										value: animationTimelineColor,
+										value: animationLineColor,
 										onChange: (color) =>
 											setAttributes({
-												animationTimelineColor: color,
+												animationLineColor: color,
 											}),
 										label: __(
-											'Animation Color',
+											'Animation Line Color',
 											'timeline-full-widget'
 										),
 									},
-								]}
+									showMarker &&
+									animationMarker &&
+									!markerUnique
+										? {
+												value: animationMarkerColor,
+												onChange: (color) =>
+													setAttributes({
+														animationMarkerColor:
+															color,
+													}),
+												label: __(
+													'Animation Marker Color',
+													'timeline-full-widget'
+												),
+											}
+										: null,
+								].filter(Boolean)}
 							/>
 						)}
 					</PanelBody>
@@ -340,7 +398,7 @@ export default function Edit({ attributes, setAttributes, clientId }) {
 				<ul
 					className={[
 						'timeline',
-						animationMarker && 'timeline-animation-marker',
+						hasAnimatedMarkers && 'timeline-animation-marker',
 						animationOtherSideSticky &&
 							'timeline-animation-other-side-sticky',
 					]

@@ -8,8 +8,9 @@ function boot() {
 		initAllWidgets(document);
 	} catch (e) {
 		// fail silently in production; you can console.error during debug
-		if (typeof console !== 'undefined')
+		if (typeof console !== 'undefined') {
 			console.debug('za-timeline: initAllWidgets error', e);
+		}
 	}
 }
 

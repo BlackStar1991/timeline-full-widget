@@ -48,16 +48,16 @@ registerBlockType('za/timeline-item', {
 			default: '',
 		},
 		titleFontSize: {
-			type: "object",
+			type: 'object',
 			default: {
 				desktop: 22,
 				tablet: null,
-				mobile: null
-			}
+				mobile: null,
+			},
 		},
 		titleFontUnit: {
-			type: "string",
-			default: "px"
+			type: 'string',
+			default: 'px',
 		},
 		titleFontWeight: {
 			type: 'string',
@@ -129,6 +129,10 @@ registerBlockType('za/timeline-item', {
 			source: 'attribute',
 			selector: '.timeline_pic img',
 			attribute: 'alt',
+			default: '',
+		},
+		mediaWidth: {
+			type: 'string',
 			default: '',
 		},
 		mediaId: {

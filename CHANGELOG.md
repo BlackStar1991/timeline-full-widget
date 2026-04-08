@@ -3,6 +3,9 @@
 ## 1.2.1
 * Add media query for the timeline in the Gutenberg block.
 * Add media query for the timeline in the Elementor widget.
+* Added control over the width of the media file in the element.
+* Fixed style problems with Content Typography in Elementor.
+* Separated styles for line and marker colors
 
 ## 1.2.0 (Januery 23, 2026)
 * Corrected styles for the timeline in the Gutenberg block.

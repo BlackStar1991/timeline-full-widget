@@ -8,6 +8,12 @@
  *   - addNoFollowForExternal  boolean, default true  (add nofollow to external links)
  *   - siteOrigin              string|undefined (for example https://example.com)
  *
+ * @param url
+ * @param rel
+ * @param target
+ * @param root0
+ * @param root0.addNoFollowForExternal
+ * @param root0.siteOrigin
  */
 export function getSafeLinkAttributes(
 	url,
@@ -70,11 +76,9 @@ export function getSafeLinkAttributes(
 			tokens.add('noopener');
 			tokens.add('noreferrer');
 		}
-	} else {
-		if (target === '_blank') {
-			tokens.add('noopener');
-			tokens.add('noreferrer');
-		}
+	} else if (target === '_blank') {
+		tokens.add('noopener');
+		tokens.add('noreferrer');
 	}
 
 	if (tokens.size) {
@@ -95,27 +99,37 @@ export function getSafeLinkAttributes(
  *  "margin-top:10px; color: red" -> { marginTop: "10px", color: "red" }
  *
  * @param {string|undefined|null} styleString
- * @returns {Object}
+ * @return {Object}
  */
 
 export function parseStyleString(styleString) {
-	if (!styleString || typeof styleString !== 'string') return {};
+	if (!styleString || typeof styleString !== 'string') {
+		return {};
+	}
 	return styleString.split(';').reduce((acc, pair) => {
 		// trim each pair first
 		const trimmed = String(pair).trim();
-		if (!trimmed) return acc;
+		if (!trimmed) {
+			return acc;
+		}
 
 		// split on FIRST ':' to allow values containing ':' (e.g. url(...))
 		const idx = trimmed.indexOf(':');
-		if (idx === -1) return acc;
+		if (idx === -1) {
+			return acc;
+		}
 
 		const rawProp = trimmed.slice(0, idx).trim();
 		const rawVal = trimmed.slice(idx + 1).trim();
-		if (!rawProp || !rawVal) return acc;
+		if (!rawProp || !rawVal) {
+			return acc;
+		}
 
 		// convert CSS property-name to JS camelCase key
 		const jsKey = rawProp.replace(/-([a-z])/g, (m, p1) => p1.toUpperCase());
-		if (jsKey) acc[jsKey] = rawVal;
+		if (jsKey) {
+			acc[jsKey] = rawVal;
+		}
 
 		return acc;
 	}, {});
@@ -124,6 +138,7 @@ export function parseStyleString(styleString) {
 /**
  * Build a style object merging a saved inline style string and separate attributes.
  * Separate attributes override style-string values.
+ * @param attrs
  */
 export function buildStyleObject(attrs = {}) {
 	// attrs: { titleInlineStyle, titleFontSize, titleFontWeight, titleMarginTop, titleMarginBottom, titleColor }
@@ -131,7 +146,9 @@ export function buildStyleObject(attrs = {}) {
 	const result = { ...styleFromAttr }; // base from stored style-str
 
 	// explicitly override if we have separate attributes (so newer UI wins)
-	if (attrs.titleColor) result.color = attrs.titleColor;
+	if (attrs.titleColor) {
+		result.color = attrs.titleColor;
+	}
 
 	if (attrs.titleFontSize) {
 		const size = String(attrs.titleFontSize);
@@ -161,15 +178,17 @@ export function buildStyleObject(attrs = {}) {
 		}
 	}
 
-	if (attrs.titleMarginTop)
+	if (attrs.titleMarginTop) {
 		result.marginTop = String(attrs.titleMarginTop).endsWith('px')
 			? String(attrs.titleMarginTop)
 			: `${attrs.titleMarginTop}px`;
+	}
 
-	if (attrs.titleMarginBottom)
+	if (attrs.titleMarginBottom) {
 		result.marginBottom = String(attrs.titleMarginBottom).endsWith('px')
 			? String(attrs.titleMarginBottom)
 			: `${attrs.titleMarginBottom}px`;
+	}
 
 	if (
 		attrs.titleLineHeight !== undefined &&
@@ -181,12 +200,10 @@ export function buildStyleObject(attrs = {}) {
 			result.lineHeight = raw;
 		} else if (/^\d+(\.\d+)?$/.test(raw)) {
 			result.lineHeight = `${raw}px`;
+		} else if (/^\d+(\.\d+)?(rem|em|%)$/.test(raw)) {
+			result.lineHeight = raw;
 		} else {
-			if (/^\d+(\.\d+)?(rem|em|%)$/.test(raw)) {
-				result.lineHeight = raw;
-			} else {
-				result.lineHeight = raw;
-			}
+			result.lineHeight = raw;
 		}
 	} else if (styleFromAttr.lineHeight) {
 		const inlineVal = String(styleFromAttr.lineHeight).trim();
@@ -204,17 +221,27 @@ export function buildStyleObject(attrs = {}) {
 
 export function convertMarginAttrToStyle(style = {}) {
 	const result = {};
-	if (!style) return result;
+	if (!style) {
+		return result;
+	}
 
 	const spacing = style.spacing ?? style;
 	const normalize = (v) => {
-		if (v == null) return null;
+		if (v === null) {
+			return null;
+		}
 
-		if (typeof v === 'number') return `${v}px`;
+		if (typeof v === 'number') {
+			return `${v}px`;
+		}
 
 		if (typeof v === 'string') {
-			if (v === '0' || v === '0px' || v === '0rem') return '0';
-			if (/^(?:-?\d+(\.\d+)?(px|rem|em|%)|var\(|--)/.test(v)) return v;
+			if (v === '0' || v === '0px' || v === '0rem') {
+				return '0';
+			}
+			if (/^(?:-?\d+(\.\d+)?(px|rem|em|%)|var\(|--)/.test(v)) {
+				return v;
+			}
 			const wpVarMatch = v.match(/^var:preset\|([^\|]+)\|(.+)$/);
 			if (wpVarMatch) {
 				const group = wpVarMatch[1];
@@ -222,7 +249,9 @@ export function convertMarginAttrToStyle(style = {}) {
 				return `var(--wp--preset--${group}--${name})`;
 			}
 
-			if (/^-?\d+(\.\d+)?$/.test(v)) return `${v}px`;
+			if (/^-?\d+(\.\d+)?$/.test(v)) {
+				return `${v}px`;
+			}
 			return v;
 		}
 		return null;
@@ -234,19 +263,27 @@ export function convertMarginAttrToStyle(style = {}) {
 		!Array.isArray(spacing.margin)
 	) {
 		const m = spacing.margin;
-		if (m.top != null) result.marginTop = normalize(m.top);
-		if (m.right != null) result.marginRight = normalize(m.right);
-		if (m.bottom != null) result.marginBottom = normalize(m.bottom);
-		if (m.left != null) result.marginLeft = normalize(m.left);
+		if (m.top !== null) {
+			result.marginTop = normalize(m.top);
+		}
+		if (m.right !== null) {
+			result.marginRight = normalize(m.right);
+		}
+		if (m.bottom !== null) {
+			result.marginBottom = normalize(m.bottom);
+		}
+		if (m.left !== null) {
+			result.marginLeft = normalize(m.left);
+		}
 
-		if (m.vertical != null) {
+		if (m.vertical !== null) {
 			const v = normalize(m.vertical);
 			if (v) {
 				result.marginTop = result.marginTop ?? v;
 				result.marginBottom = result.marginBottom ?? v;
 			}
 		}
-		if (m.horizontal != null) {
+		if (m.horizontal !== null) {
 			const h = normalize(m.horizontal);
 			if (h) {
 				result.marginLeft = result.marginLeft ?? h;
@@ -257,26 +294,40 @@ export function convertMarginAttrToStyle(style = {}) {
 
 	if (spacing && Array.isArray(spacing.margin)) {
 		const [t, r, b, l] = spacing.margin;
-		if (t != null) result.marginTop = normalize(t);
-		if (r != null) result.marginRight = normalize(r);
-		if (b != null) result.marginBottom = normalize(b);
-		if (l != null) result.marginLeft = normalize(l);
+		if (t !== null) {
+			result.marginTop = normalize(t);
+		}
+		if (r !== null) {
+			result.marginRight = normalize(r);
+		}
+		if (b !== null) {
+			result.marginBottom = normalize(b);
+		}
+		if (l !== null) {
+			result.marginLeft = normalize(l);
+		}
 	}
 
 	['marginTop', 'marginRight', 'marginBottom', 'marginLeft'].forEach((k) => {
 		const v = spacing?.[k] ?? style?.[k];
-		if (v != null) result[k] = normalize(v);
+		if (v !== null) {
+			result[k] = normalize(v);
+		}
 	});
 
 	if (!Object.keys(result).length) {
 		if (typeof spacing === 'string' || typeof spacing === 'number') {
 			const v = normalize(spacing);
-			if (v != null) result.margin = v;
+			if (v !== null) {
+				result.margin = v;
+			}
 		}
 	}
 
 	Object.keys(result).forEach((k) => {
-		if (result[k] == null) delete result[k];
+		if (result[k] === null) {
+			delete result[k];
+		}
 	});
 
 	return result;

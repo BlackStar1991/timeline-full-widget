@@ -4,11 +4,24 @@ import {
 	TextControl,
 	ToolbarButton,
 	Button,
+	__experimentalUnitControl as UnitControl
 } from '@wordpress/components';
 import { MediaPlaceholder, MediaReplaceFlow } from '@wordpress/block-editor';
 import { isBlobURL } from '@wordpress/blob';
 import { __ } from '@wordpress/i18n';
-import React from 'react';
+import { React } from 'react';
+
+const WidthOfMedia = ({ value, onChange }) => {
+	return (
+		<UnitControl
+			value={value}
+			onChange={onChange}
+			label={__('Width of media', 'timeline-full-widget')}
+			unit={'%'}
+			__next40pxDefaultSize={true}
+		/>
+	);
+};
 
 export default function MediaSettingsPanel({
 	showMedia,
@@ -16,14 +29,16 @@ export default function MediaSettingsPanel({
 	mediaMime,
 	videoPoster,
 	imageAlt,
+	mediaWidth,
 	setAttributes,
-	showMarker,
 	markerUnique,
 	markerUrl,
 	markerId,
 	markerAlt,
 }) {
-	if (!showMedia && !markerUnique) return null;
+	if (!showMedia && !markerUnique) {
+		return null;
+	}
 
 	const isVideo =
 		(typeof mediaMime === 'string' && mediaMime.indexOf('video/') === 0) ||
@@ -31,7 +46,10 @@ export default function MediaSettingsPanel({
 			/\.(mp4|webm|ogv|ogg)(?:[\?#]|$)/i.test(mediaUrl));
 
 	return (
-		<PanelBody title={__('Media Settings', 'timeline-full-widget')}>
+		<PanelBody
+			title={__('Media Settings', 'timeline-full-widget')}
+			initialOpen={false}
+		>
 			{showMedia && mediaUrl && !isBlobURL(mediaUrl) && (
 				<>
 					{isVideo ? (
@@ -88,6 +106,10 @@ export default function MediaSettingsPanel({
 							onChange={(val) => setAttributes({ imageAlt: val })}
 						/>
 					)}
+					<WidthOfMedia
+						value={mediaWidth}
+						onChange={(val) => setAttributes({ mediaWidth: val })}
+					/>
 				</>
 			)}
 

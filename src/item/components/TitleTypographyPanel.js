@@ -9,7 +9,6 @@ import { normalizeResponsive } from '../utils/normalizeResponsive';
 export default function TitleTypographyPanel({ attrs = {}, setAttributes }) {
 	const {
 		titleFontSize,
-		titleFontUnit,
 		titleFontWeight,
 		titleMarginTop,
 		titleMarginBottom,
@@ -19,12 +18,13 @@ export default function TitleTypographyPanel({ attrs = {}, setAttributes }) {
 
 	const device = useViewport();
 
+	// Font size <=58px otherwise incorrect styles
 	const normalizedFontSize = normalizeResponsive(titleFontSize, {
 		desktop: 22,
 	});
 
 	const currentValue =
-		normalizedFontSize[device] != null
+		normalizedFontSize[device] !== null
 			? normalizedFontSize[device]
 			: undefined;
 
@@ -105,7 +105,5 @@ export default function TitleTypographyPanel({ attrs = {}, setAttributes }) {
 				__next40pxDefaultSize={true}
 			/>
 		</PanelBody>
-
-
 	);
 }

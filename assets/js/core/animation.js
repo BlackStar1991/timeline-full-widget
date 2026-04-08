@@ -2,7 +2,9 @@
 
 const DEBUG = false;
 function log(...args) {
-	if (!DEBUG) return;
+	if (!DEBUG) {
+		return;
+	}
 	try {
 		console.log('[za-timeline]', ...args);
 	} catch (e) {}
@@ -10,34 +12,46 @@ function log(...args) {
 
 export function initTimelineAnimation(scopeEl) {
 	const el = scopeEl && scopeEl.jquery ? scopeEl[0] : scopeEl;
-	if (!el || el.nodeType !== 1) return null;
-	if (el.__zaTimelineDestroy) return el.__zaTimelineDestroy;
+	if (!el || el.nodeType !== 1) {
+		return null;
+	}
+	if (el.__zaTimelineDestroy) {
+		return el.__zaTimelineDestroy;
+	}
 
 	// ---- helpers ----
 	const findWrapper = (node) => {
-		if (!node) return null;
+		if (!node) {
+			return null;
+		}
 		if (
 			node.classList &&
 			(node.classList.contains('timeline-wrapper') ||
 				node.classList.contains('timeline'))
-		)
+		) {
 			return node;
-		if (node.querySelector)
+		}
+		if (node.querySelector) {
 			return (
 				node.querySelector('.timeline-wrapper') ||
 				node.querySelector('.timeline')
 			);
+		}
 		return null;
 	};
 
 	const getScrollParent = (node) => {
-		if (!node) return window;
+		if (!node) {
+			return window;
+		}
 		let p = node.parentElement;
 		while (p) {
 			try {
 				const style = window.getComputedStyle(p);
 				const y = style.overflowY;
-				if (y === 'auto' || y === 'scroll' || y === 'overlay') return p;
+				if (y === 'auto' || y === 'scroll' || y === 'overlay') {
+					return p;
+				}
 			} catch (e) {
 				// access denied? skip
 			}
@@ -47,24 +61,36 @@ export function initTimelineAnimation(scopeEl) {
 	};
 
 	const wrapper = findWrapper(el);
-	if (!wrapper) return null;
+	if (!wrapper) {
+		return null;
+	}
 
 	const line =
 		wrapper.querySelector('.timeline-line-animation') ||
 		(el !== wrapper &&
 			el.querySelector &&
 			el.querySelector('.timeline-line-animation'));
-	if (!line) return null;
+	if (!line) {
+		return null;
+	}
 
 	let scrollParent = getScrollParent(wrapper);
 
 	const shouldFallbackToWindow = (rootEl) => {
-		if (!rootEl || rootEl === window) return false;
+		if (!rootEl || rootEl === window) {
+			return false;
+		}
 		try {
 			const r = rootEl.getBoundingClientRect();
-			if (!r || r.height < 2) return true;
-			if (rootEl === document.body || rootEl === document.documentElement)
+			if (!r || r.height < 2) {
 				return true;
+			}
+			if (
+				rootEl === document.body ||
+				rootEl === document.documentElement
+			) {
+				return true;
+			}
 		} catch (e) {
 			return true;
 		}
@@ -131,7 +157,9 @@ export function initTimelineAnimation(scopeEl) {
 			threshold: 0,
 		};
 		observer = new IntersectionObserver((entries) => {
-			if (!DEBUG) return;
+			if (!DEBUG) {
+				return;
+			}
 			entries.forEach((entry) => {
 				const trg = entry.target;
 				const parentBlock =
@@ -139,7 +167,9 @@ export function initTimelineAnimation(scopeEl) {
 					trg.closest('.timeline-item') ||
 					trg.closest('.wp-block') ||
 					trg.closest('.elementor-widget');
-				if (!parentBlock) return;
+				if (!parentBlock) {
+					return;
+				}
 				try {
 					console.log('[za-timeline][IO]', {
 						isIntersecting: entry.isIntersecting,
@@ -156,7 +186,9 @@ export function initTimelineAnimation(scopeEl) {
 	}
 
 	const observeTriggers = () => {
-		if (!observer) return;
+		if (!observer) {
+			return;
+		}
 		for (let i = 0; i < triggers.length; i++) {
 			try {
 				observer.observe(triggers[i]);
@@ -164,7 +196,9 @@ export function initTimelineAnimation(scopeEl) {
 		}
 	};
 	const unobserveTriggers = () => {
-		if (!observer) return;
+		if (!observer) {
+			return;
+		}
 		for (let i = 0; i < triggers.length; i++) {
 			try {
 				observer.unobserve(triggers[i]);
@@ -176,8 +210,9 @@ export function initTimelineAnimation(scopeEl) {
 	const getIframeElementRect = () => {
 		try {
 			const fe = window.frameElement;
-			if (!fe || typeof fe.getBoundingClientRect !== 'function')
+			if (!fe || typeof fe.getBoundingClientRect !== 'function') {
 				return null;
+			}
 			return fe.getBoundingClientRect();
 		} catch (e) {
 			return null;
@@ -186,9 +221,13 @@ export function initTimelineAnimation(scopeEl) {
 
 	// convert rect (from el.getBoundingClientRect() in iframe coords) to parent viewport coords
 	const rectInParent = (rect) => {
-		if (!canUseParentCoords) return rect;
+		if (!canUseParentCoords) {
+			return rect;
+		}
 		const iframeRect = getIframeElementRect();
-		if (!iframeRect) return rect;
+		if (!iframeRect) {
+			return rect;
+		}
 		return {
 			top: iframeRect.top + rect.top,
 			bottom: iframeRect.top + rect.bottom,
@@ -208,7 +247,9 @@ export function initTimelineAnimation(scopeEl) {
 				/* fallback below */
 			}
 		}
-		if (scrollParent === window) return window.innerHeight / 2;
+		if (scrollParent === window) {
+			return window.innerHeight / 2;
+		}
 		try {
 			const r = scrollParent.getBoundingClientRect();
 			return r.top + r.height / 2;
@@ -217,14 +258,16 @@ export function initTimelineAnimation(scopeEl) {
 		}
 	};
 
-	let currentStuckEl = null;
+	const currentStuckEl = null;
 
 	const EPS_ADD_PX = 6;
 	const EPS_REMOVE_PX = 10;
 
 	// update stuck classes — using parent coords when possible
 	function updateStuckByLine() {
-		if (!line || items.length === 0) return;
+		if (!line || items.length === 0) {
+			return;
+		}
 
 		// read line rect once
 		const lineRect = line.getBoundingClientRect();
@@ -260,7 +303,9 @@ export function initTimelineAnimation(scopeEl) {
 			const { el: it, mark } = items[i];
 			const markRect = mark.getBoundingClientRect();
 			let markCenter = (markRect.top + markRect.bottom) / 2;
-			if (canUseParentCoords) markCenter += iframeOffsetTop;
+			if (canUseParentCoords) {
+				markCenter += iframeOffsetTop;
+			}
 
 			const isCurrent = it === best;
 			const passed = markCenter <= lineBottom + EPS_ADD_PX;
@@ -297,27 +342,26 @@ export function initTimelineAnimation(scopeEl) {
 				);
 			}
 			return 0;
-		} else {
-			try {
-				const rootRect = scrollParent.getBoundingClientRect();
-				const rootMiddle = rootRect.top + rootRect.height / 2;
-				if (rect.top < rootMiddle && rect.bottom > rootRect.top) {
-					return Math.max(
-						0,
-						Math.min(1, (rootMiddle - rect.top) / rect.height)
-					);
-				}
-			} catch (e) {
-				const middle = window.innerHeight / 2;
-				if (rect.top < middle && rect.bottom > 0) {
-					return Math.max(
-						0,
-						Math.min(1, (middle - rect.top) / rect.height)
-					);
-				}
-			}
-			return 0;
 		}
+		try {
+			const rootRect = scrollParent.getBoundingClientRect();
+			const rootMiddle = rootRect.top + rootRect.height / 2;
+			if (rect.top < rootMiddle && rect.bottom > rootRect.top) {
+				return Math.max(
+					0,
+					Math.min(1, (rootMiddle - rect.top) / rect.height)
+				);
+			}
+		} catch (e) {
+			const middle = window.innerHeight / 2;
+			if (rect.top < middle && rect.bottom > 0) {
+				return Math.max(
+					0,
+					Math.min(1, (middle - rect.top) / rect.height)
+				);
+			}
+		}
+		return 0;
 	}
 
 	// animation frame (smooth lerp)
@@ -337,21 +381,29 @@ export function initTimelineAnimation(scopeEl) {
 
 		const LERP = 0.12;
 		current += (target - current) * LERP;
-		if (Math.abs(current - target) < 0.001) current = target;
+		if (Math.abs(current - target) < 0.001) {
+			current = target;
+		}
 		line.style.transform = `scaleY(${current})`;
 
 		updateStuckByLine();
 
-		if (running) rafId = requestAnimationFrame(frame);
-		else if (Math.abs(current - target) > 0.0005)
+		if (running) {
 			rafId = requestAnimationFrame(frame);
+		} else if (Math.abs(current - target) > 0.0005) {
+			rafId = requestAnimationFrame(frame);
+		}
 	}
 
 	function startLoop() {
-		if (running) return;
+		if (running) {
+			return;
+		}
 		running = true;
 		lastTarget = -1;
-		if (!rafId) rafId = requestAnimationFrame(frame);
+		if (!rafId) {
+			rafId = requestAnimationFrame(frame);
+		}
 	}
 	function stopLoop() {
 		running = false;
@@ -369,16 +421,23 @@ export function initTimelineAnimation(scopeEl) {
 	}
 
 	// observe triggers + visibility
-	if (triggers.length) observeTriggers();
+	if (triggers.length) {
+		observeTriggers();
+	}
 
 	let visObserver = null;
 	try {
 		visObserver = new IntersectionObserver(
 			(entries) => {
 				entries.forEach((entry) => {
-					if (entry.target !== wrapper) return;
-					if (entry.isIntersecting) startLoop();
-					else stopLoop();
+					if (entry.target !== wrapper) {
+						return;
+					}
+					if (entry.isIntersecting) {
+						startLoop();
+					} else {
+						stopLoop();
+					}
 				});
 			},
 			{
@@ -451,7 +510,9 @@ export function initTimelineAnimation(scopeEl) {
 				break;
 			}
 		}
-		if (!changed) return;
+		if (!changed) {
+			return;
+		}
 		unobserveTriggers();
 		triggers = Array.from(wrapper.querySelectorAll('.tl-trigger'));
 		items = Array.from(
@@ -463,7 +524,9 @@ export function initTimelineAnimation(scopeEl) {
 				it.querySelector('.tl-trigger') ||
 				it,
 		}));
-		if (triggers.length) observeTriggers();
+		if (triggers.length) {
+			observeTriggers();
+		}
 		updateStuckByLine();
 		startLoop();
 	});
@@ -503,14 +566,16 @@ export function initTimelineAnimation(scopeEl) {
 	// destroy
 	function destroy() {
 		stopLoop();
-		if (observer)
+		if (observer) {
 			try {
 				observer.disconnect();
 			} catch (e) {}
-		if (visObserver)
+		}
+		if (visObserver) {
 			try {
 				visObserver.disconnect();
 			} catch (e) {}
+		}
 		try {
 			mo.disconnect();
 		} catch (e) {}
@@ -579,7 +644,9 @@ export function initTimelineAnimation(scopeEl) {
 
 		// remove stuck class if present
 		try {
-			if (currentStuckEl) currentStuckEl.classList.remove('is-stuck');
+			if (currentStuckEl) {
+				currentStuckEl.classList.remove('is-stuck');
+			}
 		} catch (e) {}
 		try {
 			delete el.__zaTimelineDestroy;
@@ -594,6 +661,7 @@ export function initTimelineAnimation(scopeEl) {
 
 /**
  * Initialize all timeline widgets in a document
+ * @param doc
  */
 export function initAllWidgets(doc = document) {
 	try {

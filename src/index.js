@@ -1,5 +1,4 @@
 import { registerBlockType } from '@wordpress/blocks';
-
 import './item';
 import Edit from './edit';
 import Save from './save';
@@ -18,6 +17,8 @@ registerBlockType('za/timeline-full-widget', {
 	category: 'widgets',
 	supports: {
 		html: false,
+		align: ['wide', 'full'],
+		anchor: true,
 		spacing: {
 			margin: true,
 		},

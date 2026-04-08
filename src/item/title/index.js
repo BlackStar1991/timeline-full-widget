@@ -14,7 +14,10 @@ import { __ } from '@wordpress/i18n';
 
 import { getSafeLinkAttributes, buildStyleObject } from '../utils';
 import useViewport from '../hooks/useViewport';
-import {normalizeResponsive, resolveResponsiveValue} from '../utils/normalizeResponsive';
+import {
+	normalizeResponsive,
+	resolveResponsiveValue,
+} from '../utils/normalizeResponsive';
 
 export default function Title({
 	clientId,
@@ -47,7 +50,6 @@ export default function Title({
 		() => resolveResponsiveValue(normalizedFontSize, device),
 		[normalizedFontSize, device]
 	);
-
 
 	const selectedBlockClientId = useSelect(
 		(select) => select('core/block-editor').getSelectedBlockClientId(),
@@ -82,11 +84,10 @@ export default function Title({
 		]
 	);
 
-
-
-
 	const linkPopover = useMemo(() => {
-		if (!isLinkPickerOpen) return null;
+		if (!isLinkPickerOpen) {
+			return null;
+		}
 		return (
 			<Popover
 				position="bottom center"

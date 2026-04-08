@@ -146,9 +146,9 @@ class Za_Pack_Widget_Timeline extends Widget_Base
                 'list_title',
                 [
                         'label' => __('Title', 'timeline-full-widget'),
-                        'type' => Controls_Manager::TEXT,
+                        'type' => Controls_Manager::TEXTAREA,
                         'default' => __('Timeline Title', 'timeline-full-widget'),
-                        'label_block' => true,
+                        'rows' => 2,
                 ]
         );
 
@@ -228,9 +228,9 @@ class Za_Pack_Widget_Timeline extends Widget_Base
     protected function register_style_controls()
     {
         $this->start_controls_section(
-                'style_section',
+                'section_style_title',
                 [
-                        'label' => __('Style', 'timeline-full-widget'),
+                        'label' => __('Title', 'timeline-full-widget'),
                         'tab' => Controls_Manager::TAB_STYLE,
                 ]
         );
@@ -238,7 +238,7 @@ class Za_Pack_Widget_Timeline extends Widget_Base
         $this->add_control(
                 'header_tag',
                 [
-                        'label' => __('Title HTML Tag', 'timeline-full-widget'),
+                        'label' => __('HTML Tag', 'timeline-full-widget'),
                         'type' => Controls_Manager::SELECT,
                         'options' => array_combine(
                                 ['h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'div', 'span', 'p', 'a'],
@@ -247,11 +247,12 @@ class Za_Pack_Widget_Timeline extends Widget_Base
                         'default' => 'h2',
                 ]
         );
+
         $this->add_group_control(
                 Group_Control_Typography::get_type(),
                 [
                         'name' => 'title_typography',
-                        'label' => __('Title Typography', 'timeline-full-widget'),
+                        'label' => __('Typography', 'timeline-full-widget'),
                         'selector' => '{{WRAPPER}} .tl-title',
                         'fields_options' => [
                                 'typography' => [
@@ -266,10 +267,54 @@ class Za_Pack_Widget_Timeline extends Widget_Base
                         ],
                 ]
         );
+
+        $this->add_responsive_control(
+                'title_alignment',
+                [
+                        'label' => __('Title Alignment', 'timeline-full-widget'),
+                        'type' => Controls_Manager::CHOOSE,
+                        'options' => [
+                                'left' => [
+                                        'title' => __('Left', 'timeline-full-widget'),
+                                        'icon' => 'eicon-text-align-left',
+                                ],
+                                'center' => [
+                                        'title' => __('Center', 'timeline-full-widget'),
+                                        'icon' => 'eicon-text-align-center',
+                                ],
+                                'right' => [
+                                        'title' => __('Right', 'timeline-full-widget'),
+                                        'icon' => 'eicon-text-align-right',
+                                ],
+                                'justify' => [
+                                        'title' => __('Justified', 'timeline-full-widget'),
+                                        'icon' => 'eicon-text-align-justify',
+                                ],
+                        ],
+                        'default' => 'left',
+                        'selectors' => [
+                                '{{WRAPPER}} .tl-title' => 'text-align: {{VALUE}};',
+                        ],
+                ]
+        );
+
+
+        $this->add_responsive_control(
+                'title_margin',
+                [
+                        'label' => __('Margin', 'timeline-full-widget'),
+                        'type' => Controls_Manager::DIMENSIONS,
+                        'size_units' => ['px', '%', 'em', 'rem'],
+                        'selectors' => [
+                                '{{WRAPPER}} .tl-title' => 'margin: {{TOP}}{{UNIT}} {{RIGHT}}{{UNIT}} {{BOTTOM}}{{UNIT}} {{LEFT}}{{UNIT}};',
+                        ],
+                ]
+        );
+
         $this->add_control(
                 'title_color',
                 [
-                        'label' => __('Title color', 'timeline-full-widget'),
+                        'label' => __('Color', 'timeline-full-widget'),
                         'type' => Controls_Manager::COLOR,
                         'selectors' => [
                                 '{{WRAPPER}} .tl-title' => 'color: {{VALUE}};',
@@ -277,10 +322,20 @@ class Za_Pack_Widget_Timeline extends Widget_Base
                 ]
         );
 
+        $this->end_controls_section();
+
+        $this->start_controls_section(
+                'section_style_content',
+                [
+                        'label' => __('Content', 'timeline-full-widget'),
+                        'tab' => Controls_Manager::TAB_STYLE,
+                ]
+        );
+
         $this->add_control(
                 'blocks_color',
                 [
-                        'label' => __('Blocks Color', 'timeline-full-widget'),
+                        'label' => __('Text Color', 'timeline-full-widget'),
                         'type' => Controls_Manager::COLOR,
                         'default' => '#333333',
                         'selectors' => [
@@ -289,126 +344,12 @@ class Za_Pack_Widget_Timeline extends Widget_Base
                 ]
         );
 
-        $this->add_control(
-                'timeline_color',
-                [
-                        'label' => __('Line & Marker Color', 'timeline-full-widget'),
-                        'type' => Controls_Manager::COLOR,
-                        'default' => '#F6F6F8',
-                        'selectors' => [
-                                '{{WRAPPER}} .tl-mark' => 'background-color: {{VALUE}};',
-                                '{{WRAPPER}} .timeline:before' => 'background-color: {{VALUE}};',
-                        ],
-                ]
-        );
-
-        $this->add_control(
-                'timeline_animation_color',
-                [
-                        'label' => __('Animation Color', 'timeline-full-widget'),
-                        'type' => Controls_Manager::COLOR,
-                        'default' => '#F37321',
-                        'selectors' => [
-                                '{{WRAPPER}} .timeline-line-animation' => 'background-color: {{VALUE}};',
-                                '{{WRAPPER}} .is-stuck .tl-mark' => 'background-color: {{VALUE}};',
-                        ],
-                        'condition' => [
-                                'tl_animation_timeline' => 'yes',
-                        ],
-                ]
-        );
-
-        $this->add_control(
-                'tl_change_direction',
-                [
-                        'label' => __('Timeline Direction', 'timeline-full-widget'),
-                        'type' => Controls_Manager::SWITCHER,
-                        'label_on' => __('Left', 'timeline-full-widget'),
-                        'label_off' => __('Right', 'timeline-full-widget'),
-                        'return_value' => 'left',
-                ]
-        );
-
-        $this->add_control(
-                'tl_change_onside',
-                [
-                        'label' => __('Single-Side Layout', 'timeline-full-widget'),
-                        'type' => Controls_Manager::SWITCHER,
-                        'label_on' => __('Yes', 'timeline-full-widget'),
-                        'label_off' => __('No', 'timeline-full-widget'),
-                        'return_value' => 'yes',
-                ]
-        );
-
-        $this->add_control(
-                'tl_animation_timeline',
-                [
-                        'label' => __('Animate Timeline Line', 'timeline-full-widget'),
-                        'type' => Controls_Manager::SWITCHER,
-                        'label_on' => __('Yes', 'timeline-full-widget'),
-                        'label_off' => __('No', 'timeline-full-widget'),
-                        'return_value' => 'yes',
-                        'default' => 'yes',
-                ]
-        );
-
-        $this->add_control(
-                'tl_show_marker',
-                [
-                        'label' => __('Show Marker', 'timeline-full-widget'),
-                        'type' => Controls_Manager::SWITCHER,
-                        'label_on' => __('Yes', 'timeline-full-widget'),
-                        'label_off' => __('No', 'timeline-full-widget'),
-                        'return_value' => 'yes',
-                        'default' => 'yes',
-                ]
-        );
-        $this->add_control(
-                'tl_animation_marker',
-                [
-                        'label' => __('Animate Markers', 'timeline-full-widget'),
-                        'type' => Controls_Manager::SWITCHER,
-                        'label_on' => __('Yes', 'timeline-full-widget'),
-                        'label_off' => __('No', 'timeline-full-widget'),
-                        'return_value' => 'yes',
-                        'default' => 'yes',
-                        'condition' => [
-                                'tl_show_marker' => 'yes',
-                        ],
-                ]
-        );
-        $this->add_control(
-                'tl_animation_other_side_sticky',
-                [
-                        'label' => __('Sticky Other Side', 'timeline-full-widget'),
-                        'type' => Controls_Manager::SWITCHER,
-                        'label_on' => __('Yes', 'timeline-full-widget'),
-                        'label_off' => __('No', 'timeline-full-widget'),
-                        'return_value' => 'yes',
-                        'default' => 'no',
-                ]
-        );
-        $this->add_control(
-                'tl_is_marker_unique',
-                [
-                        'label' => __('Unique Marker', 'timeline-full-widget'),
-                        'type' => Controls_Manager::SWITCHER,
-                        'label_on' => __('Yes', 'timeline-full-widget'),
-                        'label_off' => __('No', 'timeline-full-widget'),
-                        'return_value' => 'yes',
-                        'default' => 'no',
-                        'condition' => [
-                                'tl_show_marker' => 'yes',
-                        ],
-                ]
-        );
-
         $this->add_group_control(
                 Group_Control_Typography::get_type(),
                 [
                         'name' => 'list_content_typography',
                         'label' => __('Content Typography', 'timeline-full-widget'),
-                        'selector' => '{{WRAPPER}} .tl-desc-short',
+                        'selector' => '{{WRAPPER}} .tl-desc-short, {{WRAPPER}} .tl-desc-short p, {{WRAPPER}} .tl-desc-short li',
                         'fields_options' => [
                                 'font_size' => [
                                         'responsive' => true,
@@ -455,6 +396,184 @@ class Za_Pack_Widget_Timeline extends Widget_Base
                 ]
         );
 
+        $this->end_controls_section();
+
+        $this->start_controls_section(
+                'section_style_timeline_colors',
+                [
+                        'label' => __('Timeline Colors', 'timeline-full-widget'),
+                        'tab' => Controls_Manager::TAB_STYLE,
+                ]
+        );
+
+        $this->add_control(
+                'timeline_line_color',
+                [
+                        'label' => __('Line Color', 'timeline-full-widget'),
+                        'type' => Controls_Manager::COLOR,
+                        'default' => '#F6F6F8',
+                        'selectors' => [
+                                '{{WRAPPER}} .timeline:before' => 'background-color: {{VALUE}};',
+                        ],
+                ]
+        );
+
+        $this->add_control(
+                'timeline_marker_color',
+                [
+                        'label' => __('Marker Color', 'timeline-full-widget'),
+                        'type' => Controls_Manager::COLOR,
+                        'default' => '#F6F6F8',
+                        'selectors' => [
+                                '{{WRAPPER}} .tl-mark' => 'background-color: {{VALUE}};',
+                        ],
+                        'condition' => [
+                                'tl_show_marker' => 'yes',
+                                'tl_is_marker_unique!' => 'yes',
+                        ],
+                ]
+        );
+
+        $this->add_control(
+                'timeline_line_animation_color',
+                [
+                        'label' => __('Active Line Color', 'timeline-full-widget'),
+                        'type' => Controls_Manager::COLOR,
+                        'default' => '#F37321',
+                        'selectors' => [
+                                '{{WRAPPER}} .timeline-line-animation' => 'background-color: {{VALUE}};',
+                        ],
+                        'condition' => [
+                                'tl_animation_timeline' => 'yes',
+                        ],
+                ]
+        );
+
+        $this->add_control(
+                'timeline_marker_animation_color',
+                [
+                        'label' => __('Active Marker Color', 'timeline-full-widget'),
+                        'type' => Controls_Manager::COLOR,
+                        'default' => '#F37321',
+                        'selectors' => [
+                                '{{WRAPPER}} .is-stuck .tl-mark' => 'background-color: {{VALUE}};',
+                        ],
+                        'condition' => [
+                                'tl_animation_timeline' => 'yes',
+                                'tl_show_marker' => 'yes',
+                                'tl_animation_marker' => 'yes',
+                                'tl_is_marker_unique!' => 'yes',
+                        ],
+                ]
+        );
+
+        $this->end_controls_section();
+
+        $this->start_controls_section(
+                'section_style_layout',
+                [
+                        'label' => __('Layout', 'timeline-full-widget'),
+                        'tab' => Controls_Manager::TAB_STYLE,
+                ]
+        );
+
+        $this->add_control(
+                'tl_change_direction',
+                [
+                        'label' => __('Timeline Direction', 'timeline-full-widget'),
+                        'type' => Controls_Manager::SWITCHER,
+                        'label_on' => __('Left', 'timeline-full-widget'),
+                        'label_off' => __('Right', 'timeline-full-widget'),
+                        'return_value' => 'left',
+                ]
+        );
+
+        $this->add_control(
+                'tl_change_onside',
+                [
+                        'label' => __('Single Side Layout', 'timeline-full-widget'),
+                        'type' => Controls_Manager::SWITCHER,
+                        'label_on' => __('Yes', 'timeline-full-widget'),
+                        'label_off' => __('No', 'timeline-full-widget'),
+                        'return_value' => 'yes',
+                ]
+        );
+
+        $this->end_controls_section();
+
+        $this->start_controls_section(
+                'section_style_behavior',
+                [
+                        'label' => __('Behavior', 'timeline-full-widget'),
+                        'tab' => Controls_Manager::TAB_STYLE,
+                ]
+        );
+
+        $this->add_control(
+                'tl_animation_timeline',
+                [
+                        'label' => __('Animate Line', 'timeline-full-widget'),
+                        'type' => Controls_Manager::SWITCHER,
+                        'label_on' => __('Yes', 'timeline-full-widget'),
+                        'label_off' => __('No', 'timeline-full-widget'),
+                        'return_value' => 'yes',
+                        'default' => 'yes',
+                ]
+        );
+
+        $this->add_control(
+                'tl_show_marker',
+                [
+                        'label' => __('Show Marker', 'timeline-full-widget'),
+                        'type' => Controls_Manager::SWITCHER,
+                        'label_on' => __('Yes', 'timeline-full-widget'),
+                        'label_off' => __('No', 'timeline-full-widget'),
+                        'return_value' => 'yes',
+                        'default' => 'yes',
+                ]
+        );
+
+        $this->add_control(
+                'tl_animation_marker',
+                [
+                        'label' => __('Animate Markers', 'timeline-full-widget'),
+                        'type' => Controls_Manager::SWITCHER,
+                        'label_on' => __('Yes', 'timeline-full-widget'),
+                        'label_off' => __('No', 'timeline-full-widget'),
+                        'return_value' => 'yes',
+                        'default' => 'yes',
+                        'condition' => [
+                                'tl_show_marker' => 'yes',
+                        ],
+                ]
+        );
+
+        $this->add_control(
+                'tl_animation_other_side_sticky',
+                [
+                        'label' => __('Sticky Side Content', 'timeline-full-widget'),
+                        'type' => Controls_Manager::SWITCHER,
+                        'label_on' => __('Yes', 'timeline-full-widget'),
+                        'label_off' => __('No', 'timeline-full-widget'),
+                        'return_value' => 'yes',
+                        'default' => 'no',
+                ]
+        );
+
+        $this->add_control(
+                'tl_is_marker_unique',
+                [
+                        'label' => __('Use Custom Marker Image', 'timeline-full-widget'),
+                        'type' => Controls_Manager::SWITCHER,
+                        'label_on' => __('Yes', 'timeline-full-widget'),
+                        'label_off' => __('No', 'timeline-full-widget'),
+                        'return_value' => 'yes',
+                        'default' => 'no',
+                        'condition' => [
+                                'tl_show_marker' => 'yes',
+                        ],
+                ]
+        );
 
         $this->end_controls_section();
     }
@@ -520,12 +639,16 @@ class Za_Pack_Widget_Timeline extends Widget_Base
      */
     private function render_item_html($li_class, $item, $tag, $show_marker, $settings)
     {
-        $title = isset($item['list_title']) ? sanitize_text_field($item['list_title']) : '';
+        $title = isset($item['list_title']) ? $item['list_title'] : '';
+        $title_output = wp_kses(
+                nl2br( esc_html( $title ) ),
+                [ 'br' => [] ]
+        );
+
         $side_content = isset($item['side_content']) ? wp_kses_post($item['side_content']) : '';
         $link = isset($item['link_url']) ? $item['link_url'] : [];
 
         $bg_color = !empty($item['li_bg_color']) ? 'background-color:' . esc_attr($item['li_bg_color']) . ';' : '';
-
         $media_html = $this->render_media_html($item);
 
         ob_start();
@@ -537,7 +660,7 @@ class Za_Pack_Widget_Timeline extends Widget_Base
             <?php if ($show_marker) : ?>
                 <?php
                 $marker_img = $item['marker_image']['url'] ?? '';
-                if ( $show_marker && !empty($marker_img) && !empty($settings['tl_is_marker_unique']) ) {
+                if ($show_marker && !empty($marker_img) && !empty($settings['tl_is_marker_unique'])) {
                     echo '<div class="tl-mark"><img src="' . esc_url($marker_img) . '" alt="marker" loading="lazy" decoding="async" /></div>';
                 } else {
                     echo '<div class="tl-mark"></div>';
@@ -547,9 +670,7 @@ class Za_Pack_Widget_Timeline extends Widget_Base
 
             <div class="timeline-panel" <?php if ($bg_color) echo 'style="' . esc_attr($bg_color) . '"'; ?>>
                 <div class="tl-content">
-                    <?php
-                    // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
-                    echo $media_html; ?>
+                    <?php echo $media_html; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
                     <div class="tl-desc">
                         <?php
                         if ($tag === 'a' && !empty($link['url'])) {
@@ -558,15 +679,16 @@ class Za_Pack_Widget_Timeline extends Widget_Base
                                     esc_url($link['url']),
                                     !empty($link['is_external']) ? ' target="' . esc_attr('_blank') . '"' : '',
                                     !empty($link['nofollow']) ? ' rel="' . esc_attr('nofollow') . '"' : '',
-                                    esc_html($title)
+                                    $title_output
                             );
                         } else {
                             printf(
                                     '<%1$s class="tl-title">%2$s</%1$s>',
                                     tag_escape($tag),
-                                    esc_html($title)
+                                    $title_output
                             );
-                        } ?>
+                        }
+                        ?>
                         <div class="tl-desc-short">
                             <?php echo wp_kses_post($item['list_content'] ?? ''); ?>
                         </div>
@@ -645,14 +767,18 @@ class Za_Pack_Widget_Timeline extends Widget_Base
             }
 
             function buildTitleHtml(item) {
-            var safeTitle = _.escape(item.list_title || '');
+            var safeTitle = _.escape(item.list_title || '').replace(/\n/g, '<br>');
+
             if (item.link_url && item.link_url.url) {
             var href = _.escape(item.link_url.url);
             var attrs = ' href="' + href + '"';
+
             if (item.link_url.is_external) attrs += ' target="_blank"';
             if (item.link_url.nofollow) attrs += ' rel="nofollow"';
+
             return '<a' + attrs + '>' + safeTitle + '</a>';
             }
+
             return safeTitle;
             }
 
@@ -736,7 +862,7 @@ class Za_Pack_Widget_Timeline extends Widget_Base
                         <# } #>
                         <div class="tl-desc">
                             {{{ titleHtml }}}
-                            <div class="tl-content">{{{ item.list_content }}}</div>
+                            <div class="tl-desc-short">{{{ item.list_content }}}</div>
                         </div>
                     </div>
                 </div>
