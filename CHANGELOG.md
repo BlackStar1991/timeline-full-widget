@@ -1,6 +1,6 @@
 # Timeline Full Widget
 
-## 1.2.1
+## 1.3.0
 * Add media query for the timeline in the Gutenberg block.
 * Add media query for the timeline in the Elementor widget.
 * Added control over the width of the media file in the element.

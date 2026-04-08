@@ -640,7 +640,7 @@ class Za_Pack_Widget_Timeline extends Widget_Base
     private function render_item_html($li_class, $item, $tag, $show_marker, $settings)
     {
         $title = isset($item['list_title']) ? $item['list_title'] : '';
-        $title_output = wp_kses(
+        $safe_title_html = wp_kses(
                 nl2br( esc_html( $title ) ),
                 [ 'br' => [] ]
         );
@@ -679,13 +679,13 @@ class Za_Pack_Widget_Timeline extends Widget_Base
                                     esc_url($link['url']),
                                     !empty($link['is_external']) ? ' target="' . esc_attr('_blank') . '"' : '',
                                     !empty($link['nofollow']) ? ' rel="' . esc_attr('nofollow') . '"' : '',
-                                    $title_output
+                                    $safe_title_html // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Escaped above with esc_html(), nl2br(), and wp_kses().
                             );
                         } else {
                             printf(
                                     '<%1$s class="tl-title">%2$s</%1$s>',
                                     tag_escape($tag),
-                                    $title_output
+                                    $safe_title_html // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Escaped above with esc_html(), nl2br(), and wp_kses().
                             );
                         }
                         ?>

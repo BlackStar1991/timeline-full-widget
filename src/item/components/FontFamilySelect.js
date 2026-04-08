@@ -5,7 +5,6 @@ import { __ } from '@wordpress/i18n';
 
 export default function FontFamilySelect({ value, onChange }) {
 	const fonts = useFontsFromSettings();
-
 	return (
 		<SelectControl
 			label={__('Title font family', 'timeline-full-widget')}

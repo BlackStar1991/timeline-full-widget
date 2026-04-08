@@ -26,6 +26,7 @@ export default function Save({ attributes }) {
 		position,
 		showMedia,
 		showMarker,
+		animationMarker,
 		mediaId,
 		mediaUrl,
 		imageAlt,
@@ -126,8 +127,7 @@ export default function Save({ attributes }) {
 									isBlobURL(mediaUrl)
 										? 'image-loading'
 										: 'loaded'
-								}`}
-							>
+								}`}>
 								{isVideo ? (
 									el(
 										'video',
