@@ -1,12 +1,10 @@
-// title/index.js
 import {
 	RichText,
 	BlockControls,
 	AlignmentToolbar,
 	LinkControl,
 } from '@wordpress/block-editor';
-
-import { Popover, ToolbarGroup, ToolbarButton } from '@wordpress/components';
+import { Popover, ToolbarButton } from '@wordpress/components';
 import { link as linkIcon } from '@wordpress/icons';
 import { useSelect } from '@wordpress/data';
 import { useState, useMemo } from '@wordpress/element';
@@ -20,32 +18,34 @@ import {
 } from '../utils/normalizeResponsive';
 
 export default function Title({
-	clientId,
-	title,
-	titleTag,
-	titleAlign,
-	titleInlineStyle,
-	titleFontSize,
-	titleFontUnit,
-	titleFontWeight,
-	titleMarginTop,
-	titleMarginBottom,
-	titleLineHeight,
-	titleColor,
-	titleFontFamily,
-	linkUrl,
-	linkTarget,
-	rel,
-	setAttributes,
-	activeField,
-	setActiveField,
-}) {
+								  clientId,
+								  title,
+								  titleTag,
+								  titleAlign,
+								  titleInlineStyle,
+								  titleFontSize,
+								  titleFontUnit,
+								  titleFontWeight,
+								  titleMarginTop,
+								  titleMarginBottom,
+								  titleLineHeight,
+								  titleColor,
+								  titleFontFamily,
+								  linkUrl,
+								  linkTarget,
+								  rel,
+								  setAttributes,
+								  activeField,
+								  setActiveField,
+							  }) {
 	const [isLinkPickerOpen, setIsLinkPickerOpen] = useState(false);
 	const device = useViewport();
+
 	const normalizedFontSize = useMemo(
 		() => normalizeResponsive(titleFontSize),
 		[titleFontSize]
 	);
+
 	const resolvedFontSize = useMemo(
 		() => resolveResponsiveValue(normalizedFontSize, device),
 		[normalizedFontSize, device]
@@ -55,6 +55,7 @@ export default function Title({
 		(select) => select('core/block-editor').getSelectedBlockClientId(),
 		[]
 	);
+
 	const showAlignmentForTitle =
 		activeField === 'title' && selectedBlockClientId === clientId;
 
@@ -88,6 +89,7 @@ export default function Title({
 		if (!isLinkPickerOpen) {
 			return null;
 		}
+
 		return (
 			<Popover
 				position="bottom center"
@@ -102,25 +104,20 @@ export default function Title({
 					settings={[
 						{
 							id: 'opensInNewTab',
-							title: __(
-								'Open in new tab',
-								'timeline-full-widget'
-							),
+							title: __('Open in new tab', 'timeline-full-widget'),
 						},
 						{
 							id: 'rel',
-							title: __(
-								'Add rel attribute',
-								'timeline-full-widget'
-							),
+							title: __('Add rel attribute', 'timeline-full-widget'),
 						},
 					]}
 					onChange={(newVal) => {
 						const linkAttrs = getSafeLinkAttributes(
-							newVal.url,
-							newVal.rel,
-							newVal.opensInNewTab ? '_blank' : ''
+							newVal?.url || '',
+							newVal?.rel || '',
+							newVal?.opensInNewTab ? '_blank' : ''
 						);
+
 						setAttributes({
 							linkUrl: linkAttrs.href,
 							linkTarget: linkAttrs.target,
@@ -134,17 +131,16 @@ export default function Title({
 
 	return (
 		<>
-			<BlockControls>
+			<BlockControls group="block">
 				{titleTag === 'a' && (
-					<ToolbarGroup>
-						<ToolbarButton
-							icon={linkIcon}
-							label={__('Edit link', 'timeline-full-widget')}
-							onClick={() => setIsLinkPickerOpen((p) => !p)}
-							isPressed={isLinkPickerOpen}
-						/>
-					</ToolbarGroup>
+					<ToolbarButton
+						icon={linkIcon}
+						label={__('Edit link', 'timeline-full-widget')}
+						onClick={() => setIsLinkPickerOpen((prev) => !prev)}
+						isPressed={isLinkPickerOpen}
+					/>
 				)}
+
 				{showAlignmentForTitle && (
 					<AlignmentToolbar
 						value={titleAlign}
@@ -157,27 +153,15 @@ export default function Title({
 
 			{linkPopover}
 
-			{titleTag === 'a' ? (
-				<RichText
-					tagName="a"
-					className={`t-text-align-${titleAlign} tl-title`}
-					value={title}
-					allowedFormats={[]}
-					onChange={(val) => setAttributes({ title: val })}
-					onFocus={() => setActiveField('title')}
-					style={styleObj}
-				/>
-			) : (
-				<RichText
-					tagName={titleTag || 'h3'}
-					className={`t-text-align-${titleAlign} tl-title`}
-					value={title}
-					allowedFormats={[]}
-					onChange={(val) => setAttributes({ title: val })}
-					onFocus={() => setActiveField('title')}
-					style={styleObj}
-				/>
-			)}
+			<RichText
+				tagName={titleTag === 'a' ? 'a' : titleTag || 'h3'}
+				className={`t-text-align-${titleAlign} tl-title`}
+				value={title}
+				allowedFormats={[]}
+				onChange={(val) => setAttributes({ title: val })}
+				onFocus={() => setActiveField('title')}
+				style={styleObj}
+			/>
 		</>
 	);
 }

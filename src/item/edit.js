@@ -194,17 +194,18 @@ export function Edit({ clientId, attributes, setAttributes }) {
 		if (!showMedia || !mediaUrl) {
 			return null;
 		}
+
 		return (
-			<BlockControls>
+			<BlockControls group="block">
 				<MediaReplaceFlow
 					name={__('Replace Media File', 'timeline-full-widget')}
 					onSelect={onSelect}
-					accept="image/*"
+					accept="image/*,video/*"
 					allowedTypes={['image', 'video']}
 					mediaId={mediaId}
-					mediaUrl={mediaUrl}
-					mediaAlt={imageAlt}
+					mediaURL={mediaUrl}
 				/>
+
 				<ToolbarButton
 					onClick={() =>
 						setAttributes({
@@ -217,12 +218,11 @@ export function Edit({ clientId, attributes, setAttributes }) {
 					}
 					isDisabled={!mediaUrl}
 					icon="trash"
-					aria-label={__('Remove Media File', 'timeline-full-widget')}
-					title={__('Remove Media File', 'timeline-full-widget')}
+					label={__('Remove Media File', 'timeline-full-widget')}
 				/>
 			</BlockControls>
 		);
-	}, [showMedia, mediaUrl, onSelect, mediaId, imageAlt, setAttributes]);
+	}, [showMedia, mediaUrl, onSelect, mediaId, setAttributes]);
 
 	const selectedBlockClientId = useSelect(
 		(s) => s('core/block-editor').getSelectedBlockClientId(),
