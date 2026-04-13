@@ -127,7 +127,8 @@ export default function Save({ attributes }) {
 									isBlobURL(mediaUrl)
 										? 'image-loading'
 										: 'loaded'
-								}`}>
+								}`}
+							>
 								{isVideo ? (
 									el(
 										'video',

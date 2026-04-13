@@ -18,26 +18,26 @@ import {
 } from '../utils/normalizeResponsive';
 
 export default function Title({
-								  clientId,
-								  title,
-								  titleTag,
-								  titleAlign,
-								  titleInlineStyle,
-								  titleFontSize,
-								  titleFontUnit,
-								  titleFontWeight,
-								  titleMarginTop,
-								  titleMarginBottom,
-								  titleLineHeight,
-								  titleColor,
-								  titleFontFamily,
-								  linkUrl,
-								  linkTarget,
-								  rel,
-								  setAttributes,
-								  activeField,
-								  setActiveField,
-							  }) {
+	clientId,
+	title,
+	titleTag,
+	titleAlign,
+	titleInlineStyle,
+	titleFontSize,
+	titleFontUnit,
+	titleFontWeight,
+	titleMarginTop,
+	titleMarginBottom,
+	titleLineHeight,
+	titleColor,
+	titleFontFamily,
+	linkUrl,
+	linkTarget,
+	rel,
+	setAttributes,
+	activeField,
+	setActiveField,
+}) {
 	const [isLinkPickerOpen, setIsLinkPickerOpen] = useState(false);
 	const device = useViewport();
 
@@ -104,11 +104,17 @@ export default function Title({
 					settings={[
 						{
 							id: 'opensInNewTab',
-							title: __('Open in new tab', 'timeline-full-widget'),
+							title: __(
+								'Open in new tab',
+								'timeline-full-widget'
+							),
 						},
 						{
 							id: 'rel',
-							title: __('Add rel attribute', 'timeline-full-widget'),
+							title: __(
+								'Add rel attribute',
+								'timeline-full-widget'
+							),
 						},
 					]}
 					onChange={(newVal) => {

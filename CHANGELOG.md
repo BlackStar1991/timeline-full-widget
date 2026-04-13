@@ -1,6 +1,7 @@
 # Timeline Full Widget
 
 ## 1.3.0
+* Added a button to copy the styles of the current item.
 * Add media query for the timeline in the Gutenberg block.
 * Add media query for the timeline in the Elementor widget.
 * Added control over the width of the media file in the element.

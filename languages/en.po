@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: timeline-full-widget 1.0\n"
-"POT-Creation-Date: 2026-04-12 23:26+0300\n"
-"PO-Revision-Date: 2026-04-12 23:26+0300\n"
+"POT-Creation-Date: 2026-04-13 10:08+0300\n"
+"PO-Revision-Date: 2026-04-13 10:09+0300\n"
 "Last-Translator: \n"
 "Language-Team: za\n"
 "Language: en\n"
@@ -32,7 +32,7 @@ msgstr ""
 msgid "Timeline Items"
 msgstr ""
 
-#: elementor-timeline-widget.php:82 src/item/edit.js:287
+#: elementor-timeline-widget.php:82 src/item/edit.js:398
 msgid "Item background color"
 msgstr ""
 
@@ -81,7 +81,7 @@ msgid "Marker Image"
 msgstr ""
 
 #: elementor-timeline-widget.php:200
-#: src/item/components/MediaSettingsPanel.js:182
+#: src/item/components/MediaSettingsPanel.js:144
 msgid ""
 "Note: this image will be used only when \"Unique Marker\" (Style) is set to "
 "Yes. Recommend width size <=50px"
@@ -225,7 +225,7 @@ msgstr ""
 msgid "Use Custom Marker Image"
 msgstr ""
 
-#: elementor-timeline-widget.php:728 src/item/edit.js:403
+#: elementor-timeline-widget.php:728 src/item/edit.js:515
 msgid "Your browser does not support the video tag."
 msgstr ""
 
@@ -294,49 +294,49 @@ msgstr ""
 msgid "Default"
 msgstr ""
 
-#: src/item/components/MediaSettingsPanel.js:19
+#: src/item/components/MediaSettingsPanel.js:20
 msgid "Width of media"
 msgstr ""
 
-#: src/item/components/MediaSettingsPanel.js:50
-msgid "Media Settings"
-msgstr ""
-
-#: src/item/components/MediaSettingsPanel.js:57
-#: src/item/components/MediaSettingsPanel.js:64
+#: src/item/components/MediaSettingsPanel.js:30
+#: src/item/components/MediaSettingsPanel.js:37
 msgid "Video poster"
 msgstr ""
 
-#: src/item/components/MediaSettingsPanel.js:72
+#: src/item/components/MediaSettingsPanel.js:42
 msgid "Remove poster"
 msgstr ""
 
-#: src/item/components/MediaSettingsPanel.js:91
+#: src/item/components/MediaSettingsPanel.js:57
 msgid "Select video poster"
 msgstr ""
 
-#: src/item/components/MediaSettingsPanel.js:100
+#: src/item/components/MediaSettingsPanel.js:70
 msgid "Image Alt"
 msgstr ""
 
-#: src/item/components/MediaSettingsPanel.js:103
+#: src/item/components/MediaSettingsPanel.js:72
 msgid "Add alt text for the image."
 msgstr ""
 
-#: src/item/components/MediaSettingsPanel.js:119
+#: src/item/components/MediaSettingsPanel.js:82
 msgid "Unique marker for this item"
 msgstr ""
 
-#: src/item/components/MediaSettingsPanel.js:133
+#: src/item/components/MediaSettingsPanel.js:94
 msgid "Replace marker image"
 msgstr ""
 
-#: src/item/components/MediaSettingsPanel.js:158
+#: src/item/components/MediaSettingsPanel.js:119
 msgid "Remove marker"
 msgstr ""
 
-#: src/item/components/MediaSettingsPanel.js:174
+#: src/item/components/MediaSettingsPanel.js:135
 msgid "Select marker image"
+msgstr ""
+
+#: src/item/components/MediaSettingsPanel.js:178
+msgid "Media Settings"
 msgstr ""
 
 #: src/item/components/TitleTypographyPanel.js:33
@@ -348,46 +348,55 @@ msgid "Title font weight"
 msgstr ""
 
 #: src/item/components/TitleTypographyPanel.js:77
-msgid "Margin Top (px)"
+msgid "Title Margin Top (px)"
 msgstr ""
 
 #: src/item/components/TitleTypographyPanel.js:88
-msgid "Margin Bottom (px)"
+msgid "Title Margin Bottom (px)"
 msgstr ""
 
 #: src/item/components/TitleTypographyPanel.js:99
 msgid "Title Line Height (px)"
 msgstr ""
 
-#: src/item/edit.js:201
+#: src/item/edit.js:236
+#, javascript-format
+msgid "Copied item styles to %d other Timeline Item(s)."
+msgstr ""
+
+#: src/item/edit.js:294
 msgid "Replace Media File"
 msgstr ""
 
-#: src/item/edit.js:221
+#: src/item/edit.js:314
 msgid "Remove Media File"
 msgstr ""
 
-#: src/item/edit.js:236
+#: src/item/edit.js:328
+msgid "Apply item styles to other items"
+msgstr ""
+
+#: src/item/edit.js:347
 msgid "Block Settings"
 msgstr ""
 
-#: src/item/edit.js:240
+#: src/item/edit.js:351
 msgid "Title Tag"
 msgstr ""
 
-#: src/item/edit.js:260
+#: src/item/edit.js:371
 msgid "Color settings"
 msgstr ""
 
-#: src/item/edit.js:267
+#: src/item/edit.js:378
 msgid "Title color"
 msgstr ""
 
-#: src/item/edit.js:276
+#: src/item/edit.js:387
 msgid "Description color"
 msgstr ""
 
-#: src/item/edit.js:350
+#: src/item/edit.js:462
 msgid "Add other side text"
 msgstr ""
 
@@ -399,14 +408,22 @@ msgstr ""
 msgid "Timeline Item Description"
 msgstr ""
 
-#: src/item/title/index.js:107
+#: src/item/style-inheritance.js:115
+msgid "Add at least one more Timeline Item to copy styles."
+msgstr ""
+
+#: src/item/style-inheritance.js:122
+msgid "No other Timeline Items were found in this block."
+msgstr ""
+
+#: src/item/title/index.js:108
 msgid "Open in new tab"
 msgstr ""
 
-#: src/item/title/index.js:111
+#: src/item/title/index.js:115
 msgid "Add rel attribute"
 msgstr ""
 
-#: src/item/title/index.js:138
+#: src/item/title/index.js:144
 msgid "Edit link"
 msgstr ""

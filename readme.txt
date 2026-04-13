@@ -36,6 +36,10 @@ Yes, but then the styles for the timeline may shift. To correct them, you will n
     }
 }
 
+= How to apply the same styles to all Timeline items in block component? =
+You can use the "Apply item styles to other items" button. It will copy the styles from the current item to all other items.
+
+
 == Screenshots ==
 
 1. Timeline widget in Elementor.
@@ -45,6 +49,7 @@ Yes, but then the styles for the timeline may shift. To correct them, you will n
 == Changelog ==
 
 = 1.3.0 =
+* Add button "Apply item styles to other items".
 * Corrected styles for the timeline item.
 * Fixed style problems with Content Typography in Elementor.
 * Separated styles for line and marker colors

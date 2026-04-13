@@ -74,7 +74,7 @@ export default function TitleTypographyPanel({ attrs = {}, setAttributes }) {
 			/>
 
 			<RangeControl
-				label={__('Margin Top (px)', 'timeline-full-widget')}
+				label={__('Title Margin Top (px)', 'timeline-full-widget')}
 				value={Number(titleMarginTop) || 0}
 				onChange={(value) =>
 					setAttributes({ titleMarginTop: String(value) })
@@ -85,7 +85,7 @@ export default function TitleTypographyPanel({ attrs = {}, setAttributes }) {
 				__next40pxDefaultSize={true}
 			/>
 			<RangeControl
-				label={__('Margin Bottom (px)', 'timeline-full-widget')}
+				label={__('Title Margin Bottom (px)', 'timeline-full-widget')}
 				value={Number(titleMarginBottom) || 0}
 				onChange={(value) =>
 					setAttributes({ titleMarginBottom: String(value) })

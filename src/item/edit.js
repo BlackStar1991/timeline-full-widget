@@ -10,8 +10,8 @@ import {
 	PanelColorSettings,
 	AlignmentToolbar,
 } from '@wordpress/block-editor';
-import { __ } from '@wordpress/i18n';
-import { useSelect } from '@wordpress/data';
+import { __, sprintf } from '@wordpress/i18n';
+import { useSelect, useDispatch } from '@wordpress/data';
 import {
 	PanelBody,
 	SelectControl,
@@ -23,6 +23,13 @@ import { useState, useEffect, useMemo, useCallback } from '@wordpress/element';
 
 import Title from './title';
 import { parseStyleString } from './utils';
+import {
+	ITEM_ATTRIBUTE_EXCLUSIONS,
+	collectDescendantStyleUpdates,
+	getInheritableAttributes,
+	getNoRecipientItemsNotice,
+	getNoSiblingItemsNotice,
+} from './style-inheritance';
 
 import MediaSettingsPanel from './components/MediaSettingsPanel';
 import TitleTypographyPanel from './components/TitleTypographyPanel';
@@ -67,21 +74,41 @@ export function Edit({ clientId, attributes, setAttributes }) {
 	} = attributes;
 
 	const [activeField, setActiveField] = useState(null);
+	const { updateBlockAttributes } = useDispatch('core/block-editor');
+	const { createSuccessNotice, createErrorNotice } =
+		useDispatch('core/notices');
 
 	/* block-index/parent info */
-	const { blockIndex, parentDirection } = useSelect(
+	const {
+		blockIndex,
+		parentDirection,
+		parentId,
+		siblingBlocks,
+		currentBlock,
+	} = useSelect(
 		(select) => {
 			const editor = select('core/block-editor');
-			const parentId = editor.getBlockRootClientId(clientId);
-			if (!parentId) {
-				return { blockIndex: 0, parentDirection: undefined };
+			const currentParentId = editor.getBlockRootClientId(clientId);
+			const currentBlockData = editor.getBlock(clientId);
+			if (!currentParentId) {
+				return {
+					blockIndex: 0,
+					parentDirection: undefined,
+					parentId: undefined,
+					siblingBlocks: [],
+					currentBlock: currentBlockData,
+				};
 			}
-			const innerBlocks = editor.getBlocks(parentId);
+
+			const innerBlocks = editor.getBlocks(currentParentId);
 			const idx = innerBlocks.findIndex((b) => b.clientId === clientId);
-			const parent = editor.getBlock(parentId);
+			const parent = editor.getBlock(currentParentId);
 			return {
 				blockIndex: idx,
 				parentDirection: parent?.attributes?.direction,
+				parentId: currentParentId,
+				siblingBlocks: innerBlocks,
+				currentBlock: currentBlockData,
 			};
 		},
 		[clientId]
@@ -158,6 +185,72 @@ export function Edit({ clientId, attributes, setAttributes }) {
 		setAttributes,
 	]);
 
+	const timelineItemSiblings = useMemo(
+		() =>
+			siblingBlocks.filter((block) => block.name === 'za/timeline-item'),
+		[siblingBlocks]
+	);
+
+	const inheritableStyleAttributes = useMemo(
+		() => getInheritableAttributes(attributes, ITEM_ATTRIBUTE_EXCLUSIONS),
+		[attributes]
+	);
+
+	const applyStylesToSiblingItems = useCallback(() => {
+		if (!parentId || timelineItemSiblings.length < 2) {
+			createErrorNotice(getNoSiblingItemsNotice(), { type: 'snackbar' });
+			return;
+		}
+
+		const recipientBlocks = timelineItemSiblings.filter(
+			(block) => block.clientId !== clientId
+		);
+
+		if (!recipientBlocks.length) {
+			createErrorNotice(getNoRecipientItemsNotice(), {
+				type: 'snackbar',
+			});
+			return;
+		}
+
+		recipientBlocks.forEach((block) => {
+			updateBlockAttributes(block.clientId, inheritableStyleAttributes);
+
+			collectDescendantStyleUpdates(currentBlock, block).forEach(
+				({
+					clientId: descendantClientId,
+					attributes: descendantAttributes,
+				}) => {
+					updateBlockAttributes(
+						descendantClientId,
+						descendantAttributes
+					);
+				}
+			);
+		});
+
+		createSuccessNotice(
+			sprintf(
+				/* translators: %d: number of timeline items that received copied styles. */
+				__(
+					'Copied item styles to %d other Timeline Item(s).',
+					'timeline-full-widget'
+				),
+				recipientBlocks.length
+			),
+			{ type: 'snackbar' }
+		);
+	}, [
+		parentId,
+		timelineItemSiblings,
+		clientId,
+		updateBlockAttributes,
+		inheritableStyleAttributes,
+		currentBlock,
+		createSuccessNotice,
+		createErrorNotice,
+	]);
+
 	const editorClassName = useMemo(
 		() =>
 			Array.from(
@@ -223,6 +316,24 @@ export function Edit({ clientId, attributes, setAttributes }) {
 			</BlockControls>
 		);
 	}, [showMedia, mediaUrl, onSelect, mediaId, setAttributes]);
+
+	const blockToolbarForStyleInheritance = useMemo(() => {
+		if (timelineItemSiblings.length < 2) {
+			return null;
+		}
+		return (
+			<BlockControls group="block">
+				<ToolbarButton
+					label={__(
+						'Apply item styles to other items',
+						'timeline-full-widget'
+					)}
+					icon="admin-customizer"
+					onClick={applyStylesToSiblingItems}
+				/>
+			</BlockControls>
+		);
+	}, [applyStylesToSiblingItems, timelineItemSiblings.length]);
 
 	const selectedBlockClientId = useSelect(
 		(s) => s('core/block-editor').getSelectedBlockClientId(),
@@ -320,6 +431,7 @@ export function Edit({ clientId, attributes, setAttributes }) {
 			</InspectorControls>
 
 			{blockToolbarForMedia}
+			{blockToolbarForStyleInheritance}
 
 			{activeField === 'sideText' &&
 				selectedBlockClientId === clientId && (
