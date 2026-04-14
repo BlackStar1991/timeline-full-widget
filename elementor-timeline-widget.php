@@ -55,6 +55,46 @@ class Za_Pack_Widget_Timeline extends Widget_Base
         return ['za-timeline-elementor'];
     }
 
+    /**
+     * Build safe link attributes from Elementor URL control.
+     */
+    private function get_link_attributes_string($link, $aria_label = '')
+    {
+        if (empty($link['url'])) {
+            return '';
+        }
+
+        $attributes = [
+                'href="' . esc_url($link['url']) . '"',
+        ];
+
+        if (!empty($link['is_external'])) {
+            $attributes[] = 'target="_blank"';
+        }
+
+        $rel = [];
+
+        if (!empty($link['nofollow'])) {
+            $rel[] = 'nofollow';
+        }
+
+        if (!empty($link['is_external'])) {
+            $rel[] = 'noopener';
+            $rel[] = 'noreferrer';
+        }
+
+        if (!empty($rel)) {
+            $attributes[] = 'rel="' . esc_attr(implode(' ', array_unique($rel))) . '"';
+        }
+
+        if ($aria_label !== '') {
+            $attributes[] = 'aria-label="' . esc_attr($aria_label) . '"';
+        }
+
+        return implode(' ', $attributes);
+    }
+
+
     /* ---------------------------
      * Register controls
      * --------------------------- */
@@ -83,7 +123,7 @@ class Za_Pack_Widget_Timeline extends Widget_Base
                         'type' => Controls_Manager::COLOR,
                         'render_type' => 'template',
                         'selectors' => [
-                                '{{WRAPPER}} {{CURRENT_ITEM}} .timeline-panel' => 'background-color: {{VALUE}};',
+                                '{{WRAPPER}} {{CURRENT_ITEM}} .timeline-item' => 'background-color: {{VALUE}};',
                         ],
                 ]
         );
@@ -153,12 +193,39 @@ class Za_Pack_Widget_Timeline extends Widget_Base
         );
 
         $repeater->add_control(
-                'link_url',
+                'media_link_url',
                 [
-                        'label' => __('Link', 'timeline-full-widget'),
+                        'label' => __('Link for media', 'timeline-full-widget'),
                         'type' => Controls_Manager::URL,
                         'placeholder' => 'https://example.com',
                         'show_external' => true,
+                ]
+        );
+
+        $repeater->add_control(
+                'media_link_enabled',
+                [
+                        'label' => __('Wrap media in link', 'timeline-full-widget'),
+                        'type' => Controls_Manager::SWITCHER,
+                        'label_on' => __('Yes', 'timeline-full-widget'),
+                        'label_off' => __('No', 'timeline-full-widget'),
+                        'return_value' => 'yes',
+                        'default' => 'yes',
+                        'condition' => [
+                                'media_link_url[url]!' => '',
+                        ],
+                        'description' => __('If enabled, the image or video will be clickable and wrapped in a link.', 'timeline-full-widget'),
+                ]
+        );
+
+        $repeater->add_control(
+                'title_link_url',
+                [
+                        'label' => __('Link for title', 'timeline-full-widget'),
+                        'type' => Controls_Manager::URL,
+                        'placeholder' => 'https://example.com',
+                        'show_external' => true,
+                        'description' => __('Used only when the Title HTML Tag is set to "a".', 'timeline-full-widget'),
                 ]
         );
 
@@ -238,13 +305,13 @@ class Za_Pack_Widget_Timeline extends Widget_Base
         $this->add_control(
                 'header_tag',
                 [
-                        'label' => __('HTML Tag', 'timeline-full-widget'),
+                        'label' => __('Title HTML Tag', 'timeline-full-widget'),
                         'type' => Controls_Manager::SELECT,
                         'options' => array_combine(
-                                ['h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'div', 'span', 'p', 'a'],
-                                ['H1', 'H2', 'H3', 'H4', 'H5', 'H6', 'div', 'span', 'p', 'a']
+                                ['h1', 'h2', 'h3', 'h4', 'div', 'p', 'a'],
+                                ['H1', 'H2', 'H3', 'H4', 'div', 'p', 'a']
                         ),
-                        'default' => 'h2',
+                        'default' => 'h3',
                 ]
         );
 
@@ -646,14 +713,14 @@ class Za_Pack_Widget_Timeline extends Widget_Base
         );
 
         $side_content = isset($item['side_content']) ? wp_kses_post($item['side_content']) : '';
-        $link = isset($item['link_url']) ? $item['link_url'] : [];
+        $title_link = isset($item['title_link_url']) && is_array($item['title_link_url']) ? $item['title_link_url'] : [];
 
         $bg_color = !empty($item['li_bg_color']) ? 'background-color:' . esc_attr($item['li_bg_color']) . ';' : '';
         $media_html = $this->render_media_html($item);
 
         ob_start();
         ?>
-        <li class="<?php echo esc_attr($li_class); ?> timeline-item">
+        <li class="<?php echo esc_attr($li_class); ?> timeline-item" <?php if ($bg_color) echo 'style="' . esc_attr($bg_color) . '"'; ?>>
             <div class="timeline-side"><?php echo wp_kses_post($side_content); ?></div>
             <div class="tl-trigger"></div>
 
@@ -668,17 +735,17 @@ class Za_Pack_Widget_Timeline extends Widget_Base
                 ?>
             <?php endif; ?>
 
-            <div class="timeline-panel" <?php if ($bg_color) echo 'style="' . esc_attr($bg_color) . '"'; ?>>
+            <div class="timeline-panel">
                 <div class="tl-content">
                     <?php echo $media_html; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
                     <div class="tl-desc">
                         <?php
-                        if ($tag === 'a' && !empty($link['url'])) {
+                        if ($tag === 'a' && !empty($title_link['url'])) {
+                            $title_link_attrs = $this->get_link_attributes_string($title_link);
+
                             printf(
-                                    '<a href="%1$s"%2$s%3$s class="tl-title">%4$s</a>',
-                                    esc_url($link['url']),
-                                    !empty($link['is_external']) ? ' target="' . esc_attr('_blank') . '"' : '',
-                                    !empty($link['nofollow']) ? ' rel="' . esc_attr('nofollow') . '"' : '',
+                                    '<a class="tl-title" %1$s>%2$s</a>',
+                                    $title_link_attrs, // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Safe attributes built by get_link_attributes_string().
                                     $safe_title_html // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Escaped above with esc_html(), nl2br(), and wp_kses().
                             );
                         } else {
@@ -705,50 +772,72 @@ class Za_Pack_Widget_Timeline extends Widget_Base
      */
     private function render_media_html($item)
     {
-        $type = $item['media_type'] ?? '';
+        $type  = $item['media_type'] ?? '';
+        $title = isset($item['list_title']) ? wp_strip_all_tags($item['list_title']) : '';
+        $media_link = isset($item['media_link_url']) && is_array($item['media_link_url']) ? $item['media_link_url'] : [];
+        $wrap_with_link = !empty($media_link['url']) && (($item['media_link_enabled'] ?? 'yes') === 'yes');
+
+        $media_inner_html = '';
 
         // VIDEO
         if ($type === 'video') {
             $media_url = $item['media_video']['url'] ?? '';
-            $poster = $item['posterURL']['url'] ?? '';
+            $poster    = $item['posterURL']['url'] ?? '';
 
             if (empty($media_url)) {
                 return '';
             }
 
-            $filetype = wp_check_filetype($media_url);
-            $mime = $filetype['type'] ?: 'video/mp4';
+            $filetype    = wp_check_filetype($media_url);
+            $mime        = $filetype['type'] ?: 'video/mp4';
             $poster_attr = $poster ? ' poster="' . esc_url($poster) . '"' : '';
 
-            return sprintf(
+            $media_inner_html = sprintf(
                     '<div class="timeline_pic pull-left"><video autoplay muted loop playsinline preload="metadata"%1$s style="width:100%%;height:auto;"><source src="%2$s" type="%3$s">%4$s</video></div>',
                     $poster_attr,
                     esc_url($media_url),
                     esc_attr($mime),
                     esc_html__('Your browser does not support the video tag.', 'timeline-full-widget')
             );
+        } else {
+            $media     = $item['media_image'] ?? [];
+            $media_url = $media['url'] ?? '';
+
+            if (!empty($media['id'])) {
+                $media_inner_html = '<div class="timeline_pic pull-left">' . Group_Control_Image_Size::get_attachment_image_html($item, 'thumbnail', 'media_image') . '</div>';
+            } elseif ($media_url) {
+                $alt = $media['alt'] ?? $media['title'] ?? '';
+
+                $media_inner_html = sprintf(
+                        '<div class="timeline_pic pull-left"><img src="%1$s" alt="%2$s" loading="lazy" decoding="async" /></div>',
+                        esc_url($media_url),
+                        esc_attr($alt)
+                );
+            }
         }
 
-
-        $media = $item['media_image'] ?? [];
-        $media_url = $media['url'] ?? '';
-
-        // If attachment ID exists — let Group_Control_Image_Size handle output (safe markup).
-        if (!empty($media['id'])) {
-            return '<div class="timeline_pic pull-left">' . Group_Control_Image_Size::get_attachment_image_html($item, 'thumbnail', 'media_image') . '</div>';
+        if (!$media_inner_html) {
+            return '';
         }
 
-        // If direct URL — print <img> with optimized attributes
-        if ($media_url) {
-            $alt = $media['alt'] ?? $media['title'] ?? '';
+        if ($wrap_with_link) {
+            $link_attrs = $this->get_link_attributes_string(
+                    $media_link,
+                    $title ? sprintf(
+                    /* translators: %s: timeline item title */
+                            __('Open media for "%s"', 'timeline-full-widget'),
+                            $title
+                    ) : __('Open media link', 'timeline-full-widget')
+            );
+
             return sprintf(
-                    '<div class="timeline_pic pull-left"><img src="%1$s" alt="%2$s" loading="lazy" decoding="async" /></div>',
-                    esc_url($media_url),
-                    esc_attr($alt)
+                    '<a class="timeline-media-link" %1$s>%2$s</a>',
+                    $link_attrs,
+                    $media_inner_html
             );
         }
 
-        return '';
+        return $media_inner_html;
     }
 
 
@@ -766,26 +855,40 @@ class Za_Pack_Widget_Timeline extends Widget_Base
             return /\.(mp4|webm|ogg|ogv)(\?.*)?$/i.test(url);
             }
 
-            function buildTitleHtml(item) {
-            var safeTitle = _.escape(item.list_title || '').replace(/\n/g, '<br>');
-
-            if (item.link_url && item.link_url.url) {
-            var href = _.escape(item.link_url.url);
-            var attrs = ' href="' + href + '"';
-
-            if (item.link_url.is_external) attrs += ' target="_blank"';
-            if (item.link_url.nofollow) attrs += ' rel="nofollow"';
-
-            return '<a' + attrs + '>' + safeTitle + '</a>';
+            function buildTitleText(item) {
+            return _.escape(item.list_title || '').replace(/\n/g, '<br>');
             }
 
-            return safeTitle;
+
+            function buildLinkAttributes(link, ariaLabel) {
+            if (!link || !link.url) return '';
+
+            var attrs = ' href="' + _.escape(link.url) + '"';
+
+            if (link.is_external) {
+            attrs += ' target="_blank" rel="noopener noreferrer"';
+            if (link.nofollow) {
+            attrs = attrs.replace('rel="noopener noreferrer"', 'rel="nofollow noopener noreferrer"');
             }
+            } else if (link.nofollow) {
+            attrs += ' rel="nofollow"';
+            }
+
+            if (ariaLabel) {
+            attrs += ' aria-label="' + _.escape(ariaLabel) + '"';
+            }
+
+            return attrs;
+            }
+
 
             function buildMediaHtml(item) {
             var image_url = '';
             var poster_url = '';
             var isVideo = false;
+            var html = '';
+            var mediaLink = item.media_link_url || {};
+            var wrapWithLink = mediaLink.url && item.media_link_enabled === 'yes';
 
             if (item.media_type === 'video' && item.media_video && item.media_video.url) {
             image_url = item.media_video.url;
@@ -800,16 +903,22 @@ class Za_Pack_Widget_Timeline extends Widget_Base
             if (isVideo) {
             var sourceType = (image_url.match(/\.([^.?]+)(\?.*)?$/i) || [])[1] || 'mp4';
             var posterAttr = poster_url ? ' poster="' + _.escape(poster_url) + '"' : '';
-            var html = '<div class="timeline_pic pull-left">';
+            html += '<div class="timeline_pic pull-left">';
                 html += '<video playsinline preload="metadata"' + posterAttr + ' style="width:100%;height:auto;">';
                 html += '<source src="' + _.escape(image_url) + '" type="video/' + _.escape(sourceType) + '">';
                 html += _.escape('Your browser does not support the video tag.');
                 html += '</video></div>';
-            return html;
+            } else {
+            var alt = (item.media_image && (item.media_image.alt || item.media_image.title)) ? _.escape(item.media_image.alt || item.media_image.title) : '';
+            html += '<div class="timeline_pic pull-left"><img src="' + _.escape(image_url) + '" alt="' + alt + '" loading="lazy" decoding="async" /></div>';
             }
 
-            var alt = (item.media_image && (item.media_image.alt || item.media_image.title)) ? _.escape(item.media_image.alt || item.media_image.title) : '';
-            return '<div class="timeline_pic pull-left"><img src="' + _.escape(image_url) + '" alt="' + alt + '" loading="lazy" decoding="async" /></div>';
+            if (wrapWithLink) {
+            var ariaLabel = item.list_title ? 'Open media for "' + item.list_title + '"' : 'Open media link';
+            html = '<a class="timeline-media-link"' + buildLinkAttributes(mediaLink, ariaLabel) + '>' + html + '</a>';
+            }
+
+            return html;
             }
             #>
 
@@ -831,22 +940,32 @@ class Za_Pack_Widget_Timeline extends Widget_Base
 
             <ul class="{{ ulClass }}">
                 <# if ( settings.list ) { _.each( settings.list, function( item ) {
-                // compute li class (compact)
                 var li_class = onSide
-                ? (direction === 'right' ? 'timeline-inverted' : 'timeline-left')
-                : ((++count % 2 === 0) ? 'timeline-inverted' : 'timeline-left');
+                ? ( direction === 'right' ? 'timeline-inverted' : 'timeline-left' )
+                : ( ( ++count % 2 === 0 ) ? 'timeline-inverted' : 'timeline-left' );
 
-                var bg_color = item.li_bg_color ? 'background-color:' + _.escape(item.li_bg_color) + ';' : '';
+                var bg_color = item.li_bg_color ? 'background-color:' + _.escape( item.li_bg_color ) + ';' : '';
                 var titleTag = settings.header_tag ? settings.header_tag : 'h2';
-                var titleInner = buildTitleHtml(item);
-                var titleHtml = '<' + titleTag + ' class="tl-title">' + titleInner + '</' + titleTag + '>';
-            var mediaHtml = buildMediaHtml(item);
+                var titleLink = item.title_link_url || {};
+                var titleHtml = '';
+                var safeTitle = buildTitleText( item );
+
+                if ( titleTag === 'a' && titleLink.url ) {
+                titleHtml = '<a class="tl-title"' + buildLinkAttributes( titleLink ) + '>' +
+                safeTitle +
+                '</a>';
+                } else {
+                titleHtml = '<' + titleTag + ' class="tl-title">' +
+                safeTitle +
+                '</' + titleTag + '>';
+                }
+
+                var mediaHtml = buildMediaHtml( item );
             #>
 
-            <li class="{{ li_class }} timeline-item">
+            <li class="{{ li_class }} timeline-item" style="{{ bg_color }}">
                 <div class="timeline-side">{{{ item.side_content }}}</div>
                 <div class="tl-trigger"></div>
-
                 <# if ( showMarker ) { #>
                     <# if ( settings.tl_is_marker_unique && item.marker_image && item.marker_image.url ) { #>
                          <div class="tl-mark"><img src="{{ item.marker_image.url }}" alt="marker" /></div>
@@ -855,7 +974,7 @@ class Za_Pack_Widget_Timeline extends Widget_Base
                     <# } #>
                 <# } #>
 
-                <div class="timeline-panel" style="{{ bg_color }}">
+                <div class="timeline-panel" >
                     <div class="tl-content">
                         <# if ( mediaHtml ) { #>
                         {{{ mediaHtml }}}

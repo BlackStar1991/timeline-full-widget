@@ -104,6 +104,22 @@ registerBlockType('za/timeline-item', {
 			type: 'string',
 			default: '',
 		},
+		mediaLinkUrl: {
+			type: 'string',
+			default: '',
+		},
+		mediaLinkTarget: {
+			type: 'string',
+			default: '',
+		},
+		mediaLinkRel: {
+			type: 'string',
+			default: '',
+		},
+		isMediaWrapToLink: {
+			type: 'boolean',
+			default: false,
+		},
 		position: {
 			type: 'string',
 			default: 'timeline-left',

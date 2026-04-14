@@ -99,7 +99,6 @@ export default function Title({
 					value={{
 						url: linkUrl,
 						opensInNewTab: linkTarget === '_blank',
-						rel,
 					}}
 					settings={[
 						{
@@ -109,18 +108,11 @@ export default function Title({
 								'timeline-full-widget'
 							),
 						},
-						{
-							id: 'rel',
-							title: __(
-								'Add rel attribute',
-								'timeline-full-widget'
-							),
-						},
 					]}
 					onChange={(newVal) => {
 						const linkAttrs = getSafeLinkAttributes(
 							newVal?.url || '',
-							newVal?.rel || '',
+							rel || '',
 							newVal?.opensInNewTab ? '_blank' : ''
 						);
 

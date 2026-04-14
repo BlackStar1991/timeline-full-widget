@@ -9,20 +9,23 @@ import {
 	InnerBlocks,
 	PanelColorSettings,
 	AlignmentToolbar,
+	LinkControl,
 } from '@wordpress/block-editor';
 import { __, sprintf } from '@wordpress/i18n';
+import { link as linkIcon, linkOff as unlinkIcon } from '@wordpress/icons';
 import { useSelect, useDispatch } from '@wordpress/data';
 import {
 	PanelBody,
 	SelectControl,
 	ToolbarButton,
 	Spinner,
+	Popover,
 } from '@wordpress/components';
 import { isBlobURL } from '@wordpress/blob';
 import { useState, useEffect, useMemo, useCallback } from '@wordpress/element';
 
 import Title from './title';
-import { parseStyleString } from './utils';
+import { parseStyleString, getSafeLinkAttributes } from './utils';
 import {
 	ITEM_ATTRIBUTE_EXCLUSIONS,
 	collectDescendantStyleUpdates,
@@ -44,6 +47,10 @@ export function Edit({ clientId, attributes, setAttributes }) {
 		linkUrl,
 		linkTarget,
 		rel,
+		mediaLinkUrl,
+		mediaLinkTarget,
+		mediaLinkRel,
+		isMediaWrapToLink,
 		showMedia,
 		mediaUrl,
 		markerAlt,
@@ -74,6 +81,7 @@ export function Edit({ clientId, attributes, setAttributes }) {
 	} = attributes;
 
 	const [activeField, setActiveField] = useState(null);
+	const [isMediaLinkPickerOpen, setIsMediaLinkPickerOpen] = useState(false);
 	const { updateBlockAttributes } = useDispatch('core/block-editor');
 	const { createSuccessNotice, createErrorNotice } =
 		useDispatch('core/notices');
@@ -307,15 +315,101 @@ export function Edit({ clientId, attributes, setAttributes }) {
 							imageAlt: '',
 							mediaType: '',
 							mediaMime: '',
+							videoPoster: '',
+							mediaLinkUrl: '',
+							mediaLinkTarget: '',
+							mediaLinkRel: '',
+							isMediaWrapToLink: false,
 						})
 					}
 					isDisabled={!mediaUrl}
 					icon="trash"
 					label={__('Remove Media File', 'timeline-full-widget')}
 				/>
+
+				<ToolbarButton
+					icon={linkIcon}
+					label={__('Link for media', 'timeline-full-widget')}
+					onClick={() => setIsMediaLinkPickerOpen((prev) => !prev)}
+					isPressed={isMediaLinkPickerOpen}
+				/>
+
+				<ToolbarButton
+					icon={unlinkIcon}
+					label={__('Remove media link', 'timeline-full-widget')}
+					onClick={() => {
+						setAttributes({
+							mediaLinkUrl: '',
+							mediaLinkTarget: '',
+							mediaLinkRel: '',
+							isMediaWrapToLink: false,
+						});
+						setIsMediaLinkPickerOpen(false);
+					}}
+					isDisabled={!mediaLinkUrl}
+				/>
+
+
 			</BlockControls>
 		);
-	}, [showMedia, mediaUrl, onSelect, mediaId, setAttributes]);
+	}, [
+		showMedia,
+		mediaUrl,
+		onSelect,
+		mediaId,
+		setAttributes,
+		mediaLinkUrl,
+		isMediaLinkPickerOpen,
+		setIsMediaLinkPickerOpen,
+	]);
+
+	const mediaLinkPopover = useMemo(() => {
+		if (!isMediaLinkPickerOpen || !showMedia || !mediaUrl) {
+			return null;
+		}
+
+		return (
+			<Popover
+				position="bottom center"
+				onClose={() => setIsMediaLinkPickerOpen(false)}
+			>
+				<LinkControl
+					value={{
+						url: mediaLinkUrl,
+						opensInNewTab: mediaLinkTarget === '_blank',
+					}}
+					settings={[
+						{
+							id: 'opensInNewTab',
+							title: __('Open in new tab', 'timeline-full-widget'),
+						},
+					]}
+					onChange={(newVal = {}) => {
+						const nextUrl = newVal.url || '';
+						const nextTarget = newVal.opensInNewTab ? '_blank' : '';
+						const nextAttrs = getSafeLinkAttributes(
+							nextUrl,
+							'',
+							nextTarget
+						);
+						setAttributes({
+							mediaLinkUrl: nextAttrs.href || '',
+							mediaLinkTarget: nextAttrs.target || '',
+							mediaLinkRel: nextAttrs.rel || '',
+							isMediaWrapToLink: !!nextAttrs.href,
+						});
+					}}
+				/>
+			</Popover>
+		);
+	}, [
+		isMediaLinkPickerOpen,
+		showMedia,
+		mediaUrl,
+		mediaLinkUrl,
+		mediaLinkTarget,
+		setAttributes,
+	]);
 
 	const blockToolbarForStyleInheritance = useMemo(() => {
 		if (timelineItemSiblings.length < 2) {
@@ -339,6 +433,87 @@ export function Edit({ clientId, attributes, setAttributes }) {
 		(s) => s('core/block-editor').getSelectedBlockClientId(),
 		[]
 	);
+
+
+	const mediaLinkProps = useMemo(
+		() =>
+			getSafeLinkAttributes(
+				mediaLinkUrl,
+				mediaLinkRel,
+				mediaLinkTarget
+			),
+		[mediaLinkUrl, mediaLinkRel, mediaLinkTarget]
+	);
+
+	const mediaPreviewNode = useMemo(() => {
+		if (!showMedia || !mediaUrl) {
+			return null;
+		}
+
+		const mediaElement = (
+			<div
+				className={`timeline_pic ${isBlobURL(mediaUrl) ? 'image-loading' : 'loaded'}`}
+			>
+				{isVideo ? (
+					<video
+						id={mediaId ? `video_${mediaId}` : undefined}
+						autoPlay
+						muted
+						loop
+						playsInline
+						preload="metadata"
+						poster={videoPoster || undefined}
+						style={{
+							width: mediaWidth || '100%',
+							height: 'auto',
+						}}
+					>
+						<source src={mediaUrl} type={mediaMime || undefined} />
+						{__(
+							'Your browser does not support the video tag.',
+							'timeline-full-widget'
+						)}
+					</video>
+				) : (
+					<img
+						id={mediaId ? `img_${mediaId}` : undefined}
+						src={mediaUrl}
+						alt={imageAlt || ''}
+						style={{
+							width: mediaWidth || undefined,
+							height: 'auto',
+						}}
+					/>
+				)}
+				{isBlobURL(mediaUrl) && <Spinner />}
+			</div>
+		);
+
+		if (isMediaWrapToLink && mediaLinkProps.href) {
+			return (
+				<div
+					className="timeline-media-link"
+					role="link"
+					aria-label={__('Linked media preview', 'timeline-full-widget')}
+				>
+					{mediaElement}
+				</div>
+			);
+		}
+
+		return mediaElement;
+	}, [
+		showMedia,
+		mediaUrl,
+		isVideo,
+		mediaId,
+		videoPoster,
+		mediaWidth,
+		mediaMime,
+		imageAlt,
+		isMediaWrapToLink,
+		mediaLinkProps,
+	]);
 
 	return (
 		<>
@@ -431,6 +606,7 @@ export function Edit({ clientId, attributes, setAttributes }) {
 			</InspectorControls>
 
 			{blockToolbarForMedia}
+			{mediaLinkPopover}
 			{blockToolbarForStyleInheritance}
 
 			{activeField === 'sideText' &&
@@ -485,55 +661,7 @@ export function Edit({ clientId, attributes, setAttributes }) {
 				>
 					<div className="tl-content">
 						<div className="tl-desc">
-							{showMedia && mediaUrl ? (
-								<div
-									className={`timeline_pic ${isBlobURL(mediaUrl) ? 'image-loading' : 'loaded'}`}
-								>
-									{isVideo ? (
-										<video
-											id={
-												mediaId
-													? `video_${mediaId}`
-													: undefined
-											}
-											autoPlay
-											muted
-											loop
-											playsInline
-											preload="metadata"
-											poster={videoPoster || undefined}
-											style={{
-												width: mediaWidth || '100%',
-												height: 'auto',
-											}}
-										>
-											<source
-												src={mediaUrl}
-												type={mediaMime || undefined}
-											/>
-											{__(
-												'Your browser does not support the video tag.',
-												'timeline-full-widget'
-											)}
-										</video>
-									) : (
-										<img
-											id={
-												mediaId
-													? `img_${mediaId}`
-													: undefined
-											}
-											src={mediaUrl}
-											alt={imageAlt || ''}
-											style={{
-												width: mediaWidth || undefined,
-												height: 'auto',
-											}}
-										/>
-									)}
-									{isBlobURL(mediaUrl) && <Spinner />}
-								</div>
-							) : (
+							{showMedia && mediaUrl ? mediaPreviewNode : (
 								showMedia && (
 									<MediaPlaceholder
 										onSelect={onSelect}
