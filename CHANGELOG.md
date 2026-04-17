@@ -1,8 +1,8 @@
 # Timeline Full Widget
 
-## 1.3.1
+## 2.0.0
 * Bug fixes.
-* 
+* Corrected vision for Title Typography
 * Add link wrapper for media element.
 
 ## 1.3.0 (Aprile 13, 2026)
