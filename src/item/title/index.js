@@ -29,6 +29,7 @@ export default function Title({
 	titleMarginTop,
 	titleMarginBottom,
 	titleLineHeight,
+	titleLetterSpacing,
 	titleColor,
 	titleFontFamily,
 	linkUrl,
@@ -67,6 +68,7 @@ export default function Title({
 				titleFontUnit,
 				titleFontWeight,
 				titleLineHeight,
+				titleLetterSpacing,
 				titleMarginTop,
 				titleMarginBottom,
 				titleColor,
@@ -80,6 +82,7 @@ export default function Title({
 			titleMarginTop,
 			titleMarginBottom,
 			titleLineHeight,
+			titleLetterSpacing,
 			titleColor,
 			titleFontFamily,
 		]

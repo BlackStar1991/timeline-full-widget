@@ -73,15 +73,19 @@ registerBlockType('za/timeline-item', {
 		},
 		titleLineHeight: {
 			type: 'string',
+			default: '1.5',
+		},
+		titleLetterSpacing: {
+			type: 'string',
 			default: '',
 		},
 		titleMarginTop: {
-			type: 'number',
-			default: 10,
+			type: 'string',
+			default: '10px',
 		},
 		titleMarginBottom: {
-			type: 'number',
-			default: 0,
+			type: 'string',
+			default: '0px',
 		},
 
 		descriptionColor: {

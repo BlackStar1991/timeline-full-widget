@@ -17,6 +17,7 @@ export default function Save({ attributes }) {
 		titleMarginTop,
 		titleMarginBottom,
 		titleLineHeight,
+		titleLetterSpacing,
 		titleFontFamily,
 		descriptionColor,
 		itemBackgroundColor,
@@ -65,6 +66,7 @@ export default function Save({ attributes }) {
 		titleMarginTop,
 		titleMarginBottom,
 		titleLineHeight,
+		titleLetterSpacing,
 		titleFontFamily,
 		titleColor,
 	});

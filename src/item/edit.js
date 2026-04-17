@@ -66,6 +66,7 @@ export function Edit({ clientId, attributes, setAttributes }) {
 		titleFontUnit,
 		titleFontWeight,
 		titleLineHeight,
+		titleLetterSpacing,
 		titleMarginTop,
 		titleMarginBottom,
 		titleColor,
@@ -170,6 +171,9 @@ export function Edit({ clientId, attributes, setAttributes }) {
 		if (parsed.lineHeight && !titleLineHeight) {
 			updates.titleLineHeight = parsed.lineHeight;
 		}
+		if (parsed.letterSpacing && !titleLetterSpacing) {
+			updates.titleLetterSpacing = parsed.letterSpacing;
+		}
 		if (parsed.color && !titleColor) {
 			updates.titleColor = parsed.color;
 		}
@@ -187,6 +191,7 @@ export function Edit({ clientId, attributes, setAttributes }) {
 		titleFontSize,
 		titleFontWeight,
 		titleLineHeight,
+		titleLetterSpacing,
 		titleMarginTop,
 		titleMarginBottom,
 		titleColor,
@@ -599,6 +604,7 @@ export function Edit({ clientId, attributes, setAttributes }) {
 						titleMarginTop,
 						titleMarginBottom,
 						titleLineHeight,
+						titleLetterSpacing,
 						titleFontFamily,
 					}}
 					setAttributes={setAttributes}
@@ -682,6 +688,7 @@ export function Edit({ clientId, attributes, setAttributes }) {
 								titleMarginTop={titleMarginTop}
 								titleMarginBottom={titleMarginBottom}
 								titleLineHeight={titleLineHeight}
+								titleLetterSpacing={titleLetterSpacing}
 								titleColor={titleColor}
 								titleFontFamily={titleFontFamily}
 								linkUrl={linkUrl}

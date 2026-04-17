@@ -1,10 +1,37 @@
 // item/components/TitleTypographyPanel.js
-import { PanelBody, SelectControl, RangeControl } from '@wordpress/components';
+import {
+	PanelBody,
+	SelectControl,
+	__experimentalBoxControl as BoxControl,
+	__experimentalUnitControl as UnitControl,
+} from '@wordpress/components';
 import { FontSizePicker } from '@wordpress/block-editor';
 import FontFamilySelect from './FontFamilySelect';
 import { __ } from '@wordpress/i18n';
 import useViewport from '../hooks/useViewport';
 import { normalizeResponsive } from '../utils/normalizeResponsive';
+
+const PX_ONLY_UNITS = [{ value: 'px', label: 'px' }];
+const LETTER_SPACING_UNITS = [
+	{ value: 'px', label: 'px' },
+	{ value: 'em', label: 'em' },
+	{ value: 'rem', label: 'rem' },
+];
+const LINE_HEIGHT_UNITS = [
+	{ value: '', label: '—' },
+	{ value: 'px', label: 'px' },
+	{ value: 'em', label: 'em' },
+	{ value: 'rem', label: 'rem' },
+];
+
+function normalizeSpacingValue(value, fallback = '') {
+	if (value === undefined || value === null) {
+		return fallback;
+	}
+
+	const normalized = String(value).trim();
+	return normalized === '' ? fallback : normalized;
+}
 
 export default function TitleTypographyPanel({ attrs = {}, setAttributes }) {
 	const {
@@ -14,6 +41,7 @@ export default function TitleTypographyPanel({ attrs = {}, setAttributes }) {
 		titleMarginBottom,
 		titleLineHeight,
 		titleFontFamily,
+		titleLetterSpacing,
 	} = attrs;
 
 	const device = useViewport();
@@ -27,6 +55,11 @@ export default function TitleTypographyPanel({ attrs = {}, setAttributes }) {
 		normalizedFontSize[device] !== null
 			? normalizedFontSize[device]
 			: undefined;
+
+	const boxValues = {
+		top: normalizeSpacingValue(titleMarginTop, '10px'),
+		bottom: normalizeSpacingValue(titleMarginBottom, '0px'),
+	};
 
 	return (
 		<PanelBody
@@ -52,9 +85,7 @@ export default function TitleTypographyPanel({ attrs = {}, setAttributes }) {
 				label={__('Title font weight', 'timeline-full-widget')}
 				value={titleFontWeight || ''}
 				options={[
-					{ label: __('Default', 'timeline-full-widget'), value: '' },
-					{ label: '100', value: '100' },
-					{ label: '200', value: '200' },
+					{ label: __('Default', 'timeline-full-widget'), value: '700' },
 					{ label: '300', value: '300' },
 					{ label: '400', value: '400' },
 					{ label: '500', value: '500' },
@@ -73,36 +104,51 @@ export default function TitleTypographyPanel({ attrs = {}, setAttributes }) {
 				onChange={(val) => setAttributes({ titleFontFamily: val })}
 			/>
 
-			<RangeControl
-				label={__('Title Margin Top (px)', 'timeline-full-widget')}
-				value={Number(titleMarginTop) || 0}
+			<UnitControl
+				label={__('Title line height', 'timeline-full-widget')}
+				value={titleLineHeight || ''}
 				onChange={(value) =>
-					setAttributes({ titleMarginTop: String(value) })
+					setAttributes({ titleLineHeight: value || '' })
 				}
-				min={0}
-				max={100}
-				__nextHasNoMarginBottom={true}
+				units={LINE_HEIGHT_UNITS}
+				step={0.1}
+				isPressEnterToChange
 				__next40pxDefaultSize={true}
+				__nextHasNoMarginBottom={true}
 			/>
-			<RangeControl
-				label={__('Title Margin Bottom (px)', 'timeline-full-widget')}
-				value={Number(titleMarginBottom) || 0}
+
+			<UnitControl
+				label={__('Title letter spacing', 'timeline-full-widget')}
+				value={titleLetterSpacing || ''}
 				onChange={(value) =>
-					setAttributes({ titleMarginBottom: String(value) })
+					setAttributes({ titleLetterSpacing: value || '' })
 				}
-				min={0}
-				max={100}
-				__nextHasNoMarginBottom={true}
+				units={LETTER_SPACING_UNITS}
+				step={0.1}
+				isPressEnterToChange
 				__next40pxDefaultSize={true}
+				__nextHasNoMarginBottom={true}
 			/>
-			<RangeControl
-				label={__('Title Line Height (px)', 'timeline-full-widget')}
-				value={Number(titleLineHeight)}
-				onChange={(value) =>
-					setAttributes({ titleLineHeight: String(value) })
-				}
-				__nextHasNoMarginBottom={true}
-				__next40pxDefaultSize={true}
+
+			<BoxControl
+				label={__('Title margins', 'timeline-full-widget')}
+				values={boxValues}
+				onChange={(nextValues = {}) => {
+					setAttributes({
+						titleMarginTop: normalizeSpacingValue(
+							nextValues.top,
+							'10px'
+						),
+						titleMarginBottom: normalizeSpacingValue(
+							nextValues.bottom,
+							'0px'
+						),
+					});
+				}}
+				units={PX_ONLY_UNITS}
+				sides={['top', 'bottom']}
+				resetValues={{ top: '10px', bottom: '0px' }}
+				allowReset={true}
 			/>
 		</PanelBody>
 	);

@@ -50,18 +50,70 @@ export const DESCENDANT_ATTRIBUTE_EXCLUSIONS = new Set([
 	'placeholder',
 ]);
 
+
+function cloneAttributeValue(value) {
+	if (Array.isArray(value)) {
+		return value.map((item) => cloneAttributeValue(item));
+	}
+
+	if (value && typeof value === 'object') {
+		return Object.keys(value).reduce((acc, key) => {
+			acc[key] = cloneAttributeValue(value[key]);
+			return acc;
+		}, {});
+	}
+
+	return value;
+}
+
+function shouldResetLegacyTitleInlineStyle(attributes = {}) {
+	return [
+		'titleFontSize',
+		'titleFontWeight',
+		'titleFontFamily',
+		'titleLineHeight',
+		'titleLetterSpacing',
+		'titleMarginTop',
+		'titleMarginBottom',
+		'titleColor',
+	].some((key) => {
+		const value = attributes[key];
+		if (value === undefined || value === null) {
+			return false;
+		}
+
+		if (typeof value === 'string') {
+			return value.trim() !== '';
+		}
+
+		if (typeof value === 'object') {
+			return Object.values(value).some(
+				(entry) => entry !== undefined && entry !== null && entry !== ''
+			);
+		}
+
+		return true;
+	});
+}
+
 export function getInheritableAttributes(
 	attributes = {},
 	exclusions = ITEM_ATTRIBUTE_EXCLUSIONS
 ) {
-	return Object.keys(attributes).reduce((acc, key) => {
+	const inheritable = Object.keys(attributes).reduce((acc, key) => {
 		if (exclusions.has(key)) {
 			return acc;
 		}
 
-		acc[key] = attributes[key];
+		acc[key] = cloneAttributeValue(attributes[key]);
 		return acc;
 	}, {});
+
+	if (shouldResetLegacyTitleInlineStyle(inheritable)) {
+		inheritable.titleInlineStyle = '';
+	}
+
+	return inheritable;
 }
 
 function collectDescendantBlocks(block, path = []) {

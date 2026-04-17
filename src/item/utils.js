@@ -178,16 +178,26 @@ export function buildStyleObject(attrs = {}) {
 		}
 	}
 
-	if (attrs.titleMarginTop) {
-		result.marginTop = String(attrs.titleMarginTop).endsWith('px')
-			? String(attrs.titleMarginTop)
-			: `${attrs.titleMarginTop}px`;
+	if (
+		attrs.titleMarginTop !== undefined &&
+		attrs.titleMarginTop !== null &&
+		String(attrs.titleMarginTop).trim() !== ''
+	) {
+		const raw = String(attrs.titleMarginTop).trim();
+		result.marginTop = /^(?:-?\d+(?:\.\d+)?(?:px|rem|em|%)|0)$/.test(raw)
+			? raw
+			: `${raw}px`;
 	}
 
-	if (attrs.titleMarginBottom) {
-		result.marginBottom = String(attrs.titleMarginBottom).endsWith('px')
-			? String(attrs.titleMarginBottom)
-			: `${attrs.titleMarginBottom}px`;
+	if (
+		attrs.titleMarginBottom !== undefined &&
+		attrs.titleMarginBottom !== null &&
+		String(attrs.titleMarginBottom).trim() !== ''
+	) {
+		const raw = String(attrs.titleMarginBottom).trim();
+		result.marginBottom = /^(?:-?\d+(?:\.\d+)?(?:px|rem|em|%)|0)$/.test(raw)
+			? raw
+			: `${raw}px`;
 	}
 
 	if (
@@ -196,24 +206,19 @@ export function buildStyleObject(attrs = {}) {
 		String(attrs.titleLineHeight).trim() !== ''
 	) {
 		const raw = String(attrs.titleLineHeight).trim();
-		if (/^\d+(\.\d+)?px$/.test(raw)) {
-			result.lineHeight = raw;
-		} else if (/^\d+(\.\d+)?$/.test(raw)) {
-			result.lineHeight = `${raw}px`;
-		} else if (/^\d+(\.\d+)?(rem|em|%)$/.test(raw)) {
-			result.lineHeight = raw;
-		} else {
-			result.lineHeight = raw;
-		}
+		result.lineHeight = raw;
 	} else if (styleFromAttr.lineHeight) {
-		const inlineVal = String(styleFromAttr.lineHeight).trim();
-		if (/^\d+(\.\d+)?px$/.test(inlineVal)) {
-			result.lineHeight = inlineVal;
-		} else if (/^\d+(\.\d+)?$/.test(inlineVal)) {
-			result.lineHeight = `${inlineVal}px`;
-		} else {
-			result.lineHeight = inlineVal;
-		}
+		result.lineHeight = String(styleFromAttr.lineHeight).trim();
+	}
+
+	if (
+		attrs.titleLetterSpacing !== undefined &&
+		attrs.titleLetterSpacing !== null &&
+		String(attrs.titleLetterSpacing).trim() !== ''
+	) {
+		result.letterSpacing = String(attrs.titleLetterSpacing).trim();
+	} else if (styleFromAttr.letterSpacing) {
+		result.letterSpacing = String(styleFromAttr.letterSpacing).trim();
 	}
 
 	return result;
