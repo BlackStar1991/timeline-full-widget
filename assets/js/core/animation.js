@@ -109,7 +109,6 @@ export function initTimelineAnimation(scopeEl) {
 	try {
 		if (isInIframe) {
 			parentWindow = window.parent;
-			// пробуем доступ — может выбросить при CORS
 			void parentWindow.document;
 			log('Inside iframe, parent window is accessible');
 		}
@@ -118,7 +117,6 @@ export function initTimelineAnimation(scopeEl) {
 		parentWindow = null;
 	}
 
-	// can we translate iframe coords to parent viewport coords?
 	const canUseParentCoords = !!(
 		isInIframe &&
 		parentWindow &&
@@ -126,8 +124,7 @@ export function initTimelineAnimation(scopeEl) {
 		typeof window.frameElement.getBoundingClientRect === 'function'
 	);
 
-	// init visual state
-	line.style.transform = 'scaleY(0)';
+	line.style.transform = 'translateX(-50%) scaleY(0)';
 
 	// state
 	let rafId = null;
@@ -136,7 +133,6 @@ export function initTimelineAnimation(scopeEl) {
 	let lastTarget = -1;
 	let resizeTimer = null;
 
-	// cache triggers and items (objects {el, mark})
 	let triggers = Array.from(wrapper.querySelectorAll('.tl-trigger'));
 	let items = Array.from(
 		wrapper.querySelectorAll('li.timeline-item, .timeline-item')
@@ -148,7 +144,6 @@ export function initTimelineAnimation(scopeEl) {
 			it,
 	}));
 
-	// Intersection observer for debug/visibility (lightweight)
 	let observer = null;
 	try {
 		const ioOptions = {
@@ -244,7 +239,7 @@ export function initTimelineAnimation(scopeEl) {
 			try {
 				return parentWindow.innerHeight / 2;
 			} catch (e) {
-				/* fallback below */
+				console.error('Failed to get parent window middle', e);
 			}
 		}
 		if (scrollParent === window) {
@@ -372,7 +367,7 @@ export function initTimelineAnimation(scopeEl) {
 		// if no change and current ~ target — finish
 		if (target === lastTarget && Math.abs(current - target) < 0.0005) {
 			current = target;
-			line.style.transform = `scaleY(${current})`;
+			line.style.transform = `translateX(-50%) scaleY(${current})`;
 			updateStuckByLine();
 			running = false;
 			return;
@@ -384,7 +379,7 @@ export function initTimelineAnimation(scopeEl) {
 		if (Math.abs(current - target) < 0.001) {
 			current = target;
 		}
-		line.style.transform = `scaleY(${current})`;
+		line.style.transform = `translateX(-50%) scaleY(${current})`;
 
 		updateStuckByLine();
 

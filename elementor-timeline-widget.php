@@ -466,10 +466,33 @@ class Za_Pack_Widget_Timeline extends Widget_Base
         $this->end_controls_section();
 
         $this->start_controls_section(
-                'section_style_timeline_colors',
+                'section_style_timeline_settings',
                 [
-                        'label' => __('Timeline Colors', 'timeline-full-widget'),
+                        'label' => __('Timeline Settings', 'timeline-full-widget'),
                         'tab' => Controls_Manager::TAB_STYLE,
+                ]
+        );
+
+        $this->add_control(
+                'timeline_line_width',
+                [
+                        'label' => __('Line Width', 'timeline-full-widget'),
+                        'type' => Controls_Manager::SLIDER,
+                        'size_units' => ['px'],
+                        'range' => [
+                                'px' => [
+                                        'min' => 1,
+                                        'max' => 20,
+                                        'step' => 1,
+                                ],
+                        ],
+                        'default' => [
+                                'unit' => 'px',
+                                'size' => 4,
+                        ],
+                        'selectors' => [
+                                '{{WRAPPER}} .timeline-wrapper' => '--timeline-line-width: {{SIZE}}{{UNIT}};',
+                        ],
                 ]
         );
 
@@ -484,6 +507,8 @@ class Za_Pack_Widget_Timeline extends Widget_Base
                         ],
                 ]
         );
+
+
 
         $this->add_control(
                 'timeline_marker_color',
@@ -680,7 +705,7 @@ class Za_Pack_Widget_Timeline extends Widget_Base
         // iterate items
         $countBase = ($direction === 'left') ? 1 : 2;
         $count = $countBase;
-        foreach ($items as $index => $item) {
+        foreach ($items as $item) {
             if ($on_side) {
                 $li_class = ($direction === 'right') ? 'timeline-inverted' : 'timeline-left';
             } else {
@@ -717,18 +742,19 @@ class Za_Pack_Widget_Timeline extends Widget_Base
 
         $bg_color = !empty($item['li_bg_color']) ? 'background-color:' . esc_attr($item['li_bg_color']) . ';' : '';
         $media_html = $this->render_media_html($item);
+        $style_attr = $bg_color ? sprintf( ' style="%s"', esc_attr( $bg_color ) ) : '';
 
         ob_start();
         ?>
-        <li class="<?php echo esc_attr($li_class); ?> timeline-item" <?php if ($bg_color) echo 'style="' . esc_attr($bg_color) . '"'; ?>>
-            <div class="timeline-side"><?php echo wp_kses_post($side_content); ?></div>
+        <li class="<?php echo esc_attr( $li_class ); ?> timeline-item"<?php echo $style_attr; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>>
+            <div class="timeline-side"><?php echo $side_content; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Sanitized with wp_kses_post() above. ?></div>
             <div class="tl-trigger"></div>
 
             <?php if ($show_marker) : ?>
                 <?php
                 $marker_img = $item['marker_image']['url'] ?? '';
-                if ($show_marker && !empty($marker_img) && !empty($settings['tl_is_marker_unique'])) {
-                    echo '<div class="tl-mark"><img src="' . esc_url($marker_img) . '" alt="marker" loading="lazy" decoding="async" /></div>';
+                if (!empty($marker_img) && (($settings['tl_is_marker_unique'] ?? '') === 'yes')) {
+                    echo '<div class="tl-mark"><img src="' . esc_url($marker_img) . '" alt="" loading="lazy" decoding="async" /></div>';
                 } else {
                     echo '<div class="tl-mark"></div>';
                 }
@@ -832,8 +858,8 @@ class Za_Pack_Widget_Timeline extends Widget_Base
 
             return sprintf(
                     '<a class="timeline-media-link" %1$s>%2$s</a>',
-                    $link_attrs,
-                    $media_inner_html
+                    $link_attrs, // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Safe attributes built by get_link_attributes_string().
+                    $media_inner_html // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Media HTML is escaped when built.
             );
         }
 
@@ -880,7 +906,6 @@ class Za_Pack_Widget_Timeline extends Widget_Base
 
             return attrs;
             }
-
 
             function buildMediaHtml(item) {
             var image_url = '';
@@ -940,53 +965,58 @@ class Za_Pack_Widget_Timeline extends Widget_Base
 
             <ul class="{{ ulClass }}">
                 <# if ( settings.list ) { _.each( settings.list, function( item ) {
-                var li_class = onSide
-                ? ( direction === 'right' ? 'timeline-inverted' : 'timeline-left' )
-                : ( ( ++count % 2 === 0 ) ? 'timeline-inverted' : 'timeline-left' );
+                    var li_class = onSide
+                        ? ( direction === 'right' ? 'timeline-inverted' : 'timeline-left' )
+                        : ( ( ++count % 2 === 0 ) ? 'timeline-inverted' : 'timeline-left' );
 
-                var bg_color = item.li_bg_color ? 'background-color:' + _.escape( item.li_bg_color ) + ';' : '';
-                var titleTag = settings.header_tag ? settings.header_tag : 'h2';
-                var titleLink = item.title_link_url || {};
-                var titleHtml = '';
-                var safeTitle = buildTitleText( item );
+                    var bg_color = item.li_bg_color ? 'background-color:' + _.escape( item.li_bg_color ) + ';' : '';
+                    var titleTag = settings.header_tag || 'h2';
+                    var titleLink = item.title_link_url || {};
+                    var safeTitle = buildTitleText( item );
+                    var mediaHtml = buildMediaHtml( item );
+                #>
 
-                if ( titleTag === 'a' && titleLink.url ) {
-                titleHtml = '<a class="tl-title"' + buildLinkAttributes( titleLink ) + '>' +
-                safeTitle +
-                '</a>';
-                } else {
-                titleHtml = '<' + titleTag + ' class="tl-title">' +
-                safeTitle +
-                '</' + titleTag + '>';
-                }
+                <li class="{{ li_class }} timeline-item" style="{{ bg_color }}">
+                    <div class="timeline-side">{{{ item.side_content }}}</div>
+                    <div class="tl-trigger"></div>
 
-                var mediaHtml = buildMediaHtml( item );
-            #>
-
-            <li class="{{ li_class }} timeline-item" style="{{ bg_color }}">
-                <div class="timeline-side">{{{ item.side_content }}}</div>
-                <div class="tl-trigger"></div>
-                <# if ( showMarker ) { #>
-                    <# if ( settings.tl_is_marker_unique && item.marker_image && item.marker_image.url ) { #>
-                         <div class="tl-mark"><img src="{{ item.marker_image.url }}" alt="marker" /></div>
-                    <# } else { #>
-                        <div class="tl-mark"></div>
-                    <# } #>
-                <# } #>
-
-                <div class="timeline-panel" >
-                    <div class="tl-content">
-                        <# if ( mediaHtml ) { #>
-                        {{{ mediaHtml }}}
+                    <# if ( showMarker ) { #>
+                        <# if ( settings.tl_is_marker_unique === 'yes' && item.marker_image && item.marker_image.url ) { #>
+                            <div class="tl-mark"><img src="{{ item.marker_image.url }}" alt="" loading="lazy" decoding="async" /></div>
+                        <# } else { #>
+                            <div class="tl-mark"></div>
                         <# } #>
-                        <div class="tl-desc">
-                            {{{ titleHtml }}}
-                            <div class="tl-desc-short">{{{ item.list_content }}}</div>
+                    <# } #>
+
+                    <div class="timeline-panel">
+                        <div class="tl-content">
+                            <# if ( mediaHtml ) { #>
+                                {{{ mediaHtml }}}
+                            <# } #>
+
+                            <div class="tl-desc">
+                                <# if ( titleTag === 'a' && titleLink.url ) { #>
+                                    <a class="tl-title" {{{ buildLinkAttributes( titleLink ) }}}>{{{ safeTitle }}}</a>
+                                <# } else if ( titleTag === 'h1' ) { #>
+                                    <h1 class="tl-title">{{{ safeTitle }}}</h1>
+                                <# } else if ( titleTag === 'h2' ) { #>
+                                    <h2 class="tl-title">{{{ safeTitle }}}</h2>
+                                <# } else if ( titleTag === 'h3' ) { #>
+                                    <h3 class="tl-title">{{{ safeTitle }}}</h3>
+                                <# } else if ( titleTag === 'h4' ) { #>
+                                    <h4 class="tl-title">{{{ safeTitle }}}</h4>
+                                <# } else if ( titleTag === 'p' ) { #>
+                                    <p class="tl-title">{{{ safeTitle }}}</p>
+                                <# } else { #>
+                                    <div class="tl-title">{{{ safeTitle }}}</div>
+                                <# } #>
+
+                                <div class="tl-desc-short">{{{ item.list_content }}}</div>
+                            </div>
                         </div>
                     </div>
-                </div>
-            </li>
-            <# }); } #>
+                </li>
+                <# }); } #>
             </ul>
         </div>
         <?php

@@ -31,6 +31,10 @@
 			"type": "string",
 			"default": "#F6F6F8"
 		},
+		"lineWidth": {
+			"type": "number",
+			"default": 4
+		},
 		"markerColor": {
 			"type": "string",
 			"default": "#F6F6F8"

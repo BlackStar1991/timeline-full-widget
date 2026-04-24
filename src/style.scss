@@ -22,6 +22,7 @@
 }
 
 .wp-block-za-timeline-full-widget .timeline::before {
+  width: var(--timeline-line-width, 4px);
   background-color: var(--timeline-line-color, #f6f6f8);
 }
 
@@ -30,7 +31,9 @@
 }
 
 .wp-block-za-timeline-full-widget .timeline-line-animation {
+  width: var(--timeline-line-width, 4px);
   background-color: var(--timeline-line-active-color, #f37321);
+  z-index: 2;
 }
 
 .wp-block-za-timeline-full-widget .timeline.timeline-animation-marker li.is-stuck .tl-mark {

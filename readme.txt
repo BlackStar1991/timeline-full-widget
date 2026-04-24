@@ -43,7 +43,7 @@ You can use it for:
 
 
 = Does it work with the latest Elementor? =
-Yes, tested with Elementor 4.0.2 and WordPress 6.9.
+Yes, tested with Elementor 4.0.3 and WordPress 6.9.
 
 = Does it support Gutenberg (block editor)? =
 Yes, the plugin includes a native Gutenberg block. Type “/timeline”
@@ -86,6 +86,7 @@ Yes, it works with most WordPress themes, including block and classic themes.
 * Corrected vision for Title Typography
 * Bug fixes.
 * Add link wrapper for media element.
+* Add adjustment styles to the timeline width.
 
 = 1.3.0 =
 * Add button "Apply item styles to other items".

@@ -4,6 +4,7 @@ import { convertMarginAttrToStyle } from './item/utils';
 export default function Save({ attributes }) {
 	const {
 		lineColor,
+		lineWidth = 4,
 		markerColor,
 		animationTimeline,
 		animationLineColor,
@@ -25,6 +26,7 @@ export default function Save({ attributes }) {
 				className="timeline-wrapper"
 				style={{
 					'--timeline-line-color': lineColor || '#F6F6F8',
+					'--timeline-line-width': `${ Math.max( 1, Number( lineWidth ) || 4 ) }px`,
 					'--timeline-marker-color': markerColor || '#F6F6F8',
 					'--timeline-line-active-color':
 						animationLineColor || '#F37321',
