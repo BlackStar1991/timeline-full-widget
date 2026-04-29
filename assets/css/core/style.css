@@ -85,8 +85,9 @@ ul.timeline {
     text-decoration: underline;
 }
 
-
 .tl-content{
+    display: flex;
+    flex-direction: column;
     border: 1px solid #F6F6F8;
     border-radius: 5px;
     padding: 15px;
@@ -96,6 +97,45 @@ ul.timeline {
 .tl-content .tl-desc-short p{
     margin-bottom: 10px;
 }
+
+
+.tl-content-horizontal{
+    flex-direction: row;
+    align-items: center;
+    gap: 10px;
+}
+
+.tl-content-horizontal .timeline_pic,
+.tl-content-horizontal .timeline-media-link {
+    flex: 0 1 45%;
+    min-width: 0;
+    max-width: 45%;
+}
+
+.tl-content-horizontal .timeline-media-link .timeline_pic {
+    max-width: 100%;
+}
+
+.tl-content-horizontal .timeline_pic img,
+.tl-content-horizontal .timeline_pic video {
+    display: block;
+    width: 100%;
+    height: auto;
+    max-width: 100%;
+    object-fit: contain;
+}
+
+.tl-content-horizontal .tl-desc {
+    flex: 1 1 auto;
+    min-width: 0;
+    overflow-wrap: anywhere;
+}
+
+.tl-content-horizontal .tl-title,
+.tl-content-horizontal .tl-desc-short {
+    max-width: 100%;
+}
+
 
 .tl-mark {
     position: absolute;
@@ -169,11 +209,9 @@ ul.timeline {
     margin-top: 5px;
 }
 
-
 .timeline .timeline_pic {
     position: relative;
     padding: 0;
-    width: 100%;
 }
 
 .tl-title {
@@ -212,7 +250,6 @@ ul.timeline {
         padding-left: 22px;
     }
 
-
     .timeline-animation-other-side-sticky .timeline-side {
         position: sticky;
         top: 0;
@@ -233,6 +270,14 @@ ul.timeline {
     .timeline-animation-marker .timeline-panel {
         margin: 0;
     }
+
+    .tl-reverse{
+        flex-direction: column-reverse;
+    }
+    .tl-content-horizontal.tl-reverse{
+        flex-direction: row-reverse;
+    }
+
 }
 
 @media (max-width: 700px) {
@@ -250,7 +295,7 @@ ul.timeline {
 
     .tl-mark {
         transform: none;
-        left: 9px;
+        left: 7px;
     }
 
     .timeline-line-animation {
@@ -281,4 +326,19 @@ ul.timeline {
         left: -14px;
         right: auto;
     }
+
+    .tl-content-horizontal {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+
+    .tl-content-horizontal .timeline_pic,
+    .tl-content-horizontal .timeline-media-link {
+        flex-basis: auto;
+        max-width: 100%;
+    }
 }
+
+
+

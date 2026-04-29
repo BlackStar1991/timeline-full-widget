@@ -1,0 +1,22 @@
+{
+	"$schema": "https://playground.wordpress.net/blueprint-schema.json",
+	"login": true,
+	"landingPage": "/wp-admin/post.php?post=2&action=edit",
+	"preferredVersions": {
+		"php": "8.3",
+		"wp": "latest"
+	},
+	"steps": [
+		{
+			"step": "installPlugin",
+			"pluginData": {
+				"resource": "wordpress.org/plugins",
+				"slug": "timeline-full-widget"
+			}
+		},
+		{
+			"step": "runPHP",
+			"code": "<?php require '/wordpress/wp-load.php'; $page_id = 2; $content = '<!-- wp:heading {\"textAlign\":\"center\"} --><h2 class=\"wp-block-heading has-text-align-center\">Timeline Demo</h2><!-- /wp:heading --><!-- wp:za/timeline-full-widget --><div class=\"wp-block-za-timeline-full-widget\"><div class=\"timeline-wrapper\" style=\"--timeline-line-color:#F6F6F8;--timeline-line-width:4px;--timeline-marker-color:#F6F6F8;--timeline-line-active-color:#F37321;--timeline-marker-active-color:#F37321\"><div class=\"timeline-line-animation\"></div><ul class=\"timeline timeline-animation-marker\"></ul></div></div><!-- /wp:za/timeline-full-widget -->'; wp_update_post(array('ID' => $page_id, 'post_title' => 'Timeline Demo', 'post_name' => 'timeline-demo', 'post_status' => 'publish', 'post_content' => $content)); update_option('show_on_front', 'page'); update_option('page_on_front', $page_id);"
+		}
+	]
+}

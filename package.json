@@ -33,7 +33,7 @@
 		"@wordpress/eslint-plugin": "^24.5.0",
 		"@wordpress/i18n": "^6.16.0",
 		"@wordpress/prettier-config": "^4.43.0",
-		"@wordpress/scripts": "^31.8.0",
+		"@wordpress/scripts": "^19.2.4",
 		"@wordpress/stylelint-config": "^23.35.0",
 		"stylelint": "^16.7.0",
 		"stylelint-scss": "^6.0.0"

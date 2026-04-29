@@ -132,6 +132,14 @@ registerBlockType('za/timeline-item', {
 			type: 'boolean',
 			default: false,
 		},
+		horizontalContentLayout: {
+			type: 'boolean',
+			default: false,
+		},
+		reverseMediaContent: {
+			type: 'boolean',
+			default: false,
+		},
 		showMedia: {
 			type: 'boolean',
 			default: true,

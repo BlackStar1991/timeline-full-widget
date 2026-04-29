@@ -20,6 +20,8 @@ export const ITEM_ATTRIBUTE_EXCLUSIONS = new Set([
 	'markerAlt',
 	'otherSiteTitle',
 	'position',
+	'horizontalContentLayout',
+	'reverseMediaContent',
 ]);
 
 export const DESCENDANT_ATTRIBUTE_EXCLUSIONS = new Set([
@@ -49,7 +51,6 @@ export const DESCENDANT_ATTRIBUTE_EXCLUSIONS = new Set([
 	'poster',
 	'placeholder',
 ]);
-
 
 function cloneAttributeValue(value) {
 	if (Array.isArray(value)) {

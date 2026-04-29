@@ -4,7 +4,7 @@ Donate link: https://www.paypal.com/donate/?hosted_button_id=TK9QQ5DE2K378
 Tags: timeline, Elementor, gutenberg blocks, editor, blocks
 Requires at least: 5.0
 Tested up to: 7.0
-Stable tag: 2.0.0
+Stable tag: 2.1.0
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -82,30 +82,36 @@ Yes, it works with most WordPress themes, including block and classic themes.
 
 == Changelog ==
 
+= 2.1.0 =
+* Added WordPress Playground support.
+* Added support for horizontal and vertical content layouts.
+* Added an option to reverse media and content order.
+
 = 2.0.0 =
-* Corrected vision for Title Typography
 * Bug fixes.
-* Add link wrapper for media element.
-* Add adjustment styles to the timeline width.
+* Improved Title Typography controls.
+* Added link wrapper support for media elements.
+* Added timeline width style controls.
 
 = 1.3.0 =
-* Add button "Apply item styles to other items".
-* Corrected styles for the timeline item.
-* Fixed style problems with Content Typography in Elementor.
-* Separated styles for line and marker colors
-* Bug fixes.
+* Added a button to copy styles from the current item.
+* Added responsive media queries for the Gutenberg block timeline.
+* Added responsive media queries for the Elementor widget timeline.
+* Added controls for media width inside timeline items.
+* Fixed Content Typography style issues in Elementor.
+* Separated line and marker color styles.
 
 = 1.2.0 =
-* Corrected styles for the timeline block.
+* Corrected timeline styles in the Gutenberg block.
 * Bug fixes.
 
 = 1.1.0 =
 * Bug fixes.
-* Add choosing font-family for a Title element in the Gutenberg block.
+* Added font-family selection for Title elements in the Gutenberg block.
 
 = 1.0.1 =
-* Added sticky text settings on the opposite side of the timeline.
-* Corrected animation for markers.
+* Added sticky text settings for the opposite side of the timeline.
+* Corrected marker animation behavior.
 
 = 1.0.0 =
 * Release Date - 25th September 2025.

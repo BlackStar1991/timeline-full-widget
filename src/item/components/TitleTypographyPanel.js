@@ -85,7 +85,10 @@ export default function TitleTypographyPanel({ attrs = {}, setAttributes }) {
 				label={__('Title font weight', 'timeline-full-widget')}
 				value={titleFontWeight || ''}
 				options={[
-					{ label: __('Default', 'timeline-full-widget'), value: '700' },
+					{
+						label: __('Default', 'timeline-full-widget'),
+						value: '700',
+					},
 					{ label: '300', value: '300' },
 					{ label: '400', value: '400' },
 					{ label: '500', value: '500' },
@@ -149,6 +152,7 @@ export default function TitleTypographyPanel({ attrs = {}, setAttributes }) {
 				sides={['top', 'bottom']}
 				resetValues={{ top: '10px', bottom: '0px' }}
 				allowReset={true}
+				__next40pxDefaultSize
 			/>
 		</PanelBody>
 	);

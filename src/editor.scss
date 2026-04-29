@@ -26,4 +26,22 @@
   margin-bottom: 20px;
 }
 
+// for sticky marker
+.editor-styles-wrapper .timeline > .block-editor-inner-blocks,
+.editor-styles-wrapper .timeline > .block-editor-inner-blocks > .block-editor-block-list__layout {
+  display: contents;
+}
+.editor-styles-wrapper .timeline-animation-marker .wp-block-za-timeline-item {
+  display: grid;
+  grid-template-columns: 1fr 26px 1fr;
+  grid-gap: 20px;
+}
 
+.editor-styles-wrapper .timeline-animation-marker .wp-block-za-timeline-item .tl-mark {
+  position: sticky;
+  top: 0;
+  grid-column: 2;
+  justify-self: center;
+  left: auto;
+  transform: none;
+}

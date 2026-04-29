@@ -46,6 +46,8 @@ export default function Save({ attributes }) {
 		markerAlt,
 		markerUrl,
 		markerId,
+		horizontalContentLayout,
+		reverseMediaContent,
 	} = attributes;
 
 	const classes = ['timeline-item', position];
@@ -53,6 +55,13 @@ export default function Save({ attributes }) {
 		classes.push(`t-text-align-${textAlignClass}`);
 	}
 	const className = Array.from(new Set(classes)).join(' ');
+	const contentClasses = [
+		'tl-content',
+		horizontalContentLayout ? 'tl-content-horizontal' : '',
+		reverseMediaContent ? 'tl-reverse' : '',
+	]
+		.filter(Boolean)
+		.join(' ');
 	const linkProps = getSafeLinkAttributes(linkUrl, rel, linkTarget);
 	const mediaLinkProps = getSafeLinkAttributes(
 		mediaLinkUrl,
@@ -99,64 +108,70 @@ export default function Save({ attributes }) {
 		className,
 	});
 
-
 	const mediaContent =
-		showMedia && mediaUrl ? (() => {
-			const mediaElement = (
-				<div
-					className={`timeline_pic ${
-						isBlobURL(mediaUrl) ? 'image-loading' : 'loaded'
-					}`}
-				>
-					{isVideo ? (
-						el(
-							'video',
-							{
-								id: mediaId ? `video_${mediaId}` : undefined,
-								poster: videoPoster || undefined,
-								autoPlay: true,
-								muted: true,
-								loop: true,
-								playsInline: true,
-								preload: 'metadata',
-								style: {
-									width: mediaWidth || '100%',
-									height: 'auto',
-								},
-							},
-							mediaUrl
-								? el('source', {
-									src: mediaUrl,
-									type: sourceType,
-								})
-								: null,
-							'Your browser does not support the video tag.'
-						)
-					) : (
-						<img
-							id={mediaId ? `img_${mediaId}` : undefined}
-							{...(mediaWidth
-								? {
-									style: { width: mediaWidth },
-								  }
-								: {})}
-							src={mediaUrl}
-							alt={imageAlt || ''}
-						/>
-					)}
-				</div>
-			);
+		showMedia && mediaUrl
+			? (() => {
+					const mediaElement = (
+						<div
+							className={`timeline_pic ${
+								isBlobURL(mediaUrl) ? 'image-loading' : 'loaded'
+							}`}
+						>
+							{isVideo ? (
+								el(
+									'video',
+									{
+										id: mediaId
+											? `video_${mediaId}`
+											: undefined,
+										poster: videoPoster || undefined,
+										autoPlay: true,
+										muted: true,
+										loop: true,
+										playsInline: true,
+										preload: 'metadata',
+										style: {
+											width: mediaWidth || '100%',
+											height: 'auto',
+										},
+									},
+									mediaUrl
+										? el('source', {
+												src: mediaUrl,
+												type: sourceType,
+											})
+										: null,
+									'Your browser does not support the video tag.'
+								)
+							) : (
+								<img
+									id={mediaId ? `img_${mediaId}` : undefined}
+									{...(mediaWidth
+										? {
+												style: { width: mediaWidth },
+											}
+										: {})}
+									src={mediaUrl}
+									alt={imageAlt || ''}
+								/>
+							)}
+						</div>
+					);
 
-			if (isMediaWrapToLink && mediaLinkProps.href) {
-				return (
-					<a className="timeline-media-link" {...mediaLinkProps}>
-						{mediaElement}
-					</a>
-				);
-			}
+					if (isMediaWrapToLink && mediaLinkProps.href) {
+						return (
+							<a
+								className="timeline-media-link"
+								{...mediaLinkProps}
+							>
+								{mediaElement}
+							</a>
+						);
+					}
 
-			return mediaElement;
-		})() : null;
+					return mediaElement;
+				})()
+			: null;
 	return (
 		<li {...blockProps}>
 			<div className="timeline-side">
@@ -189,10 +204,10 @@ export default function Save({ attributes }) {
 						}
 					: {})}
 			>
-				<div className="tl-content">
-					<div className="tl-desc">
-						{mediaContent}
+				<div className={contentClasses}>
+					{mediaContent}
 
+					<div className="tl-desc">
 						{titleTag === 'a' ? (
 							<RichText.Content
 								tagName="a"

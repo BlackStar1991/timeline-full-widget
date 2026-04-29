@@ -18,6 +18,7 @@ import {
 	PanelBody,
 	SelectControl,
 	ToolbarButton,
+	ToggleControl,
 	Spinner,
 	Popover,
 } from '@wordpress/components';
@@ -79,6 +80,8 @@ export function Edit({ clientId, attributes, setAttributes }) {
 		otherSiteTitle,
 		sideTextAlign,
 		position,
+		horizontalContentLayout,
+		reverseMediaContent,
 	} = attributes;
 
 	const [activeField, setActiveField] = useState(null);
@@ -353,8 +356,6 @@ export function Edit({ clientId, attributes, setAttributes }) {
 					}}
 					isDisabled={!mediaLinkUrl}
 				/>
-
-
 			</BlockControls>
 		);
 	}, [
@@ -386,7 +387,10 @@ export function Edit({ clientId, attributes, setAttributes }) {
 					settings={[
 						{
 							id: 'opensInNewTab',
-							title: __('Open in new tab', 'timeline-full-widget'),
+							title: __(
+								'Open in new tab',
+								'timeline-full-widget'
+							),
 						},
 					]}
 					onChange={(newVal = {}) => {
@@ -439,14 +443,9 @@ export function Edit({ clientId, attributes, setAttributes }) {
 		[]
 	);
 
-
 	const mediaLinkProps = useMemo(
 		() =>
-			getSafeLinkAttributes(
-				mediaLinkUrl,
-				mediaLinkRel,
-				mediaLinkTarget
-			),
+			getSafeLinkAttributes(mediaLinkUrl, mediaLinkRel, mediaLinkTarget),
 		[mediaLinkUrl, mediaLinkRel, mediaLinkTarget]
 	);
 
@@ -499,7 +498,10 @@ export function Edit({ clientId, attributes, setAttributes }) {
 				<div
 					className="timeline-media-link"
 					role="link"
-					aria-label={__('Linked media preview', 'timeline-full-widget')}
+					aria-label={__(
+						'Linked media preview',
+						'timeline-full-widget'
+					)}
 				>
 					{mediaElement}
 				</div>
@@ -520,6 +522,14 @@ export function Edit({ clientId, attributes, setAttributes }) {
 		mediaLinkProps,
 	]);
 
+	const contentClasses = [
+		'tl-content',
+		horizontalContentLayout ? 'tl-content-horizontal' : '',
+		reverseMediaContent ? 'tl-reverse' : '',
+	]
+		.filter(Boolean)
+		.join(' ');
+
 	return (
 		<>
 			<InspectorControls>
@@ -527,6 +537,31 @@ export function Edit({ clientId, attributes, setAttributes }) {
 					title={__('Block Settings', 'timeline-full-widget')}
 					initialOpen={false}
 				>
+					<ToggleControl
+						label={__(
+							'Horizontal content layout',
+							'timeline-full-widget'
+						)}
+						checked={!!horizontalContentLayout}
+						onChange={(value) =>
+							setAttributes({
+								horizontalContentLayout: value,
+							})
+						}
+					/>
+
+					<ToggleControl
+						label={__(
+							'Reverse media and content',
+							'timeline-full-widget'
+						)}
+						checked={!!reverseMediaContent}
+						onChange={(value) =>
+							setAttributes({
+								reverseMediaContent: value,
+							})
+						}
+					/>
 					<SelectControl
 						label={__('Title Tag', 'timeline-full-widget')}
 						value={titleTag}
@@ -665,18 +700,18 @@ export function Edit({ clientId, attributes, setAttributes }) {
 						? { style: { backgroundColor: itemBackgroundColor } }
 						: {})}
 				>
-					<div className="tl-content">
-						<div className="tl-desc">
-							{showMedia && mediaUrl ? mediaPreviewNode : (
-								showMedia && (
+					<div className={contentClasses}>
+						{showMedia && mediaUrl
+							? mediaPreviewNode
+							: showMedia && (
 									<MediaPlaceholder
 										onSelect={onSelect}
-										accept="image/*"
+										accept="image/*,video/*"
 										allowedTypes={['image', 'video']}
 									/>
-								)
-							)}
+								)}
 
+						<div className="tl-desc">
 							<Title
 								clientId={clientId}
 								title={title}
@@ -712,7 +747,7 @@ export function Edit({ clientId, attributes, setAttributes }) {
 										'core/list',
 									]}
 								/>
-								{/*<InnerBlocks template={[['core/freeform']]} />*/}
+								{/*<InnerBlocks template={[[\'core/freeform\']]} />*/}
 							</div>
 						</div>
 					</div>
@@ -721,4 +756,5 @@ export function Edit({ clientId, attributes, setAttributes }) {
 		</>
 	);
 }
+
 export default Edit;
