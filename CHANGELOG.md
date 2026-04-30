@@ -1,5 +1,10 @@
 # Timeline Full Widget
 
+## 2.2.0 (, 2026)
+
+## 2.1.1 (April 29, 2026)
+* Bug fixes.
+
 ## 2.1.0 (April 29, 2026)
 * Added WordPress Playground support.
 * Added support for horizontal and vertical content layouts.

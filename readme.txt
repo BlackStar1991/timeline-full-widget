@@ -4,7 +4,7 @@ Donate link: https://www.paypal.com/donate/?hosted_button_id=TK9QQ5DE2K378
 Tags: timeline, Elementor, gutenberg blocks, editor, blocks
 Requires at least: 5.0
 Tested up to: 7.0
-Stable tag: 2.1.0
+Stable tag: 2.2.0
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -79,8 +79,15 @@ Yes, it works with most WordPress themes, including block and classic themes.
 1. Timeline widget in Elementor.
 2. Timeline block in Gutenberg.
 3. Timeline block in Gutenberg.
+4. Horizontal and vertical content layouts
 
 == Changelog ==
+
+= 2.2.0 =
+*
+
+= 2.1.1 =
+* Bug fixes.
 
 = 2.1.0 =
 * Added WordPress Playground support.

@@ -3,7 +3,7 @@
  * Plugin Name: Timeline Full Widget
  * Description: A powerful and flexible Timeline plugin compatible with Elementor, Gutenberg, and Classic WordPress themes. Easily add beautiful timelines anywhere!
  * Plugin URI: https://wordpress.org/plugins/timeline-full-widget
- * Version: 2.1.0
+ * Version: 2.2.0
  * License: GPL-2.0-or-later
  * License URI:  https://spdx.org/licenses/GPL-2.0-or-later.html
  * Author: Andry Zirka
@@ -25,7 +25,7 @@ if ( ! defined( 'TIMELINE_ELEMENTOR_PATH' ) ) {
 }
 
 if ( ! defined( 'TIMELINE_VERSION' ) ) {
-    $timeline_version = '2.1.0';
+    $timeline_version = '2.2.0';
 
     if ( function_exists( 'get_file_data' ) ) {
         $timeline_data = get_file_data( __FILE__, [ 'Version' => 'Version' ] );
@@ -56,23 +56,24 @@ final class TimelinePlugin {
         // Registering shared assets (js for Elementor/Gutenberg, core script)
         add_action( 'init', [ $this, 'register_assets' ] );
 
-        // Elementor
+        // Elementor.
         add_action( 'elementor/widgets/widgets_registered', [ $this, 'widgets_registered' ] );
         add_action( 'elementor/editor/after_enqueue_scripts', [ $this, 'enqueue_elementor_editor_assets' ] );
 
-        // Gutenberg (via block.json)
+        // Elementor does not read Gutenberg block.json styles, so enqueue shared core styles only for Elementor.
+        add_action( 'elementor/frontend/after_enqueue_styles', [ $this, 'enqueue_core_style_everywhere' ] );
+        add_action( 'elementor/editor/after_enqueue_styles', [ $this, 'enqueue_core_style_everywhere' ] );
+
+        // Gutenberg block assets are handled by block.json.
         add_action( 'init', [ $this, 'register_gutenberg_block' ] );
 
-        // Frontend: only include animation scripts if the block is on the page
+        // Frontend: only include animation scripts if the Gutenberg block is on the page.
         add_action( 'wp_enqueue_scripts', [ $this, 'maybe_enqueue_frontend_assets' ] );
 
-        // Classic Editor (TinyMCE button)
+        // Classic Editor / TinyMCE support.
         add_action( 'admin_init', [ $this, 'maybe_register_classic_mce_late' ] );
+        add_action( 'admin_enqueue_scripts', [ $this, 'enqueue_classic_editor_styles' ] );
         add_action( 'admin_enqueue_scripts', [ $this, 'enqueue_classic_adapter_admin' ] );
-
-        // Core styles (both in the admin panel and on the front end)
-        add_action( 'wp_enqueue_scripts', [ $this, 'enqueue_core_style_everywhere' ] );
-        add_action( 'admin_enqueue_scripts', [ $this, 'enqueue_core_style_everywhere' ] );
 
         // Module type for the required scripts
         add_filter( 'script_loader_tag', [ $this, 'add_module_type_attribute' ], 10, 3 );
@@ -100,6 +101,31 @@ final class TimelinePlugin {
         }
     }
 
+    /**
+     * Enqueue shared timeline styles only on Classic Editor screens.
+     *
+     * Gutenberg receives frontend/editor styles from block.json, so loading the
+     * same core stylesheet on block editor screens would duplicate CSS.
+     */
+    public function enqueue_classic_editor_styles( string $hook ): void {
+        if ( ! in_array( $hook, [ 'post.php', 'post-new.php' ], true ) ) {
+            return;
+        }
+
+        $screen = function_exists( 'get_current_screen' ) ? get_current_screen() : null;
+        if ( ! $screen || empty( $screen->post_type ) ) {
+            return;
+        }
+
+        if (
+            function_exists( 'use_block_editor_for_post_type' ) &&
+            use_block_editor_for_post_type( $screen->post_type )
+        ) {
+            return;
+        }
+
+        $this->enqueue_core_style_everywhere();
+    }
     public function add_module_type_attribute( $tag, $handle, $src ) {
         $module_handles = [
             'za-timeline-elementor',
