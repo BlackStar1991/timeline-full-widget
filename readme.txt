@@ -81,6 +81,12 @@ Yes, it works with most WordPress themes, including block and classic themes.
 3. Timeline block in Gutenberg.
 4. Horizontal and vertical content layouts
 
+== Contribute ==
+
+Would you like to help translate Timeline Full Widget into your language?
+You can contribute translations here:
+https://translate.wordpress.org/projects/wp-plugins/timeline-full-widget/
+
 == Changelog ==
 
 = 2.2.0 =

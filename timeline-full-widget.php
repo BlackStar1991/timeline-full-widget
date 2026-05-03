@@ -24,6 +24,10 @@ if ( ! defined( 'TIMELINE_ELEMENTOR_PATH' ) ) {
     define( 'TIMELINE_ELEMENTOR_PATH', plugin_dir_path( __FILE__ ) );
 }
 
+if ( ! defined( 'TIMELINE_FULL_WIDGET_FILE' ) ) {
+    define( 'TIMELINE_FULL_WIDGET_FILE', __FILE__ );
+}
+
 if ( ! defined( 'TIMELINE_VERSION' ) ) {
     $timeline_version = '2.2.0';
 
@@ -77,6 +81,8 @@ final class TimelinePlugin {
 
         // Module type for the required scripts
         add_filter( 'script_loader_tag', [ $this, 'add_module_type_attribute' ], 10, 3 );
+
+        add_filter( 'plugin_row_meta', [$this, 'tfw_plugin_row_meta'], 10, 2 );
     }
 
     /**
@@ -484,6 +490,29 @@ final class TimelinePlugin {
             }
         }
         return false;
+    }
+
+    /**
+     * Add Translate link to the plugin row meta.
+     *
+     * @param array<int, string> $links Plugin row meta links.
+     * @param string            $file   Plugin basename.
+     *
+     * @return array<int, string>
+     */
+
+    function tfw_plugin_row_meta( array $links, string $file ): array {
+        if ( plugin_basename( TIMELINE_FULL_WIDGET_FILE ) !== $file ) {
+            return $links;
+        }
+
+        $links[] = sprintf(
+            '<a href="%s" target="_blank" rel="noopener noreferrer">%s</a>',
+            esc_url( 'https://translate.wordpress.org/projects/wp-plugins/timeline-full-widget/' ),
+            esc_html__( 'Translate', 'timeline-full-widget' )
+        );
+
+        return $links;
     }
 }
 
