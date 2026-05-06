@@ -1,6 +1,7 @@
 # Timeline Full Widget
 
 ## 2.2.0 (, 2026)
+* Added showing step numbers of items.
 
 ## 2.1.1 (April 29, 2026)
 * Bug fixes.

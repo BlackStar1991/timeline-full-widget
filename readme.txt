@@ -90,7 +90,7 @@ https://translate.wordpress.org/projects/wp-plugins/timeline-full-widget/
 == Changelog ==
 
 = 2.2.0 =
-*
+* Added showing step numbers of items.
 
 = 2.1.1 =
 * Bug fixes.

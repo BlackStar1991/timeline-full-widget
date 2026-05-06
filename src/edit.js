@@ -373,10 +373,7 @@ export default function Edit({ attributes, setAttributes, clientId }) {
 						>
 							{[
 								{
-									label: __(
-										'Sticky Markers',
-										'timeline-full-widget'
-									),
+									label: __('Sticky Markers', 'timeline-full-widget'),
 									help: animationMarker
 										? __('Yes', 'timeline-full-widget')
 										: __('No', 'timeline-full-widget'),
@@ -387,10 +384,7 @@ export default function Edit({ attributes, setAttributes, clientId }) {
 										}),
 								},
 								{
-									label: __(
-										'Unique Marker',
-										'timeline-full-widget'
-									),
+									label: __('Unique Marker', 'timeline-full-widget'),
 									help: markerUnique
 										? __('Yes', 'timeline-full-widget')
 										: __('No', 'timeline-full-widget'),
@@ -400,6 +394,7 @@ export default function Edit({ attributes, setAttributes, clientId }) {
 											markerUnique: val,
 										}),
 								},
+
 							]
 								.filter(Boolean)
 								.map((ctrl, i) => (

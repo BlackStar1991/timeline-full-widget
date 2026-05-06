@@ -150,7 +150,7 @@ ul.timeline {
     box-sizing: border-box;
     backface-visibility: hidden;
     z-index: 3;
-    background-color: #F6F6F8;
+    background-color: var(--timeline-marker-color, #F6F6F8);
 }
 
 
@@ -170,7 +170,28 @@ ul.timeline {
 .timeline.timeline-animation-marker .is-stuck .tl-mark,
 .timeline.timeline-animation-marker li.is-stuck .tl-mark {
     transition: background 0.2s;
-    background-color: #F37321;
+    background-color: var(--timeline-marker-color-active, #F37321);
+}
+
+.timeline-numbers{
+    counter-reset: item;
+}
+
+.timeline-numbers li::after {
+    position: absolute;
+    top:-5px;
+    left:50%;
+    transform: translateX(-50%);
+    counter-increment: item;
+    content: counter(item);
+    font-size: 22px;
+    font-weight: 700;
+    color: #6f6f6f;
+    transition: color .12s;
+    z-index: 3;
+}
+.timeline-numbers .is-stuck::after{
+    color: #fff;
 }
 
 .tl-trigger {
@@ -260,7 +281,6 @@ ul.timeline {
 
     .timeline-animation-marker .tl-mark {
         position: sticky;
-        /*left: calc(50% - 13px);*/
     }
 
     .timeline-left .timeline-side {

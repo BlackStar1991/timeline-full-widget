@@ -618,6 +618,17 @@ class Za_Pack_Widget_Timeline extends Widget_Base
                 ]
         );
 
+        $this->add_control(
+                'tl_show_step_numbers',
+                [
+                        'label' => __('Show step numbers', 'timeline-full-widget'),
+                        'type' => Controls_Manager::SWITCHER,
+                        'label_on' => __('Yes', 'timeline-full-widget'),
+                        'label_off' => __('No', 'timeline-full-widget'),
+                        'return_value' => 'yes',
+                ]
+        );
+
 
         $this->end_controls_section();
 
@@ -728,6 +739,11 @@ class Za_Pack_Widget_Timeline extends Widget_Base
         if ($sticky_other_side) {
             $ul_classes[] = 'timeline-animation-other-side-sticky';
         }
+
+        if ( ( $settings['tl_show_step_numbers'] ?? '' ) === 'yes' ) {
+            $ul_classes[] = 'timeline-numbers';
+        }
+
         echo '<ul class="' . esc_attr(implode(' ', $ul_classes)) . '">';
 
         // iterate items
@@ -779,9 +795,13 @@ class Za_Pack_Widget_Timeline extends Widget_Base
             $content_classes[] = 'tl-content-horizontal';
         }
 
+
         if (($item['tl_card_change_direction'] ?? '') === 'yes') {
             $content_classes[] = 'tl-reverse';
         }
+
+
+
 
         ob_start();
         ?>
@@ -1041,11 +1061,15 @@ class Za_Pack_Widget_Timeline extends Widget_Base
             var ulClassesArr = ['timeline'];
             if (animationMarkerEnabled) ulClassesArr.push('timeline-animation-marker');
             if (stickyOtherSide) ulClassesArr.push('timeline-animation-other-side-sticky');
+            if (settings.tl_show_step_numbers === 'yes') ulClassesArr.push('timeline-numbers');
+
             var ulClass = _.escape( ulClassesArr.join(' ') );
 
             var onSide = settings.tl_change_onside === 'yes';
             var direction = settings.tl_change_direction ? 'left' : 'right';
             var contentHorizontalLayout = settings.tl_content_horizontal_layout === 'yes';
+
+
             var count = direction === 'left' ? 1 : 2;
             #>
 
@@ -1061,6 +1085,7 @@ class Za_Pack_Widget_Timeline extends Widget_Base
                     var safeTitle = buildTitleText( item );
                     var mediaHtml = buildMediaHtml( item );
                     var contentClasses = [ 'tl-content' ];
+                    var showStepNumbers = settings.tl_show_step_numbers === 'yes';
 
                     if ( contentHorizontalLayout ) {
                         contentClasses.push( 'tl-content-horizontal' );

@@ -10,7 +10,7 @@
  * Text Domain: timeline-full-widget
  * Domain Path: /languages
  * Elementor requires at least: 3.0.0
- * Elementor tested up to: 4.0.2
+ * Elementor tested up to: 4.0.7
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
