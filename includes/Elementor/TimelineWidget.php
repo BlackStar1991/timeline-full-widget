@@ -1,0 +1,1145 @@
+<?php
+/**
+ * Elementor Timeline Widget.
+ * @since 1.0.0
+ */
+
+namespace TimelineFullWidget\Elementor;
+
+use Elementor\Widget_Base;
+use Elementor\Controls_Manager;
+use Elementor\Repeater;
+use Elementor\Utils;
+use Elementor\Group_Control_Image_Size;
+use Elementor\Group_Control_Typography;
+
+if (!defined('ABSPATH')) {
+    exit;
+}
+
+final class TimelineWidget extends Widget_Base
+{
+
+    public function get_name()
+    {
+        return 'za-timeline';
+    }
+
+    public function get_title()
+    {
+        return __('Timeline', 'timeline-full-widget');
+    }
+
+    public function get_icon()
+    {
+        return 'eicon-time-line';
+    }
+
+    public function get_categories()
+    {
+        return ['basic'];
+    }
+
+    public function get_keywords()
+    {
+        return ['timeline', 'history', 'event'];
+    }
+
+    public function get_style_depends()
+    {
+        return ['timeline-core-style'];
+    }
+
+    public function get_script_depends()
+    {
+        return ['za-timeline-elementor'];
+    }
+
+    /**
+     * Build safe link attributes from Elementor URL control.
+     */
+    private function get_link_attributes_string($link, $aria_label = '')
+    {
+        if (empty($link['url'])) {
+            return '';
+        }
+
+        $attributes = [
+                'href="' . esc_url($link['url']) . '"',
+        ];
+
+        if (!empty($link['is_external'])) {
+            $attributes[] = 'target="_blank"';
+        }
+
+        $rel = [];
+
+        if (!empty($link['nofollow'])) {
+            $rel[] = 'nofollow';
+        }
+
+        if (!empty($link['is_external'])) {
+            $rel[] = 'noopener';
+            $rel[] = 'noreferrer';
+        }
+
+        if (!empty($rel)) {
+            $attributes[] = 'rel="' . esc_attr(implode(' ', array_unique($rel))) . '"';
+        }
+
+        if ($aria_label !== '') {
+            $attributes[] = 'aria-label="' . esc_attr($aria_label) . '"';
+        }
+
+        return implode(' ', $attributes);
+    }
+
+
+    /* ---------------------------
+     * Register controls
+     * --------------------------- */
+    protected function register_controls()
+    {
+        $this->register_content_controls();
+        $this->register_style_controls();
+    }
+
+    protected function register_content_controls()
+    {
+        $this->start_controls_section(
+                'content_section',
+                [
+                        'label' => __('Timeline Items', 'timeline-full-widget'),
+                        'tab' => Controls_Manager::TAB_CONTENT,
+                ]
+        );
+
+        $repeater = new Repeater();
+
+        $repeater->add_control(
+                'li_bg_color',
+                [
+                        'label' => __('Item background color', 'timeline-full-widget'),
+                        'type' => Controls_Manager::COLOR,
+                        'render_type' => 'template',
+                        'selectors' => [
+                                '{{WRAPPER}} {{CURRENT_ITEM}} .timeline-item' => 'background-color: {{VALUE}};',
+                        ],
+                ]
+        );
+
+        $repeater->add_control(
+                'media_type',
+                [
+                        'label' => __('Media Type', 'timeline-full-widget'),
+                        'type' => Controls_Manager::SELECT,
+                        'options' => [
+                                'image' => __('Image', 'timeline-full-widget'),
+                                'video' => __('Video', 'timeline-full-widget'),
+                        ],
+                        'default' => 'image',
+                ]
+        );
+
+        $repeater->add_control(
+                'media_image',
+                [
+                        'label' => __('Image', 'timeline-full-widget'),
+                        'type' => Controls_Manager::MEDIA,
+                        'media_types' => ['image'],
+                        'default' => ['url' => Utils::get_placeholder_image_src()],
+                        'condition' => ['media_type' => 'image'],
+                ]
+        );
+
+        $repeater->add_control(
+                'media_video',
+                [
+                        'label' => __('Video', 'timeline-full-widget'),
+                        'type' => Controls_Manager::MEDIA,
+                        'media_types' => ['video'],
+                        'condition' => ['media_type' => 'video'],
+                ]
+        );
+
+        $repeater->add_control(
+                'posterURL',
+                [
+                        'label' => __('Poster URL', 'timeline-full-widget'),
+                        'type' => Controls_Manager::MEDIA,
+                        'media_types' => ['image'],
+                        'default' => ['url' => Utils::get_placeholder_image_src()],
+                        'condition' => ['media_type' => 'video'],
+                ]
+        );
+
+        $repeater->add_group_control(
+                Group_Control_Image_Size::get_type(),
+                [
+                        'name' => 'thumbnail',
+                        'default' => 'medium',
+                        'separator' => 'none',
+                ]
+        );
+
+
+        $repeater->add_control(
+                'tl_card_change_direction',
+                [
+                        'label' => __('Reverse media and content', 'timeline-full-widget'),
+                        'type' => Controls_Manager::SWITCHER,
+                        'label_on' => __('Yes', 'timeline-full-widget'),
+                        'label_off' => __('No', 'timeline-full-widget'),
+                        'return_value' => 'yes',
+                ]
+        );
+
+
+        $repeater->add_control(
+                'list_title',
+                [
+                        'label' => __('Title', 'timeline-full-widget'),
+                        'type' => Controls_Manager::TEXTAREA,
+                        'default' => __('Timeline Title', 'timeline-full-widget'),
+                        'rows' => 2,
+                ]
+        );
+
+        $repeater->add_control(
+                'media_link_url',
+                [
+                        'label' => __('Link for media', 'timeline-full-widget'),
+                        'type' => Controls_Manager::URL,
+                        'placeholder' => 'https://example.com',
+                        'show_external' => true,
+                ]
+        );
+
+        $repeater->add_control(
+                'media_link_enabled',
+                [
+                        'label' => __('Wrap media in link', 'timeline-full-widget'),
+                        'type' => Controls_Manager::SWITCHER,
+                        'label_on' => __('Yes', 'timeline-full-widget'),
+                        'label_off' => __('No', 'timeline-full-widget'),
+                        'return_value' => 'yes',
+                        'default' => 'yes',
+                        'condition' => [
+                                'media_link_url[url]!' => '',
+                        ],
+                        'description' => __('If enabled, the image or video will be clickable and wrapped in a link.', 'timeline-full-widget'),
+                ]
+        );
+
+        $repeater->add_control(
+                'title_link_url',
+                [
+                        'label' => __('Link for title', 'timeline-full-widget'),
+                        'type' => Controls_Manager::URL,
+                        'placeholder' => 'https://example.com',
+                        'show_external' => true,
+                        'description' => __('Used only when the Title HTML Tag is set to "a".', 'timeline-full-widget'),
+                ]
+        );
+
+        $repeater->add_control(
+                'list_content',
+                [
+                        'label' => __('Content', 'timeline-full-widget'),
+                        'type' => Controls_Manager::WYSIWYG,
+                        'default' => __('Timeline content here...', 'timeline-full-widget'),
+                ]
+        );
+
+
+        $repeater->add_control(
+                'side_content',
+                [
+                        'label' => __('Side Content', 'timeline-full-widget'),
+                        'type' => Controls_Manager::WYSIWYG,
+                        'default' => '',
+                ]
+        );
+
+        $repeater->add_control(
+                'marker_image',
+                [
+                        'label' => __('Marker Image', 'timeline-full-widget'),
+                        'type' => Controls_Manager::MEDIA,
+                        'media_types' => ['image'],
+
+                ]
+        );
+
+        $repeater->add_control(
+                'marker_image_notice',
+                [
+                        'type' => Controls_Manager::RAW_HTML,
+                        'raw' => sprintf(
+                                '<div class="elementor-control-description">%s</div>',
+                                esc_html__('Note: this image will be used only when "Unique Marker" (Style) is set to Yes. Recommend width size <=50px', 'timeline-full-widget')
+                        ),
+                        'content_classes' => 'elementor-control-descriptor',
+                ]
+        );
+
+        $this->add_control(
+                'list',
+                [
+                        'type' => Controls_Manager::REPEATER,
+                        'fields' => $repeater->get_controls(),
+                        'title_field' => '{{{ list_title }}}',
+                        'default' => [
+                                [
+                                        'list_title' => __('Timeline Item #1', 'timeline-full-widget'),
+                                        'list_content' => __('Content for item #1', 'timeline-full-widget'),
+                                ],
+                                [
+                                        'list_title' => __('Timeline Item #2', 'timeline-full-widget'),
+                                        'list_content' => __('Content for item #2', 'timeline-full-widget'),
+                                ],
+                        ],
+                ]
+        );
+
+        $this->end_controls_section();
+    }
+
+    protected function register_style_controls()
+    {
+        $this->start_controls_section(
+                'section_style_title',
+                [
+                        'label' => __('Title', 'timeline-full-widget'),
+                        'tab' => Controls_Manager::TAB_STYLE,
+                ]
+        );
+
+        $this->add_control(
+                'header_tag',
+                [
+                        'label' => __('Title HTML Tag', 'timeline-full-widget'),
+                        'type' => Controls_Manager::SELECT,
+                        'options' => array_combine(
+                                ['h1', 'h2', 'h3', 'h4', 'div', 'p', 'a'],
+                                ['H1', 'H2', 'H3', 'H4', 'div', 'p', 'a']
+                        ),
+                        'default' => 'h3',
+                ]
+        );
+
+        $this->add_group_control(
+                Group_Control_Typography::get_type(),
+                [
+                        'name' => 'title_typography',
+                        'label' => __('Typography', 'timeline-full-widget'),
+                        'selector' => '{{WRAPPER}} .tl-title',
+                        'fields_options' => [
+                                'typography' => [
+                                        'default' => 'custom',
+                                ],
+                                'font_size' => [
+                                        'default' => [
+                                                'size' => 24,
+                                                'unit' => 'px',
+                                        ],
+                                ],
+                        ],
+                ]
+        );
+
+        $this->add_responsive_control(
+                'title_alignment',
+                [
+                        'label' => __('Title Alignment', 'timeline-full-widget'),
+                        'type' => Controls_Manager::CHOOSE,
+                        'options' => [
+                                'left' => [
+                                        'title' => __('Left', 'timeline-full-widget'),
+                                        'icon' => 'eicon-text-align-left',
+                                ],
+                                'center' => [
+                                        'title' => __('Center', 'timeline-full-widget'),
+                                        'icon' => 'eicon-text-align-center',
+                                ],
+                                'right' => [
+                                        'title' => __('Right', 'timeline-full-widget'),
+                                        'icon' => 'eicon-text-align-right',
+                                ],
+                                'justify' => [
+                                        'title' => __('Justified', 'timeline-full-widget'),
+                                        'icon' => 'eicon-text-align-justify',
+                                ],
+                        ],
+                        'default' => 'left',
+                        'selectors' => [
+                                '{{WRAPPER}} .tl-title' => 'text-align: {{VALUE}};',
+                        ],
+                ]
+        );
+
+
+        $this->add_responsive_control(
+                'title_margin',
+                [
+                        'label' => __('Margin', 'timeline-full-widget'),
+                        'type' => Controls_Manager::DIMENSIONS,
+                        'size_units' => ['px', '%', 'em', 'rem'],
+                        'selectors' => [
+                                '{{WRAPPER}} .tl-title' => 'margin: {{TOP}}{{UNIT}} {{RIGHT}}{{UNIT}} {{BOTTOM}}{{UNIT}} {{LEFT}}{{UNIT}};',
+                        ],
+                ]
+        );
+
+        $this->add_control(
+                'title_color',
+                [
+                        'label' => __('Color', 'timeline-full-widget'),
+                        'type' => Controls_Manager::COLOR,
+                        'selectors' => [
+                                '{{WRAPPER}} .tl-title' => 'color: {{VALUE}};',
+                        ],
+                ]
+        );
+
+        $this->end_controls_section();
+
+        $this->start_controls_section(
+                'section_style_content',
+                [
+                        'label' => __('Content', 'timeline-full-widget'),
+                        'tab' => Controls_Manager::TAB_STYLE,
+                ]
+        );
+
+        $this->add_control(
+                'blocks_color',
+                [
+                        'label' => __('Text Color', 'timeline-full-widget'),
+                        'type' => Controls_Manager::COLOR,
+                        'default' => '#333333',
+                        'selectors' => [
+                                '{{WRAPPER}} .timeline-item' => 'color: {{VALUE}};',
+                        ]
+                ]
+        );
+
+        $this->add_group_control(
+                Group_Control_Typography::get_type(),
+                [
+                        'name' => 'list_content_typography',
+                        'label' => __('Content Typography', 'timeline-full-widget'),
+                        'selector' => '{{WRAPPER}} .tl-desc-short, {{WRAPPER}} .tl-desc-short p, {{WRAPPER}} .tl-desc-short li',
+                        'fields_options' => [
+                                'font_size' => [
+                                        'responsive' => true,
+                                        'default' => [
+                                                'size' => 16,
+                                                'unit' => 'px',
+                                        ],
+                                        'tablet_default' => [
+                                                'size' => 15,
+                                                'unit' => 'px',
+                                        ],
+                                        'mobile_default' => [
+                                                'size' => 14,
+                                                'unit' => 'px',
+                                        ],
+                                ],
+                        ],
+                ]
+        );
+
+        $this->add_group_control(
+                Group_Control_Typography::get_type(),
+                [
+                        'name' => 'side_content_typography',
+                        'label' => __('Side Content Typography', 'timeline-full-widget'),
+                        'selector' => '{{WRAPPER}} .timeline-side',
+                        'fields_options' => [
+                                'font_size' => [
+                                        'responsive' => true,
+                                        'default' => [
+                                                'size' => 14,
+                                                'unit' => 'px',
+                                        ],
+                                        'tablet_default' => [
+                                                'size' => 13,
+                                                'unit' => 'px',
+                                        ],
+                                        'mobile_default' => [
+                                                'size' => 12,
+                                                'unit' => 'px',
+                                        ],
+                                ],
+                        ],
+                ]
+        );
+
+        $this->end_controls_section();
+
+        $this->start_controls_section(
+                'section_style_timeline_settings',
+                [
+                        'label' => __('Timeline Settings', 'timeline-full-widget'),
+                        'tab' => Controls_Manager::TAB_STYLE,
+                ]
+        );
+
+        $this->add_control(
+                'timeline_line_width',
+                [
+                        'label' => __('Line Width', 'timeline-full-widget'),
+                        'type' => Controls_Manager::SLIDER,
+                        'size_units' => ['px'],
+                        'range' => [
+                                'px' => [
+                                        'min' => 1,
+                                        'max' => 20,
+                                        'step' => 1,
+                                ],
+                        ],
+                        'default' => [
+                                'unit' => 'px',
+                                'size' => 4,
+                        ],
+                        'selectors' => [
+                                '{{WRAPPER}} .timeline-wrapper' => '--timeline-line-width: {{SIZE}}{{UNIT}};',
+                        ],
+                ]
+        );
+
+        $this->add_control(
+                'timeline_line_color',
+                [
+                        'label' => __('Line Color', 'timeline-full-widget'),
+                        'type' => Controls_Manager::COLOR,
+                        'default' => '#F6F6F8',
+                        'selectors' => [
+                                '{{WRAPPER}} .timeline:before' => 'background-color: {{VALUE}};',
+                        ],
+                ]
+        );
+
+
+        $this->add_control(
+                'timeline_marker_color',
+                [
+                        'label' => __('Marker Color', 'timeline-full-widget'),
+                        'type' => Controls_Manager::COLOR,
+                        'default' => '#F6F6F8',
+                        'selectors' => [
+                                '{{WRAPPER}} .tl-mark' => 'background-color: {{VALUE}};',
+                        ],
+                        'condition' => [
+                                'tl_show_marker' => 'yes',
+                                'tl_is_marker_unique!' => 'yes',
+                        ],
+                ]
+        );
+
+        $this->add_control(
+                'timeline_line_animation_color',
+                [
+                        'label' => __('Active Line Color', 'timeline-full-widget'),
+                        'type' => Controls_Manager::COLOR,
+                        'default' => '#F37321',
+                        'selectors' => [
+                                '{{WRAPPER}} .timeline-line-animation' => 'background-color: {{VALUE}};',
+                        ],
+                        'condition' => [
+                                'tl_animation_timeline' => 'yes',
+                        ],
+                ]
+        );
+
+        $this->add_control(
+                'timeline_marker_animation_color',
+                [
+                        'label' => __('Active Marker Color', 'timeline-full-widget'),
+                        'type' => Controls_Manager::COLOR,
+                        'default' => '#F37321',
+                        'selectors' => [
+                                '{{WRAPPER}} .is-stuck .tl-mark' => 'background-color: {{VALUE}};',
+                        ],
+                        'condition' => [
+                                'tl_animation_timeline' => 'yes',
+                                'tl_show_marker' => 'yes',
+                                'tl_animation_marker' => 'yes',
+                                'tl_is_marker_unique!' => 'yes',
+                        ],
+                ]
+        );
+
+        $this->end_controls_section();
+
+        $this->start_controls_section(
+                'section_style_layout',
+                [
+                        'label' => __('Layout', 'timeline-full-widget'),
+                        'tab' => Controls_Manager::TAB_STYLE,
+                ]
+        );
+
+        $this->add_control(
+                'tl_change_direction',
+                [
+                        'label' => __('Timeline Direction', 'timeline-full-widget'),
+                        'type' => Controls_Manager::SWITCHER,
+                        'label_on' => __('Left', 'timeline-full-widget'),
+                        'label_off' => __('Right', 'timeline-full-widget'),
+                        'return_value' => 'left',
+                ]
+        );
+
+        $this->add_control(
+                'tl_change_onside',
+                [
+                        'label' => __('Single Side Layout', 'timeline-full-widget'),
+                        'type' => Controls_Manager::SWITCHER,
+                        'label_on' => __('Yes', 'timeline-full-widget'),
+                        'label_off' => __('No', 'timeline-full-widget'),
+                        'return_value' => 'yes',
+                ]
+        );
+
+        $this->add_control(
+                'tl_content_horizontal_layout',
+                [
+                        'label' => __('Horizontal content layout', 'timeline-full-widget'),
+                        'type' => Controls_Manager::SWITCHER,
+                        'label_on' => __('Yes', 'timeline-full-widget'),
+                        'label_off' => __('No', 'timeline-full-widget'),
+                        'return_value' => 'yes',
+                        'description' => __(
+                                'If your image appears too large, set Image Resolution to Custom and define custom width and height values.',
+                                'timeline-full-widget'
+                        ),
+                ]
+        );
+
+        $this->add_control(
+                'tl_show_step_numbers',
+                [
+                        'label' => __('Show step numbers', 'timeline-full-widget'),
+                        'type' => Controls_Manager::SWITCHER,
+                        'label_on' => __('Yes', 'timeline-full-widget'),
+                        'label_off' => __('No', 'timeline-full-widget'),
+                        'return_value' => 'yes',
+                ]
+        );
+
+
+        $this->end_controls_section();
+
+        $this->start_controls_section(
+                'section_style_behavior',
+                [
+                        'label' => __('Behavior', 'timeline-full-widget'),
+                        'tab' => Controls_Manager::TAB_STYLE,
+                ]
+        );
+
+        $this->add_control(
+                'tl_animation_timeline',
+                [
+                        'label' => __('Animate Line', 'timeline-full-widget'),
+                        'type' => Controls_Manager::SWITCHER,
+                        'label_on' => __('Yes', 'timeline-full-widget'),
+                        'label_off' => __('No', 'timeline-full-widget'),
+                        'return_value' => 'yes',
+                        'default' => 'yes',
+                ]
+        );
+
+        $this->add_control(
+                'tl_show_marker',
+                [
+                        'label' => __('Show Marker', 'timeline-full-widget'),
+                        'type' => Controls_Manager::SWITCHER,
+                        'label_on' => __('Yes', 'timeline-full-widget'),
+                        'label_off' => __('No', 'timeline-full-widget'),
+                        'return_value' => 'yes',
+                        'default' => 'yes',
+                ]
+        );
+
+        $this->add_control(
+                'tl_animation_marker',
+                [
+                        'label' => __('Animate Markers', 'timeline-full-widget'),
+                        'type' => Controls_Manager::SWITCHER,
+                        'label_on' => __('Yes', 'timeline-full-widget'),
+                        'label_off' => __('No', 'timeline-full-widget'),
+                        'return_value' => 'yes',
+                        'default' => 'yes',
+                        'condition' => [
+                                'tl_show_marker' => 'yes',
+                        ],
+                ]
+        );
+
+        $this->add_control(
+                'tl_animation_other_side_sticky',
+                [
+                        'label' => __('Sticky Side Content', 'timeline-full-widget'),
+                        'type' => Controls_Manager::SWITCHER,
+                        'label_on' => __('Yes', 'timeline-full-widget'),
+                        'label_off' => __('No', 'timeline-full-widget'),
+                        'return_value' => 'yes',
+                        'default' => 'no',
+                ]
+        );
+
+        $this->add_control(
+                'tl_is_marker_unique',
+                [
+                        'label' => __('Use Custom Marker Image', 'timeline-full-widget'),
+                        'type' => Controls_Manager::SWITCHER,
+                        'label_on' => __('Yes', 'timeline-full-widget'),
+                        'label_off' => __('No', 'timeline-full-widget'),
+                        'return_value' => 'yes',
+                        'default' => 'no',
+                        'condition' => [
+                                'tl_show_marker' => 'yes',
+                        ],
+                ]
+        );
+
+        $this->end_controls_section();
+    }
+
+    /* Render */
+    protected function render()
+    {
+        $settings = $this->get_settings_for_display();
+        $items = !empty($settings['list']) && is_array($settings['list']) ? $settings['list'] : [];
+        // validate tag
+        $tag = Utils::validate_html_tag($settings['header_tag'] ?? 'h2');
+        $on_side = ($settings['tl_change_onside'] ?? '') === 'yes';
+        $direction = ($settings['tl_change_direction'] ?? '') === 'left' ? 'left' : 'right';
+
+        $show_marker = ($settings['tl_show_marker'] ?? '') === 'yes';
+        $animation_marker_enabled = $show_marker && (($settings['tl_animation_marker'] ?? '') === 'yes');
+        $sticky_other_side = ($settings['tl_animation_other_side_sticky'] ?? '') === 'yes';
+
+
+        echo '<div class="timeline-wrapper">';
+
+        // animation line
+        if (($settings['tl_animation_timeline'] ?? '') === 'yes') {
+            echo '<div class="timeline-line-animation"></div>';
+        }
+
+        // ul open
+        $ul_classes = ['timeline'];
+        if ($animation_marker_enabled) {
+            $ul_classes[] = 'timeline-animation-marker';
+        }
+        if ($sticky_other_side) {
+            $ul_classes[] = 'timeline-animation-other-side-sticky';
+        }
+
+        if ( ( $settings['tl_show_step_numbers'] ?? '' ) === 'yes' ) {
+            $ul_classes[] = 'timeline-numbers';
+        }
+
+        echo '<ul class="' . esc_attr(implode(' ', $ul_classes)) . '">';
+
+        // iterate items
+        $countBase = ($direction === 'left') ? 1 : 2;
+        $count = $countBase;
+        foreach ($items as $item) {
+            if ($on_side) {
+                $li_class = ($direction === 'right') ? 'timeline-inverted' : 'timeline-left';
+            } else {
+                $count++;
+                $li_class = ($count % 2 === 0) ? 'timeline-inverted' : 'timeline-left';
+            }
+            // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+            echo $this->render_item_html($li_class, $item, $tag, $show_marker, $settings);
+        }
+
+        echo '</ul></div>';
+
+        if (wp_script_is('za-timeline-elementor', 'registered')) {
+            wp_enqueue_script('za-timeline-elementor');
+        }
+        if (wp_style_is('timeline-core-style', 'registered')) {
+            wp_enqueue_style('timeline-core-style');
+        }
+    }
+
+    /**
+     * Render single <li>
+     */
+    private function render_item_html($li_class, $item, $tag, $show_marker, $settings)
+    {
+        $title = isset($item['list_title']) ? $item['list_title'] : '';
+        $safe_title_html = wp_kses(
+                nl2br(esc_html($title)),
+                ['br' => []]
+        );
+
+        $side_content = isset($item['side_content']) ? wp_kses_post($item['side_content']) : '';
+        $title_link = isset($item['title_link_url']) && is_array($item['title_link_url']) ? $item['title_link_url'] : [];
+
+        $bg_color = !empty($item['li_bg_color']) ? 'background-color:' . esc_attr($item['li_bg_color']) . ';' : '';
+        $media_html = $this->render_media_html($item);
+        $style_attr = $bg_color ? sprintf(' style="%s"', esc_attr($bg_color)) : '';
+
+
+        $content_classes = ['tl-content'];
+
+        if (($settings['tl_content_horizontal_layout'] ?? '') === 'yes') {
+            $content_classes[] = 'tl-content-horizontal';
+        }
+
+
+        if (($item['tl_card_change_direction'] ?? '') === 'yes') {
+            $content_classes[] = 'tl-reverse';
+        }
+
+
+
+
+        ob_start();
+        ?>
+        <li class="<?php echo esc_attr($li_class); ?> timeline-item"<?php echo $style_attr; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+        ?>>
+            <div class="timeline-side"><?php echo $side_content; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Sanitized with wp_kses_post() above.
+                ?></div>
+            <div class="tl-trigger"></div>
+
+            <?php if ($show_marker) : ?>
+                <?php
+                $marker_img = $item['marker_image']['url'] ?? '';
+                if (!empty($marker_img) && (($settings['tl_is_marker_unique'] ?? '') === 'yes')) {
+                    echo '<div class="tl-mark"><img src="' . esc_url($marker_img) . '" alt="" loading="lazy" decoding="async" /></div>';
+                } else {
+                    echo '<div class="tl-mark"></div>';
+                }
+                ?>
+            <?php endif; ?>
+
+            <div class="timeline-panel">
+                <div class="<?php echo esc_attr(implode(' ', $content_classes)); ?>">
+                    <?php echo $media_html; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+                    ?>
+                    <div class="tl-desc">
+                        <?php
+                        if ($tag === 'a' && !empty($title_link['url'])) {
+                            $title_link_attrs = $this->get_link_attributes_string($title_link);
+
+                            printf(
+                                    '<a class="tl-title" %1$s>%2$s</a>',
+                                    $title_link_attrs, // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Safe attributes built by get_link_attributes_string().
+                                    $safe_title_html // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Escaped above with esc_html(), nl2br(), and wp_kses().
+                            );
+                        } else {
+                            printf(
+                                    '<%1$s class="tl-title">%2$s</%1$s>',
+                                    tag_escape($tag),
+                                    $safe_title_html // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Escaped above with esc_html(), nl2br(), and wp_kses().
+                            );
+                        }
+                        ?>
+                        <div class="tl-desc-short">
+                            <?php echo wp_kses_post($item['list_content'] ?? ''); ?>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </li>
+        <?php
+        return ob_get_clean();
+    }
+
+    /**
+     * Render media HTML (image or video).
+     */
+    private function render_media_html($item)
+    {
+        $type = $item['media_type'] ?? 'image';
+        $title = isset($item['list_title']) ? wp_strip_all_tags($item['list_title']) : '';
+        $media_link = isset($item['media_link_url']) && is_array($item['media_link_url']) ? $item['media_link_url'] : [];
+        $wrap_with_link = !empty($media_link['url']) && (($item['media_link_enabled'] ?? 'yes') === 'yes');
+        $media_inner_html = '';
+
+        if ($type === 'video') {
+            $media_url = $item['media_video']['url'] ?? '';
+            $poster = $item['posterURL']['url'] ?? '';
+
+            if (empty($media_url)) {
+                return '';
+            }
+
+            $filetype = wp_check_filetype($media_url);
+            $mime = $filetype['type'] ?: 'video/mp4';
+            $poster_attr = $poster ? ' poster="' . esc_url($poster) . '"' : '';
+
+            $media_inner_html = sprintf(
+                    '<div class="timeline_pic pull-left"><video autoplay muted loop playsinline preload="metadata"%1$s><source src="%2$s" type="%3$s">%4$s</video></div>',
+                    $poster_attr,
+                    esc_url($media_url),
+                    esc_attr($mime),
+                    esc_html__('Your browser does not support the video tag.', 'timeline-full-widget')
+            );
+        } else {
+            $media = $item['media_image'] ?? [];
+            $media_url = $media['url'] ?? '';
+
+            if (!$media_url && empty($media['id'])) {
+                return '';
+            }
+
+            if (!empty($media['id'])) {
+                $media_inner_html = '<div class="timeline_pic pull-left">' . Group_Control_Image_Size::get_attachment_image_html($item, 'thumbnail', 'media_image') . '</div>';
+            } elseif ($media_url) {
+                $alt = $media['alt'] ?? $media['title'] ?? '';
+
+                $media_inner_html = sprintf(
+                        '<div class="timeline_pic pull-left"><img src="%1$s" alt="%2$s" loading="lazy" decoding="async" /></div>',
+                        esc_url($media_url),
+                        esc_attr($alt)
+                );
+            }
+        }
+
+        if (!$media_inner_html) {
+            return '';
+        }
+
+        if ($wrap_with_link) {
+            $link_attrs = $this->get_link_attributes_string(
+                    $media_link,
+                    $title ? sprintf(
+                    /* translators: %s: timeline item title */
+                            __('Open media for "%s"', 'timeline-full-widget'),
+                            $title
+                    ) : __('Open media link', 'timeline-full-widget')
+            );
+
+            return sprintf(
+                    '<a class="timeline-media-link" %1$s>%2$s</a>',
+                    $link_attrs, // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Safe attributes built by get_link_attributes_string().
+                    $media_inner_html // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Media HTML is escaped when built.
+            );
+        }
+
+        return $media_inner_html;
+    }
+
+
+    /*  Editor template (Underscore.js) */
+    protected function content_template()
+    { ?>
+        <div class="timeline-wrapper">
+            <# if ( settings.tl_animation_timeline === 'yes' ) { #>
+            <div class="timeline-line-animation"></div>
+            <# } #>
+
+            <#
+            function isVideoUrl(url) {
+                return !!url && /\.(mp4|webm|ogg|ogv)(\?.*)?$/i.test(url);
+            }
+
+            function buildTitleText(item) {
+                return _.escape(item.list_title || '').replace(/\n/g, '<br>');
+            }
+
+            function buildLinkAttributes(link, ariaLabel) {
+                if (!link || !link.url) return '';
+
+                var attrs = ' href="' + _.escape(link.url) + '"';
+                var rel = [];
+
+                if (link.is_external) {
+                    attrs += ' target="_blank"';
+                    rel.push('noopener', 'noreferrer');
+                }
+
+                if (link.nofollow) {
+                    rel.unshift('nofollow');
+                }
+
+                if (rel.length) {
+                    attrs += ' rel="' + _.escape(_.uniq(rel).join(' ')) + '"';
+                }
+
+                if (ariaLabel) {
+                    attrs += ' aria-label="' + _.escape(ariaLabel) + '"';
+                }
+
+                return attrs;
+            }
+
+            function getImageUrl(item) {
+                if (!item.media_image || !item.media_image.url) {
+                    return '';
+                }
+
+                var imageUrl = item.media_image.url;
+                var hasAttachmentId = !!item.media_image.id;
+                var hasCustomDimensions = item.thumbnail_size !== 'custom' || (
+                    item.thumbnail_custom_dimension &&
+                    item.thumbnail_custom_dimension.width &&
+                    item.thumbnail_custom_dimension.height
+                );
+
+                if (
+                    hasAttachmentId &&
+                    hasCustomDimensions &&
+                    typeof elementor !== 'undefined' &&
+                    elementor.imagesManager &&
+                    typeof elementor.imagesManager.getImageUrl === 'function'
+                ) {
+                    var resolvedImageUrl = elementor.imagesManager.getImageUrl({
+                        id: item.media_image.id,
+                        url: item.media_image.url,
+                        size: item.thumbnail_size || 'full',
+                        dimension: item.thumbnail_custom_dimension || {},
+                        model: view.getEditModel()
+                    });
+
+                    if (resolvedImageUrl) {
+                        imageUrl = resolvedImageUrl;
+                    }
+                }
+
+                return imageUrl;
+            }
+
+            function buildMediaHtml(item) {
+                var imageUrl = '';
+                var posterUrl = '';
+                var isVideo = false;
+                var html = '';
+                var mediaLink = item.media_link_url || {};
+                var wrapWithLink = mediaLink.url && item.media_link_enabled === 'yes';
+
+                if (item.media_type === 'video' && item.media_video && item.media_video.url) {
+                    imageUrl = item.media_video.url;
+                    isVideo = isVideoUrl(imageUrl);
+                    posterUrl = (item.posterURL && item.posterURL.url) ? item.posterURL.url : '';
+                } else {
+                    imageUrl = getImageUrl(item);
+                }
+
+                if (!imageUrl) return '';
+
+                if (isVideo) {
+                    var sourceType = (imageUrl.match(/\.([^.?]+)(\?.*)?$/i) || [])[1] || 'mp4';
+                    var posterAttr = posterUrl ? ' poster="' + _.escape(posterUrl) + '"' : '';
+
+                    html += '<div class="timeline_pic pull-left">';
+                    html += '<video playsinline preload="metadata"' + posterAttr + '>';
+                    html += '<source src="' + _.escape(imageUrl) + '" type="video/' + _.escape(sourceType) + '">';
+                    html += _.escape('Your browser does not support the video tag.');
+                    html += '</video>';
+                    html += '</div>';
+                } else {
+                    var alt = (item.media_image && (item.media_image.alt || item.media_image.title)) ? _.escape(item.media_image.alt || item.media_image.title) : '';
+
+                    html += '<div class="timeline_pic pull-left">';
+                    html += '<img src="' + _.escape(imageUrl) + '" alt="' + alt + '" loading="lazy" decoding="async"/>';
+                    html += '</div>';
+                }
+
+                if (wrapWithLink) {
+                    var ariaLabel = item.list_title ? 'Open media for "' + item.list_title + '"' : 'Open media link';
+                    html = '<a class="timeline-media-link"' + buildLinkAttributes(mediaLink, ariaLabel) + '>' + html + '</a>';
+                }
+
+                return html;
+            }
+
+            var showMarker = settings.tl_show_marker === 'yes';
+            var animationMarkerEnabled = showMarker && settings.tl_animation_marker === 'yes';
+            var stickyOtherSide = settings.tl_animation_other_side_sticky === 'yes';
+
+            var ulClassesArr = ['timeline'];
+            if (animationMarkerEnabled) ulClassesArr.push('timeline-animation-marker');
+            if (stickyOtherSide) ulClassesArr.push('timeline-animation-other-side-sticky');
+            if (settings.tl_show_step_numbers === 'yes') ulClassesArr.push('timeline-numbers');
+
+            var ulClass = _.escape( ulClassesArr.join(' ') );
+
+            var onSide = settings.tl_change_onside === 'yes';
+            var direction = settings.tl_change_direction ? 'left' : 'right';
+            var contentHorizontalLayout = settings.tl_content_horizontal_layout === 'yes';
+
+
+            var count = direction === 'left' ? 1 : 2;
+            #>
+
+            <ul class="{{ ulClass }}">
+                <# if ( settings.list ) { _.each( settings.list, function( item ) {
+                    var li_class = onSide
+                        ? ( direction === 'right' ? 'timeline-inverted' : 'timeline-left' )
+                        : ( ( ++count % 2 === 0 ) ? 'timeline-inverted' : 'timeline-left' );
+
+                    var bg_color = item.li_bg_color ? 'background-color:' + _.escape( item.li_bg_color ) + ';' : '';
+                    var titleTag = settings.header_tag || 'h2';
+                    var titleLink = item.title_link_url || {};
+                    var safeTitle = buildTitleText( item );
+                    var mediaHtml = buildMediaHtml( item );
+                    var contentClasses = [ 'tl-content' ];
+                    var showStepNumbers = settings.tl_show_step_numbers === 'yes';
+
+                    if ( contentHorizontalLayout ) {
+                        contentClasses.push( 'tl-content-horizontal' );
+                    }
+
+                    if ( item.tl_card_change_direction === 'yes' ) {
+                        contentClasses.push( 'tl-reverse' );
+                    }
+                #>
+
+                <li class="{{ li_class }} timeline-item" style="{{ bg_color }}">
+                    <div class="timeline-side">{{{ item.side_content }}}</div>
+                    <div class="tl-trigger"></div>
+
+                    <# if ( showMarker ) { #>
+                        <# if ( settings.tl_is_marker_unique === 'yes' && item.marker_image && item.marker_image.url ) { #>
+                            <div class="tl-mark"><img src="{{ item.marker_image.url }}" alt="" loading="lazy" decoding="async"/></div>
+                        <# } else { #>
+                            <div class="tl-mark"></div>
+                        <# } #>
+                    <# } #>
+
+                    <div class="timeline-panel">
+                        <div class="{{ _.escape( contentClasses.join( ' ' ) ) }}">
+                            <# if ( mediaHtml ) { #>
+                                {{{ mediaHtml }}}
+                            <# } #>
+
+                            <div class="tl-desc">
+                                <# if ( titleTag === 'a' && titleLink.url ) { #>
+                                    <a class="tl-title" {{{ buildLinkAttributes( titleLink ) }}}>{{{ safeTitle }}}</a>
+                                <# } else if ( titleTag === 'h1' ) { #>
+                                    <h1 class="tl-title">{{{ safeTitle }}}</h1>
+                                <# } else if ( titleTag === 'h2' ) { #>
+                                    <h2 class="tl-title">{{{ safeTitle }}}</h2>
+                                <# } else if ( titleTag === 'h3' ) { #>
+                                    <h3 class="tl-title">{{{ safeTitle }}}</h3>
+                                <# } else if ( titleTag === 'h4' ) { #>
+                                    <h4 class="tl-title">{{{ safeTitle }}}</h4>
+                                <# } else if ( titleTag === 'p' ) { #>
+                                    <p class="tl-title">{{{ safeTitle }}}</p>
+                                <# } else { #>
+                                    <div class="tl-title">{{{ safeTitle }}}</div>
+                                <# } #>
+
+                                <div class="tl-desc-short">{{{ item.list_content }}}</div>
+                            </div>
+                        </div>
+                    </div>
+                </li>
+                <# }); } #>
+            </ul>
+        </div>
+        <?php
+    }
+
+}

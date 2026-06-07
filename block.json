@@ -59,6 +59,10 @@
 			"type": "boolean",
 			"default": false
 		},
+		"showStepNumbers": {
+			"type": "boolean",
+			"default": false
+		},
 		"animationMarker": {
 			"type": "boolean",
 			"default": true

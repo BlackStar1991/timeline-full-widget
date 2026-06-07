@@ -2,13 +2,13 @@
 Contributors: Blackstar1991
 Donate link: https://www.paypal.com/donate/?hosted_button_id=TK9QQ5DE2K378
 Tags: timeline, Elementor, gutenberg blocks, editor, blocks
-Requires at least: 5.0
+Requires at least: 5.5
 Tested up to: 7.0
-Stable tag: 2.2.0
+Stable tag: 2.3.0
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
-Add a Timeline Widget easily to your WordPress site. Elementor Widget and Gutenberg Block for your site.
+Free timeline plugin for WordPress, Elementor, and Gutenberg. Create responsive timelines, roadmaps, and milestones without code.
 
 == Description ==
 
@@ -88,6 +88,15 @@ You can contribute translations here:
 https://translate.wordpress.org/projects/wp-plugins/timeline-full-widget/
 
 == Changelog ==
+
+= 2.3.0 =
+* Refactored the PHP plugin structure into PSR-4-style classes under `includes/` while keeping Gutenberg source files in `src/`.
+* Kept backward-compatible constants for existing custom integrations.
+* Improved separation between Gutenberg, Elementor, Classic Editor, assets, and admin metadata loading.
+
+= 2.2.1 =
+* Fixed an issue with module script optimization.
+* Improved Gutenberg block frontend script loading to ensure animations initialize correctly.
 
 = 2.2.0 =
 * Added showing step numbers of items.

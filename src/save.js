@@ -12,6 +12,7 @@ export default function Save({ attributes }) {
 		animationMarker,
 		animationMarkerColor,
 		animationOtherSideSticky,
+		showStepNumbers,
 	} = attributes;
 
 	const hasAnimatedMarkers =
@@ -44,6 +45,7 @@ export default function Save({ attributes }) {
 						hasAnimatedMarkers && 'timeline-animation-marker',
 						animationOtherSideSticky &&
 							'timeline-animation-other-side-sticky',
+						showStepNumbers && 'timeline-numbers',
 					]
 						.filter(Boolean)
 						.join(' ')}

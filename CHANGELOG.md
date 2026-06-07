@@ -1,6 +1,14 @@
 # Timeline Full Widget
 
-## 2.2.0 (, 2026)
+## 2.3.0 (June 7, 2026)
+* Refactored PHP loading into a PSR-4-style `includes/` structure.
+* Kept Gutenberg source files in `src/` and moved PHP responsibilities into dedicated classes for assets, block registration, Elementor, Classic Editor, and plugin metadata.
+
+## 2.2.1 (May 30, 2026)
+* Fixed an issue where timeline animations could fail when JavaScript optimization or minification plugins were enabled.
+* Improved Gutenberg block frontend script loading to ensure animations initialize correctly.
+
+## 2.2.0 (May 30, 2026)
 * Added showing step numbers of items.
 
 ## 2.1.1 (April 29, 2026)

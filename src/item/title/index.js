@@ -159,6 +159,7 @@ export default function Title({
 				className={`t-text-align-${titleAlign} tl-title`}
 				value={title}
 				allowedFormats={[]}
+				placeholder={__('Timeline Item', 'timeline-full-widget')}
 				onChange={(val) => setAttributes({ title: val })}
 				onFocus={() => setActiveField('title')}
 				style={styleObj}

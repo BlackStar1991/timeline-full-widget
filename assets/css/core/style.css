@@ -144,8 +144,8 @@ ul.timeline {
     transform: translateX(-50%);
     align-self: self-start;
     transition: background 0.2s;
-    width: 26px;
-    height: 26px;
+    width: 30px;
+    height: 30px;
     border-radius: 50%;
     box-sizing: border-box;
     backface-visibility: hidden;
@@ -164,7 +164,8 @@ ul.timeline {
 .tl-mark img {
     max-width: initial !important;
     position: absolute;
-    left: -50%;
+    left: 50%;
+    transform: translateX(-50%);
 }
 
 .timeline.timeline-animation-marker .is-stuck .tl-mark,
@@ -177,7 +178,7 @@ ul.timeline {
     counter-reset: item;
 }
 
-.timeline-numbers li::after {
+.timeline-numbers li .tl-mark::after {
     position: absolute;
     top:-5px;
     left:50%;
@@ -190,7 +191,7 @@ ul.timeline {
     transition: color .12s;
     z-index: 3;
 }
-.timeline-numbers .is-stuck::after{
+.timeline-numbers .is-stuck .tl-mark::after{
     color: #fff;
 }
 

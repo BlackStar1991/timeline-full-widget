@@ -87,10 +87,10 @@
 
 	function getTimelineItem(index, inverted = false) {
 		return `<!-- wp:za/timeline-item ${inverted ? '{"position":"timeline-inverted"}' : ''} -->
-<li class="wp-block-za-timeline-item timeline-item ${inverted ? 'timeline-inverted' : 'timeline-left'}">
-	<div class="timeline-side">
-		<p class="t-text-align-left">&nbsp;</p>
-	</div>
+		<li class="wp-block-za-timeline-item timeline-item ${inverted ? 'timeline-inverted' : 'timeline-left'}">
+			<div class="timeline-side">
+				<p class="t-text-align-left">&nbsp;</p>
+			</div>
 	<div class="tl-trigger">&nbsp;</div>
 	<div class="tl-mark">&nbsp;</div>
 	<div class="timeline-panel">

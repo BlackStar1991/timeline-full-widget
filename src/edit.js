@@ -34,6 +34,7 @@ export default function Edit({ attributes, setAttributes, clientId }) {
 		showMarker,
 		animationMarker,
 		markerUnique,
+		showStepNumbers,
 		animationMarkerColor,
 		animationOtherSideSticky,
 	} = attributes;
@@ -101,6 +102,7 @@ export default function Edit({ attributes, setAttributes, clientId }) {
 			animationLineColor,
 			showMarker,
 			markerUnique,
+			showStepNumbers,
 			animationMarker,
 			animationMarkerColor,
 			animationOtherSideSticky,
@@ -373,7 +375,10 @@ export default function Edit({ attributes, setAttributes, clientId }) {
 						>
 							{[
 								{
-									label: __('Sticky Markers', 'timeline-full-widget'),
+									label: __(
+										'Sticky Markers',
+										'timeline-full-widget'
+									),
 									help: animationMarker
 										? __('Yes', 'timeline-full-widget')
 										: __('No', 'timeline-full-widget'),
@@ -384,7 +389,10 @@ export default function Edit({ attributes, setAttributes, clientId }) {
 										}),
 								},
 								{
-									label: __('Unique Marker', 'timeline-full-widget'),
+									label: __(
+										'Unique Marker',
+										'timeline-full-widget'
+									),
 									help: markerUnique
 										? __('Yes', 'timeline-full-widget')
 										: __('No', 'timeline-full-widget'),
@@ -394,7 +402,20 @@ export default function Edit({ attributes, setAttributes, clientId }) {
 											markerUnique: val,
 										}),
 								},
-
+								{
+									label: __(
+										'Show step numbers',
+										'timeline-full-widget'
+									),
+									help: showStepNumbers
+										? __('Yes', 'timeline-full-widget')
+										: __('No', 'timeline-full-widget'),
+									checked: showStepNumbers,
+									onChange: (val) =>
+										setAttributes({
+											showStepNumbers: val,
+										}),
+								},
 							]
 								.filter(Boolean)
 								.map((ctrl, i) => (
@@ -418,6 +439,7 @@ export default function Edit({ attributes, setAttributes, clientId }) {
 						hasAnimatedMarkers && 'timeline-animation-marker',
 						animationOtherSideSticky &&
 							'timeline-animation-other-side-sticky',
+						showStepNumbers && 'timeline-numbers',
 					]
 						.filter(Boolean)
 						.join(' ')}

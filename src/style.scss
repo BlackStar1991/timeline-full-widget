@@ -21,12 +21,32 @@
   opacity: 0.3;
 }
 
+.wp-block-za-timeline-full-widget,
+.wp-block-za-timeline-full-widget * {
+  box-sizing: border-box;
+}
+
+.wp-block-za-timeline-full-widget {
+  width: 100%;
+}
+
+.wp-block-za-timeline-full-widget .timeline-wrapper {
+  position: relative;
+  width: 100%;
+  max-width: 100%;
+}
+
+.wp-block-za-timeline-full-widget .timeline {
+  width: 100%;
+}
+
 .wp-block-za-timeline-full-widget .timeline::before {
   width: var(--timeline-line-width, 4px);
   background-color: var(--timeline-line-color, #f6f6f8);
 }
 
 .wp-block-za-timeline-full-widget .tl-mark {
+  //left: calc(50% - 8px); ///
   background-color: var(--timeline-marker-color, #f6f6f8);
 }
 
