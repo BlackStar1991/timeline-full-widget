@@ -571,6 +571,29 @@ final class TimelineWidget extends Widget_Base
                 ]
         );
 
+        $this->add_control(
+                'timeline_marker_size',
+                [
+                        'label' => __('Marker Size', 'timeline-full-widget'),
+                        'type' => Controls_Manager::SLIDER,
+                        'size_units' => ['px'],
+                        'range' => [
+                                'px' => [
+                                        'min' => 2,
+                                        'max' => 80,
+                                        'step' => 1,
+                                ],
+                        ],
+                        'default' => [
+                                'unit' => 'px',
+                                'size' => 30,
+                        ],
+                        'selectors' => [
+                                '{{WRAPPER}} .timeline-wrapper' => '--marker-size: {{SIZE}}{{UNIT}};',
+                        ],
+                ]
+        );
+
         $this->end_controls_section();
 
         $this->start_controls_section(

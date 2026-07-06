@@ -39,6 +39,10 @@
 			"type": "string",
 			"default": "#F6F6F8"
 		},
+		"markerSize": {
+			"type": "number",
+			"default": 30
+		},
 		"showOtherSide": {
 			"type": "boolean",
 			"default": true

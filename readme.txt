@@ -57,17 +57,6 @@ Yes, you can control colors, typography, spacing, and alignment for each item.
 = How to apply the same styles to all Timeline items in block component? =
 Use the "Apply item styles to other items" button. It copies styles from the current item to all other items.
 
-= Can I set a unique marker that is wider (width) than 30 px? =
-Yes, but timeline styles may need adjustment. Example:
-
-@media (min-width: 701px) {
-    .tl-mark:has(img) {
-        max-width: 42px !important;
-        height: 30px;
-        left: calc(50% + 2px);
-    }
-}
-
 = Is it responsive? =
 Yes, the timeline layout adapts to different screen sizes.
 
@@ -93,6 +82,7 @@ https://translate.wordpress.org/projects/wp-plugins/timeline-full-widget/
 * Refactored the PHP plugin structure into PSR-4-style classes under `includes/` while keeping Gutenberg source files in `src/`.
 * Kept backward-compatible constants for existing custom integrations.
 * Improved separation between Gutenberg, Elementor, Classic Editor, assets, and admin metadata loading.
+* Added the ability to change marker size
 
 = 2.2.1 =
 * Fixed an issue with module script optimization.

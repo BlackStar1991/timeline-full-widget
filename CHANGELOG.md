@@ -1,8 +1,9 @@
 # Timeline Full Widget
 
-## 2.3.0 (June 7, 2026)
+## 2.3.0 (July 7, 2026)
 * Refactored PHP loading into a PSR-4-style `includes/` structure.
 * Kept Gutenberg source files in `src/` and moved PHP responsibilities into dedicated classes for assets, block registration, Elementor, Classic Editor, and plugin metadata.
+* Added the ability to change marker size
 
 ## 2.2.1 (May 30, 2026)
 * Fixed an issue where timeline animations could fail when JavaScript optimization or minification plugins were enabled.

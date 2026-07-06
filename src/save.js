@@ -6,6 +6,7 @@ export default function Save({ attributes }) {
 		lineColor,
 		lineWidth = 4,
 		markerColor,
+		markerSize,
 		animationTimeline,
 		animationLineColor,
 		showMarker,
@@ -29,10 +30,9 @@ export default function Save({ attributes }) {
 					'--timeline-line-color': lineColor || '#F6F6F8',
 					'--timeline-line-width': `${Math.max(1, Number(lineWidth) || 4)}px`,
 					'--timeline-marker-color': markerColor || '#F6F6F8',
-					'--timeline-line-active-color':
-						animationLineColor || '#F37321',
-					'--timeline-marker-active-color':
-						animationMarkerColor || '#F37321',
+					'--marker-size': `${Math.max(1, Number(markerSize) || 30)}px`,
+					'--timeline-line-active-color': animationLineColor || '#F37321',
+					'--timeline-marker-active-color': animationMarkerColor || '#F37321',
 				}}
 			>
 				{animationTimeline && (

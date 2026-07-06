@@ -13,10 +13,16 @@ if ( ! defined( 'ABSPATH' ) ) {
     exit;
 }
 
-if ( ! class_exists( '\TimelineFullWidget\Elementor\TimelineWidget' ) ) {
+function timeline_full_widget_load_legacy_elementor_widget() {
+    if ( class_exists( '\TimelineFullWidget\Elementor\TimelineWidget' ) ) {
+        return;
+    }
+
     $widget_file = __DIR__ . '/includes/Elementor/TimelineWidget.php';
 
     if ( is_readable( $widget_file ) ) {
         require_once $widget_file;
     }
 }
+
+timeline_full_widget_load_legacy_elementor_widget();

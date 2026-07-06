@@ -27,6 +27,7 @@ export default function Edit({ attributes, setAttributes, clientId }) {
 		onTheOneSide,
 		lineColor,
 		lineWidth = 4,
+		markerSize = 30,
 		markerColor,
 		showOtherSide,
 		animationTimeline,
@@ -96,6 +97,7 @@ export default function Edit({ attributes, setAttributes, clientId }) {
 			lineColor,
 			lineWidth,
 			markerColor,
+			markerSize,
 			direction,
 			onTheOneSide,
 			animationTimeline,
@@ -113,6 +115,7 @@ export default function Edit({ attributes, setAttributes, clientId }) {
 		lineColor,
 		lineWidth,
 		markerColor,
+		markerSize,
 		direction,
 		onTheOneSide,
 		animationTimeline,
@@ -172,10 +175,10 @@ export default function Edit({ attributes, setAttributes, clientId }) {
 					'--timeline-line-color': lineColor || '#F6F6F8',
 					'--timeline-line-width': `${Math.max(1, Number(lineWidth) || 4)}px`,
 					'--timeline-marker-color': markerColor || '#F6F6F8',
-					'--timeline-line-active-color':
-						animationLineColor || '#F37321',
-					'--timeline-marker-active-color':
-						animationMarkerColor || '#F37321',
+					'--marker-size': `${Math.max(1, Number(markerSize) || 30)}px`,
+
+					'--timeline-line-active-color': animationLineColor || '#F37321',
+					'--timeline-marker-active-color': animationMarkerColor || '#F37321',
 				}}
 			>
 				<InspectorControls>
@@ -293,6 +296,24 @@ export default function Edit({ attributes, setAttributes, clientId }) {
 							}
 							min={1}
 							max={20}
+							step={1}
+							__nextHasNoMarginBottom
+						/>
+
+						<RangeControl
+							label={__('Marker Size', 'timeline-full-widget')}
+							help={__(
+								'Minimum value is 2px.',
+								'timeline-full-widget'
+							)}
+							value={markerSize}
+							onChange={(value) =>
+								setAttributes({
+									markerSize: Math.max(1, Number(value) || 30),
+								})
+							}
+							min={2}
+							max={80}
 							step={1}
 							__nextHasNoMarginBottom
 						/>
