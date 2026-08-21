@@ -1,6 +1,6 @@
 import { __ } from '@wordpress/i18n';
 
-export const ITEM_ATTRIBUTE_EXCLUSIONS = new Set([
+export const ITEM_ATTRIBUTE_EXCLUSIONS = new Set( [
 	'title',
 	'linkUrl',
 	'linkTarget',
@@ -22,9 +22,9 @@ export const ITEM_ATTRIBUTE_EXCLUSIONS = new Set([
 	'position',
 	'horizontalContentLayout',
 	'reverseMediaContent',
-]);
+] );
 
-export const DESCENDANT_ATTRIBUTE_EXCLUSIONS = new Set([
+export const DESCENDANT_ATTRIBUTE_EXCLUSIONS = new Set( [
 	'content',
 	'values',
 	'caption',
@@ -50,24 +50,24 @@ export const DESCENDANT_ATTRIBUTE_EXCLUSIONS = new Set([
 	'fileName',
 	'poster',
 	'placeholder',
-]);
+] );
 
-function cloneAttributeValue(value) {
-	if (Array.isArray(value)) {
-		return value.map((item) => cloneAttributeValue(item));
+function cloneAttributeValue( value ) {
+	if ( Array.isArray( value ) ) {
+		return value.map( ( item ) => cloneAttributeValue( item ) );
 	}
 
-	if (value && typeof value === 'object') {
-		return Object.keys(value).reduce((acc, key) => {
-			acc[key] = cloneAttributeValue(value[key]);
+	if ( value && typeof value === 'object' ) {
+		return Object.keys( value ).reduce( ( acc, key ) => {
+			acc[ key ] = cloneAttributeValue( value[ key ] );
 			return acc;
-		}, {});
+		}, {} );
 	}
 
 	return value;
 }
 
-function shouldResetLegacyTitleInlineStyle(attributes = {}) {
+function shouldResetLegacyTitleInlineStyle( attributes = {} ) {
 	return [
 		'titleFontSize',
 		'titleFontWeight',
@@ -77,80 +77,86 @@ function shouldResetLegacyTitleInlineStyle(attributes = {}) {
 		'titleMarginTop',
 		'titleMarginBottom',
 		'titleColor',
-	].some((key) => {
-		const value = attributes[key];
-		if (value === undefined || value === null) {
+	].some( ( key ) => {
+		const value = attributes[ key ];
+		if ( value === undefined || value === null ) {
 			return false;
 		}
 
-		if (typeof value === 'string') {
+		if ( typeof value === 'string' ) {
 			return value.trim() !== '';
 		}
 
-		if (typeof value === 'object') {
-			return Object.values(value).some(
-				(entry) => entry !== undefined && entry !== null && entry !== ''
+		if ( typeof value === 'object' ) {
+			return Object.values( value ).some(
+				( entry ) =>
+					entry !== undefined && entry !== null && entry !== ''
 			);
 		}
 
 		return true;
-	});
+	} );
 }
 
 export function getInheritableAttributes(
 	attributes = {},
 	exclusions = ITEM_ATTRIBUTE_EXCLUSIONS
 ) {
-	const inheritable = Object.keys(attributes).reduce((acc, key) => {
-		if (exclusions.has(key)) {
+	const inheritable = Object.keys( attributes ).reduce( ( acc, key ) => {
+		if ( exclusions.has( key ) ) {
 			return acc;
 		}
 
-		acc[key] = cloneAttributeValue(attributes[key]);
+		acc[ key ] = cloneAttributeValue( attributes[ key ] );
 		return acc;
-	}, {});
+	}, {} );
 
-	if (shouldResetLegacyTitleInlineStyle(inheritable)) {
+	if ( shouldResetLegacyTitleInlineStyle( inheritable ) ) {
 		inheritable.titleInlineStyle = '';
 	}
 
 	return inheritable;
 }
 
-function collectDescendantBlocks(block, path = []) {
-	if (!block) {
+function collectDescendantBlocks( block, path = [] ) {
+	if ( ! block ) {
 		return [];
 	}
 
-	const children = Array.isArray(block.innerBlocks) ? block.innerBlocks : [];
+	const children = Array.isArray( block.innerBlocks )
+		? block.innerBlocks
+		: [];
 
-	return children.flatMap((child, index) => {
-		const childPath = [...path, index];
+	return children.flatMap( ( child, index ) => {
+		const childPath = [ ...path, index ];
 		return [
 			{ block: child, path: childPath },
-			...collectDescendantBlocks(child, childPath),
+			...collectDescendantBlocks( child, childPath ),
 		];
-	});
+	} );
 }
 
-function pathToKey(path = []) {
-	return path.join('.');
+function pathToKey( path = [] ) {
+	return path.join( '.' );
 }
 
-export function collectDescendantStyleUpdates(sourceBlock, targetBlock) {
-	if (!sourceBlock || !targetBlock) {
+export function collectDescendantStyleUpdates( sourceBlock, targetBlock ) {
+	if ( ! sourceBlock || ! targetBlock ) {
 		return [];
 	}
 
-	const sourceDescendants = collectDescendantBlocks(sourceBlock);
-	const targetDescendants = collectDescendantBlocks(targetBlock);
+	const sourceDescendants = collectDescendantBlocks( sourceBlock );
+	const targetDescendants = collectDescendantBlocks( targetBlock );
 	const sourceMap = new Map(
-		sourceDescendants.map(({ block, path }) => [pathToKey(path), block])
+		sourceDescendants.map( ( { block, path } ) => [
+			pathToKey( path ),
+			block,
+		] )
 	);
 
-	return targetDescendants.reduce((updates, { block, path }) => {
-		const sourceMatch = sourceMap.get(pathToKey(path));
-		if (!sourceMatch || sourceMatch.name !== block.name) {
+	return targetDescendants.reduce( ( updates, { block, path } ) => {
+		const sourceMatch = sourceMap.get( pathToKey( path ) );
+		if ( ! sourceMatch || sourceMatch.name !== block.name ) {
 			return updates;
 		}
 
@@ -159,12 +165,12 @@ export function collectDescendantStyleUpdates(sourceBlock, targetBlock) {
 			DESCENDANT_ATTRIBUTE_EXCLUSIONS
 		);
 
-		if (Object.keys(attrs).length) {
-			updates.push({ clientId: block.clientId, attributes: attrs });
+		if ( Object.keys( attrs ).length ) {
+			updates.push( { clientId: block.clientId, attributes: attrs } );
 		}
 
 		return updates;
-	}, []);
+	}, [] );
 }
 
 export function getNoSiblingItemsNotice() {

@@ -38,7 +38,7 @@ import {
 import MediaSettingsPanel from './components/MediaSettingsPanel';
 import TitleTypographyPanel from './components/TitleTypographyPanel';
 
-export function Edit({ clientId, attributes, setAttributes }) {
+export function Edit( { clientId, attributes, setAttributes } ) {
 	const {
 		titleAlign,
 		title,
@@ -84,11 +84,12 @@ export function Edit({ clientId, attributes, setAttributes }) {
 		reverseMediaContent,
 	} = attributes;
 
-	const [activeField, setActiveField] = useState(null);
-	const [isMediaLinkPickerOpen, setIsMediaLinkPickerOpen] = useState(false);
-	const { updateBlockAttributes } = useDispatch('core/block-editor');
+	const [ activeField, setActiveField ] = useState( null );
+	const [ isMediaLinkPickerOpen, setIsMediaLinkPickerOpen ] =
+		useState( false );
+	const { updateBlockAttributes } = useDispatch( 'core/block-editor' );
 	const { createSuccessNotice, createErrorNotice } =
-		useDispatch('core/notices');
+		useDispatch( 'core/notices' );
 
 	/* block-index/parent info */
 	const {
@@ -98,11 +99,11 @@ export function Edit({ clientId, attributes, setAttributes }) {
 		siblingBlocks,
 		currentBlock,
 	} = useSelect(
-		(select) => {
-			const editor = select('core/block-editor');
-			const currentParentId = editor.getBlockRootClientId(clientId);
-			const currentBlockData = editor.getBlock(clientId);
-			if (!currentParentId) {
+		( select ) => {
+			const editor = select( 'core/block-editor' );
+			const currentParentId = editor.getBlockRootClientId( clientId );
+			const currentBlockData = editor.getBlock( clientId );
+			if ( ! currentParentId ) {
 				return {
 					blockIndex: 0,
 					parentDirection: undefined,
@@ -112,9 +113,11 @@ export function Edit({ clientId, attributes, setAttributes }) {
 				};
 			}
 
-			const innerBlocks = editor.getBlocks(currentParentId);
-			const idx = innerBlocks.findIndex((b) => b.clientId === clientId);
-			const parent = editor.getBlock(currentParentId);
+			const innerBlocks = editor.getBlocks( currentParentId );
+			const idx = innerBlocks.findIndex(
+				( b ) => b.clientId === clientId
+			);
+			const parent = editor.getBlock( currentParentId );
 			return {
 				blockIndex: idx,
 				parentDirection: parent?.attributes?.direction,
@@ -123,7 +126,7 @@ export function Edit({ clientId, attributes, setAttributes }) {
 				currentBlock: currentBlockData,
 			};
 		},
-		[clientId]
+		[ clientId ]
 	);
 
 	const direction =
@@ -131,8 +134,8 @@ export function Edit({ clientId, attributes, setAttributes }) {
 			? parentDirection
 			: attributes.direction;
 
-	const computedFallbackPosition = useMemo(() => {
-		if (typeof direction === 'undefined') {
+	const computedFallbackPosition = useMemo( () => {
+		if ( typeof direction === 'undefined' ) {
 			return 'timeline-left';
 		}
 		const even = blockIndex % 2 === 0;
@@ -141,48 +144,51 @@ export function Edit({ clientId, attributes, setAttributes }) {
 				? 'timeline-inverted'
 				: 'timeline-left'
 			: even
-				? 'timeline-left'
-				: 'timeline-inverted';
-	}, [direction, blockIndex]);
+			? 'timeline-left'
+			: 'timeline-inverted';
+	}, [ direction, blockIndex ] );
 
-	useEffect(() => {
+	useEffect( () => {
 		const updates = {};
 		const computedPosition = onTheOneSide
 			? direction
 				? 'timeline-inverted'
 				: 'timeline-left'
 			: computedFallbackPosition;
-		if (position !== computedPosition) {
+		if ( position !== computedPosition ) {
 			updates.position = computedPosition;
 		}
 
 		// pull inline style values once
-		const parsed = parseStyleString(titleInlineStyle || '');
-		if (parsed.fontSize && !titleFontSize) {
-			const m = parsed.fontSize.match(/^([\d.]+)(px|rem|em|%)?$/);
-			updates.titleFontSize = m ? m[1] : parsed.fontSize;
+		const parsed = parseStyleString( titleInlineStyle || '' );
+		if ( parsed.fontSize && ! titleFontSize ) {
+			const m = parsed.fontSize.match( /^([\d.]+)(px|rem|em|%)?$/ );
+			updates.titleFontSize = m ? m[ 1 ] : parsed.fontSize;
 		}
-		if (parsed.fontWeight && !titleFontWeight) {
+		if ( parsed.fontWeight && ! titleFontWeight ) {
 			updates.titleFontWeight = parsed.fontWeight;
 		}
-		if (parsed.marginTop && !titleMarginTop) {
-			updates.titleMarginTop = parsed.marginTop.replace(/px$/, '');
+		if ( parsed.marginTop && ! titleMarginTop ) {
+			updates.titleMarginTop = parsed.marginTop.replace( /px$/, '' );
 		}
-		if (parsed.marginBottom && !titleMarginBottom) {
-			updates.titleMarginBottom = parsed.marginBottom.replace(/px$/, '');
+		if ( parsed.marginBottom && ! titleMarginBottom ) {
+			updates.titleMarginBottom = parsed.marginBottom.replace(
+				/px$/,
+				''
+			);
 		}
-		if (parsed.lineHeight && !titleLineHeight) {
+		if ( parsed.lineHeight && ! titleLineHeight ) {
 			updates.titleLineHeight = parsed.lineHeight;
 		}
-		if (parsed.letterSpacing && !titleLetterSpacing) {
+		if ( parsed.letterSpacing && ! titleLetterSpacing ) {
 			updates.titleLetterSpacing = parsed.letterSpacing;
 		}
-		if (parsed.color && !titleColor) {
+		if ( parsed.color && ! titleColor ) {
 			updates.titleColor = parsed.color;
 		}
 
-		if (Object.keys(updates).length) {
-			setAttributes(updates);
+		if ( Object.keys( updates ).length ) {
+			setAttributes( updates );
 		}
 	}, [
 		blockIndex,
@@ -199,51 +205,55 @@ export function Edit({ clientId, attributes, setAttributes }) {
 		titleMarginBottom,
 		titleColor,
 		setAttributes,
-	]);
+	] );
 
 	const timelineItemSiblings = useMemo(
 		() =>
-			siblingBlocks.filter((block) => block.name === 'za/timeline-item'),
-		[siblingBlocks]
+			siblingBlocks.filter(
+				( block ) => block.name === 'za/timeline-item'
+			),
+		[ siblingBlocks ]
 	);
 
 	const inheritableStyleAttributes = useMemo(
-		() => getInheritableAttributes(attributes, ITEM_ATTRIBUTE_EXCLUSIONS),
-		[attributes]
+		() => getInheritableAttributes( attributes, ITEM_ATTRIBUTE_EXCLUSIONS ),
+		[ attributes ]
 	);
 
-	const applyStylesToSiblingItems = useCallback(() => {
-		if (!parentId || timelineItemSiblings.length < 2) {
-			createErrorNotice(getNoSiblingItemsNotice(), { type: 'snackbar' });
+	const applyStylesToSiblingItems = useCallback( () => {
+		if ( ! parentId || timelineItemSiblings.length < 2 ) {
+			createErrorNotice( getNoSiblingItemsNotice(), {
+				type: 'snackbar',
+			} );
 			return;
 		}
 
 		const recipientBlocks = timelineItemSiblings.filter(
-			(block) => block.clientId !== clientId
+			( block ) => block.clientId !== clientId
 		);
 
-		if (!recipientBlocks.length) {
-			createErrorNotice(getNoRecipientItemsNotice(), {
+		if ( ! recipientBlocks.length ) {
+			createErrorNotice( getNoRecipientItemsNotice(), {
 				type: 'snackbar',
-			});
+			} );
 			return;
 		}
 
-		recipientBlocks.forEach((block) => {
-			updateBlockAttributes(block.clientId, inheritableStyleAttributes);
+		recipientBlocks.forEach( ( block ) => {
+			updateBlockAttributes( block.clientId, inheritableStyleAttributes );
 
-			collectDescendantStyleUpdates(currentBlock, block).forEach(
-				({
+			collectDescendantStyleUpdates( currentBlock, block ).forEach(
+				( {
 					clientId: descendantClientId,
 					attributes: descendantAttributes,
-				}) => {
+				} ) => {
 					updateBlockAttributes(
 						descendantClientId,
 						descendantAttributes
 					);
 				}
 			);
-		});
+		} );
 
 		createSuccessNotice(
 			sprintf(
@@ -265,59 +275,62 @@ export function Edit({ clientId, attributes, setAttributes }) {
 		currentBlock,
 		createSuccessNotice,
 		createErrorNotice,
-	]);
+	] );
 
 	const editorClassName = useMemo(
 		() =>
 			Array.from(
-				new Set([position || computedFallbackPosition, 'timeline-item'])
-			).join(' '),
-		[position, computedFallbackPosition]
+				new Set( [
+					position || computedFallbackPosition,
+					'timeline-item',
+				] )
+			).join( ' ' ),
+		[ position, computedFallbackPosition ]
 	);
 
-	const blockProps = useBlockProps({ className: editorClassName });
+	const blockProps = useBlockProps( { className: editorClassName } );
 
 	const onSelect = useCallback(
-		(media) =>
-			setAttributes({
+		( media ) =>
+			setAttributes( {
 				mediaUrl: media.url,
 				imageAlt: media.alt || '',
 				mediaId: media.id,
 				mediaType: media.type,
 				mediaMime: media.mime,
-			}),
-		[setAttributes]
+			} ),
+		[ setAttributes ]
 	);
 
 	const isVideo = useMemo(
 		() =>
 			mediaType === 'video' ||
-			(typeof mediaMime === 'string' &&
-				mediaMime.indexOf('video/') === 0) ||
-			(typeof mediaUrl === 'string' &&
-				/\.(mp4|webm|ogv|ogg)(?:[\?#]|$)/i.test(mediaUrl)),
-		[mediaType, mediaMime, mediaUrl]
+			( typeof mediaMime === 'string' &&
+				mediaMime.indexOf( 'video/' ) === 0 ) ||
+			( typeof mediaUrl === 'string' &&
+				/\.(mp4|webm|ogv|ogg)(?:[\?#]|$)/i.test( mediaUrl ) ),
+		[ mediaType, mediaMime, mediaUrl ]
 	);
 
-	const blockToolbarForMedia = useMemo(() => {
-		if (!showMedia || !mediaUrl) {
+	const blockToolbarForMedia = useMemo( () => {
+		if ( ! showMedia || ! mediaUrl ) {
 			return null;
 		}
 
 		return (
 			<BlockControls group="block">
 				<MediaReplaceFlow
-					name={__('Replace Media File', 'timeline-full-widget')}
-					onSelect={onSelect}
+					name={ __( 'Replace Media File', 'timeline-full-widget' ) }
+					onSelect={ onSelect }
 					accept="image/*,video/*"
-					allowedTypes={['image', 'video']}
-					mediaId={mediaId}
-					mediaURL={mediaUrl}
+					allowedTypes={ [ 'image', 'video' ] }
+					mediaId={ mediaId }
+					mediaURL={ mediaUrl }
 				/>
 
 				<ToolbarButton
-					onClick={() =>
-						setAttributes({
+					onClick={ () =>
+						setAttributes( {
 							mediaId: undefined,
 							mediaUrl: undefined,
 							imageAlt: '',
@@ -328,33 +341,35 @@ export function Edit({ clientId, attributes, setAttributes }) {
 							mediaLinkTarget: '',
 							mediaLinkRel: '',
 							isMediaWrapToLink: false,
-						})
+						} )
 					}
-					isDisabled={!mediaUrl}
+					isDisabled={ ! mediaUrl }
 					icon="trash"
-					label={__('Remove Media File', 'timeline-full-widget')}
+					label={ __( 'Remove Media File', 'timeline-full-widget' ) }
 				/>
 
 				<ToolbarButton
-					icon={linkIcon}
-					label={__('Link for media', 'timeline-full-widget')}
-					onClick={() => setIsMediaLinkPickerOpen((prev) => !prev)}
-					isPressed={isMediaLinkPickerOpen}
+					icon={ linkIcon }
+					label={ __( 'Media link', 'timeline-full-widget' ) }
+					onClick={ () =>
+						setIsMediaLinkPickerOpen( ( prev ) => ! prev )
+					}
+					isPressed={ isMediaLinkPickerOpen }
 				/>
 
 				<ToolbarButton
-					icon={unlinkIcon}
-					label={__('Remove media link', 'timeline-full-widget')}
-					onClick={() => {
-						setAttributes({
+					icon={ unlinkIcon }
+					label={ __( 'Remove media link', 'timeline-full-widget' ) }
+					onClick={ () => {
+						setAttributes( {
 							mediaLinkUrl: '',
 							mediaLinkTarget: '',
 							mediaLinkRel: '',
 							isMediaWrapToLink: false,
-						});
-						setIsMediaLinkPickerOpen(false);
-					}}
-					isDisabled={!mediaLinkUrl}
+						} );
+						setIsMediaLinkPickerOpen( false );
+					} }
+					isDisabled={ ! mediaLinkUrl }
 				/>
 			</BlockControls>
 		);
@@ -367,24 +382,24 @@ export function Edit({ clientId, attributes, setAttributes }) {
 		mediaLinkUrl,
 		isMediaLinkPickerOpen,
 		setIsMediaLinkPickerOpen,
-	]);
+	] );
 
-	const mediaLinkPopover = useMemo(() => {
-		if (!isMediaLinkPickerOpen || !showMedia || !mediaUrl) {
+	const mediaLinkPopover = useMemo( () => {
+		if ( ! isMediaLinkPickerOpen || ! showMedia || ! mediaUrl ) {
 			return null;
 		}
 
 		return (
 			<Popover
 				position="bottom center"
-				onClose={() => setIsMediaLinkPickerOpen(false)}
+				onClose={ () => setIsMediaLinkPickerOpen( false ) }
 			>
 				<LinkControl
-					value={{
+					value={ {
 						url: mediaLinkUrl,
 						opensInNewTab: mediaLinkTarget === '_blank',
-					}}
-					settings={[
+					} }
+					settings={ [
 						{
 							id: 'opensInNewTab',
 							title: __(
@@ -392,8 +407,8 @@ export function Edit({ clientId, attributes, setAttributes }) {
 								'timeline-full-widget'
 							),
 						},
-					]}
-					onChange={(newVal = {}) => {
+					] }
+					onChange={ ( newVal = {} ) => {
 						const nextUrl = newVal.url || '';
 						const nextTarget = newVal.opensInNewTab ? '_blank' : '';
 						const nextAttrs = getSafeLinkAttributes(
@@ -401,13 +416,13 @@ export function Edit({ clientId, attributes, setAttributes }) {
 							'',
 							nextTarget
 						);
-						setAttributes({
+						setAttributes( {
 							mediaLinkUrl: nextAttrs.href || '',
 							mediaLinkTarget: nextAttrs.target || '',
 							mediaLinkRel: nextAttrs.rel || '',
-							isMediaWrapToLink: !!nextAttrs.href,
-						});
-					}}
+							isMediaWrapToLink: !! nextAttrs.href,
+						} );
+					} }
 				/>
 			</Popover>
 		);
@@ -418,92 +433,101 @@ export function Edit({ clientId, attributes, setAttributes }) {
 		mediaLinkUrl,
 		mediaLinkTarget,
 		setAttributes,
-	]);
+	] );
 
-	const blockToolbarForStyleInheritance = useMemo(() => {
-		if (timelineItemSiblings.length < 2) {
+	const blockToolbarForStyleInheritance = useMemo( () => {
+		if ( timelineItemSiblings.length < 2 ) {
 			return null;
 		}
 		return (
 			<BlockControls group="block">
 				<ToolbarButton
-					label={__(
+					label={ __(
 						'Apply item styles to other items',
 						'timeline-full-widget'
-					)}
+					) }
 					icon="admin-customizer"
-					onClick={applyStylesToSiblingItems}
+					onClick={ applyStylesToSiblingItems }
 				/>
 			</BlockControls>
 		);
-	}, [applyStylesToSiblingItems, timelineItemSiblings.length]);
+	}, [ applyStylesToSiblingItems, timelineItemSiblings.length ] );
 
 	const selectedBlockClientId = useSelect(
-		(s) => s('core/block-editor').getSelectedBlockClientId(),
+		( s ) => s( 'core/block-editor' ).getSelectedBlockClientId(),
 		[]
 	);
 
 	const mediaLinkProps = useMemo(
 		() =>
-			getSafeLinkAttributes(mediaLinkUrl, mediaLinkRel, mediaLinkTarget),
-		[mediaLinkUrl, mediaLinkRel, mediaLinkTarget]
+			getSafeLinkAttributes(
+				mediaLinkUrl,
+				mediaLinkRel,
+				mediaLinkTarget
+			),
+		[ mediaLinkUrl, mediaLinkRel, mediaLinkTarget ]
 	);
 
-	const mediaPreviewNode = useMemo(() => {
-		if (!showMedia || !mediaUrl) {
+	const mediaPreviewNode = useMemo( () => {
+		if ( ! showMedia || ! mediaUrl ) {
 			return null;
 		}
 
 		const mediaElement = (
 			<div
-				className={`timeline_pic ${isBlobURL(mediaUrl) ? 'image-loading' : 'loaded'}`}
+				className={ `timeline_pic ${
+					isBlobURL( mediaUrl ) ? 'image-loading' : 'loaded'
+				}` }
 			>
-				{isVideo ? (
+				{ isVideo ? (
 					<video
-						id={mediaId ? `video_${mediaId}` : undefined}
+						id={ mediaId ? `video_${ mediaId }` : undefined }
 						autoPlay
 						muted
 						loop
 						playsInline
 						preload="metadata"
-						poster={videoPoster || undefined}
-						style={{
+						poster={ videoPoster || undefined }
+						style={ {
 							width: mediaWidth || '100%',
 							height: 'auto',
-						}}
+						} }
 					>
-						<source src={mediaUrl} type={mediaMime || undefined} />
-						{__(
+						<source
+							src={ mediaUrl }
+							type={ mediaMime || undefined }
+						/>
+						{ __(
 							'Your browser does not support the video tag.',
 							'timeline-full-widget'
-						)}
+						) }
 					</video>
 				) : (
 					<img
-						id={mediaId ? `img_${mediaId}` : undefined}
-						src={mediaUrl}
-						alt={imageAlt || ''}
-						style={{
+						id={ mediaId ? `img_${ mediaId }` : undefined }
+						src={ mediaUrl }
+						alt={ imageAlt || '' }
+						style={ {
 							width: mediaWidth || undefined,
 							height: 'auto',
-						}}
+						} }
 					/>
-				)}
-				{isBlobURL(mediaUrl) && <Spinner />}
+				) }
+				{ isBlobURL( mediaUrl ) && <Spinner /> }
 			</div>
 		);
 
-		if (isMediaWrapToLink && mediaLinkProps.href) {
+		if ( isMediaWrapToLink && mediaLinkProps.href ) {
 			return (
 				<div
 					className="timeline-media-link"
 					role="link"
-					aria-label={__(
+					aria-label={ __(
 						'Linked media preview',
 						'timeline-full-widget'
-					)}
+					) }
 				>
-					{mediaElement}
+					{ mediaElement }
 				</div>
 			);
 		}
@@ -520,52 +544,52 @@ export function Edit({ clientId, attributes, setAttributes }) {
 		imageAlt,
 		isMediaWrapToLink,
 		mediaLinkProps,
-	]);
+	] );
 
 	const contentClasses = [
 		'tl-content',
 		horizontalContentLayout ? 'tl-content-horizontal' : '',
 		reverseMediaContent ? 'tl-reverse' : '',
 	]
-		.filter(Boolean)
-		.join(' ');
+		.filter( Boolean )
+		.join( ' ' );
 
 	return (
 		<>
 			<InspectorControls>
 				<PanelBody
-					title={__('Block Settings', 'timeline-full-widget')}
-					initialOpen={false}
+					title={ __( 'Block Settings', 'timeline-full-widget' ) }
+					initialOpen={ false }
 				>
 					<ToggleControl
-						label={__(
-							'Horizontal content layout',
+						label={ __(
+							'Use horizontal content layout',
 							'timeline-full-widget'
-						)}
-						checked={!!horizontalContentLayout}
-						onChange={(value) =>
-							setAttributes({
+						) }
+						checked={ !! horizontalContentLayout }
+						onChange={ ( value ) =>
+							setAttributes( {
 								horizontalContentLayout: value,
-							})
+							} )
 						}
 					/>
 
 					<ToggleControl
-						label={__(
-							'Reverse media and content',
+						label={ __(
+							'Reverse media and content order',
 							'timeline-full-widget'
-						)}
-						checked={!!reverseMediaContent}
-						onChange={(value) =>
-							setAttributes({
+						) }
+						checked={ !! reverseMediaContent }
+						onChange={ ( value ) =>
+							setAttributes( {
 								reverseMediaContent: value,
-							})
+							} )
 						}
 					/>
 					<SelectControl
-						label={__('Title Tag', 'timeline-full-widget')}
-						value={titleTag}
-						options={[
+						label={ __( 'Title Tag', 'timeline-full-widget' ) }
+						value={ titleTag }
+						options={ [
 							{ label: 'H1', value: 'h1' },
 							{ label: 'H2', value: 'h2' },
 							{ label: 'H3', value: 'h3' },
@@ -576,19 +600,21 @@ export function Edit({ clientId, attributes, setAttributes }) {
 							{ label: 'Div', value: 'div' },
 							{ label: 'Span', value: 'span' },
 							{ label: 'Link (a)', value: 'a' },
-						]}
-						onChange={(val) => setAttributes({ titleTag: val })}
-						__next40pxDefaultSize={true}
-						__nextHasNoMarginBottom={true}
+						] }
+						onChange={ ( val ) =>
+							setAttributes( { titleTag: val } )
+						}
+						__next40pxDefaultSize={ true }
+						__nextHasNoMarginBottom={ true }
 					/>
 
 					<PanelColorSettings
-						title={__('Color settings', 'timeline-full-widget')}
-						colorSettings={[
+						title={ __( 'Color settings', 'timeline-full-widget' ) }
+						colorSettings={ [
 							{
 								value: titleColor,
-								onChange: (color) =>
-									setAttributes({ titleColor: color }),
+								onChange: ( color ) =>
+									setAttributes( { titleColor: color } ),
 								label: __(
 									'Title color',
 									'timeline-full-widget'
@@ -596,43 +622,45 @@ export function Edit({ clientId, attributes, setAttributes }) {
 							},
 							{
 								value: descriptionColor,
-								onChange: (color) =>
-									setAttributes({ descriptionColor: color }),
+								onChange: ( color ) =>
+									setAttributes( {
+										descriptionColor: color,
+									} ),
 								label: __(
-									'Description color',
+									'Content color',
 									'timeline-full-widget'
 								),
 							},
 							{
 								value: itemBackgroundColor,
-								onChange: (color) =>
-									setAttributes({
+								onChange: ( color ) =>
+									setAttributes( {
 										itemBackgroundColor: color,
-									}),
+									} ),
 								label: __(
 									'Item background color',
 									'timeline-full-widget'
 								),
 							},
-						]}
+						] }
 					/>
 				</PanelBody>
 				<MediaSettingsPanel
-					showMedia={showMedia}
-					mediaUrl={mediaUrl}
-					mediaMime={mediaMime}
-					videoPoster={videoPoster}
-					imageAlt={imageAlt}
-					mediaWidth={mediaWidth}
-					setAttributes={setAttributes}
-					markerUnique={markerUnique}
-					markerAlt={markerAlt}
-					markerUrl={markerUrl}
-					markerId={markerId}
+					showMedia={ showMedia }
+					mediaUrl={ mediaUrl }
+					mediaMime={ mediaMime }
+					videoPoster={ videoPoster }
+					imageAlt={ imageAlt }
+					mediaWidth={ mediaWidth }
+					setAttributes={ setAttributes }
+					markerUnique={ markerUnique }
+					markerAlt={ markerAlt }
+					markerUrl={ markerUrl }
+					markerId={ markerId }
 				/>
 
 				<TitleTypographyPanel
-					attrs={{
+					attrs={ {
 						titleFontSize,
 						titleFontUnit,
 						titleFontWeight,
@@ -641,113 +669,116 @@ export function Edit({ clientId, attributes, setAttributes }) {
 						titleLineHeight,
 						titleLetterSpacing,
 						titleFontFamily,
-					}}
-					setAttributes={setAttributes}
+					} }
+					setAttributes={ setAttributes }
 				/>
 			</InspectorControls>
 
-			{blockToolbarForMedia}
-			{mediaLinkPopover}
-			{blockToolbarForStyleInheritance}
+			{ blockToolbarForMedia }
+			{ mediaLinkPopover }
+			{ blockToolbarForStyleInheritance }
 
-			{activeField === 'sideText' &&
+			{ activeField === 'sideText' &&
 				selectedBlockClientId === clientId && (
 					<BlockControls group="block">
 						<AlignmentToolbar
-							value={sideTextAlign}
-							onChange={(newAlign) =>
-								setAttributes({
+							value={ sideTextAlign }
+							onChange={ ( newAlign ) =>
+								setAttributes( {
 									sideTextAlign: newAlign || 'left',
-								})
+								} )
 							}
 						/>
 					</BlockControls>
-				)}
+				) }
 
-			<li {...blockProps}>
+			<li { ...blockProps }>
 				<div className="timeline-side">
-					{showOtherSide && (
+					{ showOtherSide && (
 						<RichText
 							tagName="p"
-							className={`t-text-align-${sideTextAlign}`}
-							value={otherSiteTitle}
-							onChange={(val) =>
-								setAttributes({ otherSiteTitle: val })
+							className={ `t-text-align-${ sideTextAlign }` }
+							value={ otherSiteTitle }
+							onChange={ ( val ) =>
+								setAttributes( { otherSiteTitle: val } )
 							}
-							onFocus={() => setActiveField('sideText')}
-							placeholder={__(
-								'Add other side text',
+							onFocus={ () => setActiveField( 'sideText' ) }
+							placeholder={ __(
+								'Add side content',
 								'timeline-full-widget'
-							)}
+							) }
 						/>
-					)}
+					) }
 				</div>
 
-				{showMarker && (
+				{ showMarker && (
 					<div
 						className="tl-mark"
-						id={mediaId ? `marker_${markerId}` : undefined}
+						id={ mediaId ? `marker_${ markerId }` : undefined }
 					>
-						{markerUnique && markerUrl && (
-							<img src={markerUrl} alt={markerAlt || 'marker'} />
-						)}
+						{ markerUnique && markerUrl && (
+							<img
+								src={ markerUrl }
+								alt={ markerAlt || 'marker' }
+							/>
+						) }
 					</div>
-				)}
+				) }
 
 				<div
 					className="timeline-panel"
-					{...(itemBackgroundColor
+					{ ...( itemBackgroundColor
 						? { style: { backgroundColor: itemBackgroundColor } }
-						: {})}
+						: {} ) }
 				>
-					<div className={contentClasses}>
-						{showMedia && mediaUrl
+					<div className={ contentClasses }>
+						{ showMedia && mediaUrl
 							? mediaPreviewNode
 							: showMedia && (
 									<MediaPlaceholder
-										onSelect={onSelect}
+										onSelect={ onSelect }
 										accept="image/*,video/*"
-										allowedTypes={['image', 'video']}
+										allowedTypes={ [ 'image', 'video' ] }
 									/>
-								)}
+							  ) }
 
 						<div className="tl-desc">
 							<Title
-								clientId={clientId}
-								title={title}
-								titleTag={titleTag}
-								titleAlign={titleAlign}
-								titleInlineStyle={titleInlineStyle}
-								titleFontSize={titleFontSize}
-								titleFontWeight={titleFontWeight}
-								titleMarginTop={titleMarginTop}
-								titleMarginBottom={titleMarginBottom}
-								titleLineHeight={titleLineHeight}
-								titleLetterSpacing={titleLetterSpacing}
-								titleColor={titleColor}
-								titleFontFamily={titleFontFamily}
-								linkUrl={linkUrl}
-								linkTarget={linkTarget}
-								rel={rel}
-								setAttributes={setAttributes}
-								activeField={activeField}
-								setActiveField={setActiveField}
+								clientId={ clientId }
+								title={ title }
+								titleTag={ titleTag }
+								titleAlign={ titleAlign }
+								titleInlineStyle={ titleInlineStyle }
+								titleFontSize={ titleFontSize }
+								titleFontWeight={ titleFontWeight }
+								titleMarginTop={ titleMarginTop }
+								titleMarginBottom={ titleMarginBottom }
+								titleLineHeight={ titleLineHeight }
+								titleLetterSpacing={ titleLetterSpacing }
+								titleColor={ titleColor }
+								titleFontFamily={ titleFontFamily }
+								linkUrl={ linkUrl }
+								linkTarget={ linkTarget }
+								rel={ rel }
+								setAttributes={ setAttributes }
+								activeField={ activeField }
+								setActiveField={ setActiveField }
 							/>
 
 							<div
 								className="tl-desc-short"
-								{...(descriptionColor
+								{ ...( descriptionColor
 									? { style: { color: descriptionColor } }
-									: {})}
+									: {} ) }
 							>
 								<InnerBlocks
-									allowedBlocks={[
+									allowedBlocks={ [
 										'core/paragraph',
 										'core/heading',
 										'core/list',
-									]}
+									] }
 								/>
-								{/*<InnerBlocks template={[[\'core/freeform\']]} />*/}
+								{ /*<InnerBlocks template={[[\'core/freeform\']]} />*/ }
 							</div>
 						</div>
 					</div>

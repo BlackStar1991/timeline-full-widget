@@ -1,5 +1,5 @@
 {
-	"extends": ["@wordpress/stylelint-config/scss"],
+	"extends": [ "@wordpress/stylelint-config/scss" ],
 	"rules": {
 		"at-rule-no-unknown": null,
 		"selector-class-pattern": null,

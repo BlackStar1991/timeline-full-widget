@@ -23,11 +23,11 @@ export function getSafeLinkAttributes(
 ) {
 	const attrs = {};
 
-	if (url) {
+	if ( url ) {
 		attrs.href = url;
 	}
 
-	if (target) {
+	if ( target ) {
 		attrs.target = target;
 	}
 
@@ -37,19 +37,19 @@ export function getSafeLinkAttributes(
 			: '';
 
 	let baseOrigin = siteOrigin;
-	if (!baseOrigin && typeof window !== 'undefined' && window.location) {
+	if ( ! baseOrigin && typeof window !== 'undefined' && window.location ) {
 		baseOrigin = window.location.origin;
 	}
 
 	let isExternal = false;
-	if (url) {
+	if ( url ) {
 		try {
-			const parsed = new URL(url, baseOrigin || undefined);
+			const parsed = new URL( url, baseOrigin || undefined );
 			const proto = parsed.protocol ? parsed.protocol.toLowerCase() : '';
-			if (proto === 'http:' || proto === 'https:') {
-				if (baseOrigin) {
+			if ( proto === 'http:' || proto === 'https:' ) {
+				if ( baseOrigin ) {
 					isExternal = parsed.origin !== baseOrigin;
-				} else if (typeof window !== 'undefined' && window.location) {
+				} else if ( typeof window !== 'undefined' && window.location ) {
 					isExternal = parsed.origin !== window.location.origin;
 				} else {
 					isExternal = true;
@@ -57,32 +57,32 @@ export function getSafeLinkAttributes(
 			} else {
 				isExternal = false;
 			}
-		} catch (e) {
+		} catch ( e ) {
 			isExternal = false;
 		}
 	}
 
 	const tokens = new Set();
 
-	if (userRel) {
-		userRel.split(/\s+/).forEach((t) => t && tokens.add(t));
+	if ( userRel ) {
+		userRel.split( /\s+/ ).forEach( ( t ) => t && tokens.add( t ) );
 	}
 
-	if (isExternal) {
-		if (addNoFollowForExternal) {
-			tokens.add('nofollow');
+	if ( isExternal ) {
+		if ( addNoFollowForExternal ) {
+			tokens.add( 'nofollow' );
 		}
-		if (target === '_blank') {
-			tokens.add('noopener');
-			tokens.add('noreferrer');
+		if ( target === '_blank' ) {
+			tokens.add( 'noopener' );
+			tokens.add( 'noreferrer' );
 		}
-	} else if (target === '_blank') {
-		tokens.add('noopener');
-		tokens.add('noreferrer');
+	} else if ( target === '_blank' ) {
+		tokens.add( 'noopener' );
+		tokens.add( 'noreferrer' );
 	}
 
-	if (tokens.size) {
-		attrs.rel = Array.from(tokens).join(' ');
+	if ( tokens.size ) {
+		attrs.rel = Array.from( tokens ).join( ' ' );
 	}
 
 	return attrs;
@@ -102,37 +102,39 @@ export function getSafeLinkAttributes(
  * @return {Object}
  */
 
-export function parseStyleString(styleString) {
-	if (!styleString || typeof styleString !== 'string') {
+export function parseStyleString( styleString ) {
+	if ( ! styleString || typeof styleString !== 'string' ) {
 		return {};
 	}
-	return styleString.split(';').reduce((acc, pair) => {
+	return styleString.split( ';' ).reduce( ( acc, pair ) => {
 		// trim each pair first
-		const trimmed = String(pair).trim();
-		if (!trimmed) {
+		const trimmed = String( pair ).trim();
+		if ( ! trimmed ) {
 			return acc;
 		}
 
 		// split on FIRST ':' to allow values containing ':' (e.g. url(...))
-		const idx = trimmed.indexOf(':');
-		if (idx === -1) {
+		const idx = trimmed.indexOf( ':' );
+		if ( idx === -1 ) {
 			return acc;
 		}
 
-		const rawProp = trimmed.slice(0, idx).trim();
-		const rawVal = trimmed.slice(idx + 1).trim();
-		if (!rawProp || !rawVal) {
+		const rawProp = trimmed.slice( 0, idx ).trim();
+		const rawVal = trimmed.slice( idx + 1 ).trim();
+		if ( ! rawProp || ! rawVal ) {
 			return acc;
 		}
 
 		// convert CSS property-name to JS camelCase key
-		const jsKey = rawProp.replace(/-([a-z])/g, (m, p1) => p1.toUpperCase());
-		if (jsKey) {
-			acc[jsKey] = rawVal;
+		const jsKey = rawProp.replace( /-([a-z])/g, ( m, p1 ) =>
+			p1.toUpperCase()
+		);
+		if ( jsKey ) {
+			acc[ jsKey ] = rawVal;
 		}
 
 		return acc;
-	}, {});
+	}, {} );
 }
 
 /**
@@ -140,19 +142,19 @@ export function parseStyleString(styleString) {
  * Separate attributes override style-string values.
  * @param attrs
  */
-export function buildStyleObject(attrs = {}) {
+export function buildStyleObject( attrs = {} ) {
 	// attrs: { titleInlineStyle, titleFontSize, titleFontWeight, titleMarginTop, titleMarginBottom, titleColor }
-	const styleFromAttr = parseStyleString(attrs.titleInlineStyle);
+	const styleFromAttr = parseStyleString( attrs.titleInlineStyle );
 	const result = { ...styleFromAttr }; // base from stored style-str
 
 	// explicitly override if we have separate attributes (so newer UI wins)
-	if (attrs.titleColor) {
+	if ( attrs.titleColor ) {
 		result.color = attrs.titleColor;
 	}
 
-	if (attrs.titleFontSize) {
-		const size = String(attrs.titleFontSize);
-		result.fontSize = /px|rem|em|%/.test(size) ? size : `${size}px`;
+	if ( attrs.titleFontSize ) {
+		const size = String( attrs.titleFontSize );
+		result.fontSize = /px|rem|em|%/.test( size ) ? size : `${ size }px`;
 	}
 
 	// Font weight handling: allow 'normal'/'bold' or numeric '400'..'900'
@@ -162,17 +164,17 @@ export function buildStyleObject(attrs = {}) {
 		attrs.titleFontWeight !== ''
 	) {
 		// ensure it's a string (CSS accepts '700' or 'bold')
-		result.fontWeight = String(attrs.titleFontWeight);
-	} else if (styleFromAttr.fontWeight) {
+		result.fontWeight = String( attrs.titleFontWeight );
+	} else if ( styleFromAttr.fontWeight ) {
 		// keep parsed inline font-weight if separate attr not set
 		result.fontWeight = styleFromAttr.fontWeight;
 	}
 
-	if (attrs.titleFontFamily) {
-		const tf = String(attrs.titleFontFamily).trim();
-		const isSlug = /^[a-z0-9\-_]+$/i.test(tf);
-		if (isSlug) {
-			result.fontFamily = `var(--wp--preset--font-family--${tf}, sans-serif)`;
+	if ( attrs.titleFontFamily ) {
+		const tf = String( attrs.titleFontFamily ).trim();
+		const isSlug = /^[a-z0-9\-_]+$/i.test( tf );
+		if ( isSlug ) {
+			result.fontFamily = `var(--wp--preset--font-family--${ tf }, sans-serif)`;
 		} else {
 			result.fontFamily = tf;
 		}
@@ -181,81 +183,83 @@ export function buildStyleObject(attrs = {}) {
 	if (
 		attrs.titleMarginTop !== undefined &&
 		attrs.titleMarginTop !== null &&
-		String(attrs.titleMarginTop).trim() !== ''
+		String( attrs.titleMarginTop ).trim() !== ''
 	) {
-		const raw = String(attrs.titleMarginTop).trim();
-		result.marginTop = /^(?:-?\d+(?:\.\d+)?(?:px|rem|em|%)|0)$/.test(raw)
+		const raw = String( attrs.titleMarginTop ).trim();
+		result.marginTop = /^(?:-?\d+(?:\.\d+)?(?:px|rem|em|%)|0)$/.test( raw )
 			? raw
-			: `${raw}px`;
+			: `${ raw }px`;
 	}
 
 	if (
 		attrs.titleMarginBottom !== undefined &&
 		attrs.titleMarginBottom !== null &&
-		String(attrs.titleMarginBottom).trim() !== ''
+		String( attrs.titleMarginBottom ).trim() !== ''
 	) {
-		const raw = String(attrs.titleMarginBottom).trim();
-		result.marginBottom = /^(?:-?\d+(?:\.\d+)?(?:px|rem|em|%)|0)$/.test(raw)
+		const raw = String( attrs.titleMarginBottom ).trim();
+		result.marginBottom = /^(?:-?\d+(?:\.\d+)?(?:px|rem|em|%)|0)$/.test(
+			raw
+		)
 			? raw
-			: `${raw}px`;
+			: `${ raw }px`;
 	}
 
 	if (
 		attrs.titleLineHeight !== undefined &&
 		attrs.titleLineHeight !== null &&
-		String(attrs.titleLineHeight).trim() !== ''
+		String( attrs.titleLineHeight ).trim() !== ''
 	) {
-		const raw = String(attrs.titleLineHeight).trim();
+		const raw = String( attrs.titleLineHeight ).trim();
 		result.lineHeight = raw;
-	} else if (styleFromAttr.lineHeight) {
-		result.lineHeight = String(styleFromAttr.lineHeight).trim();
+	} else if ( styleFromAttr.lineHeight ) {
+		result.lineHeight = String( styleFromAttr.lineHeight ).trim();
 	}
 
 	if (
 		attrs.titleLetterSpacing !== undefined &&
 		attrs.titleLetterSpacing !== null &&
-		String(attrs.titleLetterSpacing).trim() !== ''
+		String( attrs.titleLetterSpacing ).trim() !== ''
 	) {
-		result.letterSpacing = String(attrs.titleLetterSpacing).trim();
-	} else if (styleFromAttr.letterSpacing) {
-		result.letterSpacing = String(styleFromAttr.letterSpacing).trim();
+		result.letterSpacing = String( attrs.titleLetterSpacing ).trim();
+	} else if ( styleFromAttr.letterSpacing ) {
+		result.letterSpacing = String( styleFromAttr.letterSpacing ).trim();
 	}
 
 	return result;
 }
 
-export function convertMarginAttrToStyle(style = {}) {
+export function convertMarginAttrToStyle( style = {} ) {
 	const result = {};
-	if (!style) {
+	if ( ! style ) {
 		return result;
 	}
 
 	const spacing = style.spacing ?? style;
-	const normalize = (v) => {
-		if (v === null) {
+	const normalize = ( v ) => {
+		if ( v === null ) {
 			return null;
 		}
 
-		if (typeof v === 'number') {
-			return `${v}px`;
+		if ( typeof v === 'number' ) {
+			return `${ v }px`;
 		}
 
-		if (typeof v === 'string') {
-			if (v === '0' || v === '0px' || v === '0rem') {
+		if ( typeof v === 'string' ) {
+			if ( v === '0' || v === '0px' || v === '0rem' ) {
 				return '0';
 			}
-			if (/^(?:-?\d+(\.\d+)?(px|rem|em|%)|var\(|--)/.test(v)) {
+			if ( /^(?:-?\d+(\.\d+)?(px|rem|em|%)|var\(|--)/.test( v ) ) {
 				return v;
 			}
-			const wpVarMatch = v.match(/^var:preset\|([^\|]+)\|(.+)$/);
-			if (wpVarMatch) {
-				const group = wpVarMatch[1];
-				const name = wpVarMatch[2];
-				return `var(--wp--preset--${group}--${name})`;
+			const wpVarMatch = v.match( /^var:preset\|([^\|]+)\|(.+)$/ );
+			if ( wpVarMatch ) {
+				const group = wpVarMatch[ 1 ];
+				const name = wpVarMatch[ 2 ];
+				return `var(--wp--preset--${ group }--${ name })`;
 			}
 
-			if (/^-?\d+(\.\d+)?$/.test(v)) {
-				return `${v}px`;
+			if ( /^-?\d+(\.\d+)?$/.test( v ) ) {
+				return `${ v }px`;
 			}
 			return v;
 		}
@@ -265,75 +269,77 @@ export function convertMarginAttrToStyle(style = {}) {
 	if (
 		spacing &&
 		typeof spacing.margin === 'object' &&
-		!Array.isArray(spacing.margin)
+		! Array.isArray( spacing.margin )
 	) {
 		const m = spacing.margin;
-		if (m.top !== null) {
-			result.marginTop = normalize(m.top);
+		if ( m.top !== null ) {
+			result.marginTop = normalize( m.top );
 		}
-		if (m.right !== null) {
-			result.marginRight = normalize(m.right);
+		if ( m.right !== null ) {
+			result.marginRight = normalize( m.right );
 		}
-		if (m.bottom !== null) {
-			result.marginBottom = normalize(m.bottom);
+		if ( m.bottom !== null ) {
+			result.marginBottom = normalize( m.bottom );
 		}
-		if (m.left !== null) {
-			result.marginLeft = normalize(m.left);
+		if ( m.left !== null ) {
+			result.marginLeft = normalize( m.left );
 		}
 
-		if (m.vertical !== null) {
-			const v = normalize(m.vertical);
-			if (v) {
+		if ( m.vertical !== null ) {
+			const v = normalize( m.vertical );
+			if ( v ) {
 				result.marginTop = result.marginTop ?? v;
 				result.marginBottom = result.marginBottom ?? v;
 			}
 		}
-		if (m.horizontal !== null) {
-			const h = normalize(m.horizontal);
-			if (h) {
+		if ( m.horizontal !== null ) {
+			const h = normalize( m.horizontal );
+			if ( h ) {
 				result.marginLeft = result.marginLeft ?? h;
 				result.marginRight = result.marginRight ?? h;
 			}
 		}
 	}
 
-	if (spacing && Array.isArray(spacing.margin)) {
-		const [t, r, b, l] = spacing.margin;
-		if (t !== null) {
-			result.marginTop = normalize(t);
+	if ( spacing && Array.isArray( spacing.margin ) ) {
+		const [ t, r, b, l ] = spacing.margin;
+		if ( t !== null ) {
+			result.marginTop = normalize( t );
 		}
-		if (r !== null) {
-			result.marginRight = normalize(r);
+		if ( r !== null ) {
+			result.marginRight = normalize( r );
 		}
-		if (b !== null) {
-			result.marginBottom = normalize(b);
+		if ( b !== null ) {
+			result.marginBottom = normalize( b );
 		}
-		if (l !== null) {
-			result.marginLeft = normalize(l);
+		if ( l !== null ) {
+			result.marginLeft = normalize( l );
 		}
 	}
 
-	['marginTop', 'marginRight', 'marginBottom', 'marginLeft'].forEach((k) => {
-		const v = spacing?.[k] ?? style?.[k];
-		if (v !== null) {
-			result[k] = normalize(v);
+	[ 'marginTop', 'marginRight', 'marginBottom', 'marginLeft' ].forEach(
+		( k ) => {
+			const v = spacing?.[ k ] ?? style?.[ k ];
+			if ( v !== null ) {
+				result[ k ] = normalize( v );
+			}
 		}
-	});
+	);
 
-	if (!Object.keys(result).length) {
-		if (typeof spacing === 'string' || typeof spacing === 'number') {
-			const v = normalize(spacing);
-			if (v !== null) {
+	if ( ! Object.keys( result ).length ) {
+		if ( typeof spacing === 'string' || typeof spacing === 'number' ) {
+			const v = normalize( spacing );
+			if ( v !== null ) {
 				result.margin = v;
 			}
 		}
 	}
 
-	Object.keys(result).forEach((k) => {
-		if (result[k] === null) {
-			delete result[k];
+	Object.keys( result ).forEach( ( k ) => {
+		if ( result[ k ] === null ) {
+			delete result[ k ];
 		}
-	});
+	} );
 
 	return result;
 }

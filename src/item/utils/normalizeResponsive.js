@@ -1,4 +1,4 @@
-export function normalizeResponsive(value, defaults = {}) {
+export function normalizeResponsive( value, defaults = {} ) {
 	return {
 		desktop: value?.desktop ?? defaults.desktop ?? null,
 		tablet: value?.tablet ?? defaults.tablet ?? null,
@@ -6,16 +6,16 @@ export function normalizeResponsive(value, defaults = {}) {
 	};
 }
 
-export function resolveResponsiveValue(responsive, device) {
-	if (!responsive) {
+export function resolveResponsiveValue( responsive, device ) {
+	if ( ! responsive ) {
 		return null;
 	}
 
-	if (device === 'mobile' && responsive.mobile !== null) {
+	if ( device === 'mobile' && responsive.mobile !== null ) {
 		return responsive.mobile;
 	}
 
-	if (device === 'tablet' && responsive.tablet !== null) {
+	if ( device === 'tablet' && responsive.tablet !== null ) {
 		return responsive.tablet;
 	}
 

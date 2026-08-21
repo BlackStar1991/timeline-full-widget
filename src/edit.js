@@ -20,7 +20,7 @@ import {
 	initAllWidgets,
 } from '../assets/js/core/animation.js';
 
-export default function Edit({ attributes, setAttributes, clientId }) {
+export default function Edit( { attributes, setAttributes, clientId } ) {
 	const {
 		showMedia = true,
 		direction = false,
@@ -43,27 +43,27 @@ export default function Edit({ attributes, setAttributes, clientId }) {
 	const hasAnimatedMarkers =
 		showMarker && animationTimeline && animationMarker;
 
-	const wrapperRef = useRef(null);
-	const { updateBlockAttributes } = useDispatch('core/block-editor');
+	const wrapperRef = useRef( null );
+	const { updateBlockAttributes } = useDispatch( 'core/block-editor' );
 
 	const innerBlocks = useSelect(
-		(select) => select('core/block-editor').getBlocks(clientId) || [],
-		[clientId]
+		( select ) => select( 'core/block-editor' ).getBlocks( clientId ) || [],
+		[ clientId ]
 	);
 
 	const syncToChildren = useCallback(
-		(attrs = {}) => {
-			if (!innerBlocks.length) {
+		( attrs = {} ) => {
+			if ( ! innerBlocks.length ) {
 				return;
 			}
 
 			const parentDirection = attrs.direction ?? direction;
 			const parentOneSide = attrs.onTheOneSide ?? onTheOneSide;
 
-			innerBlocks.forEach((block, index) => {
+			innerBlocks.forEach( ( block, index ) => {
 				const updates = { ...attrs };
 
-				if (parentOneSide) {
+				if ( parentOneSide ) {
 					updates.position = parentDirection
 						? 'timeline-inverted'
 						: 'timeline-left';
@@ -74,24 +74,24 @@ export default function Edit({ attributes, setAttributes, clientId }) {
 							? 'timeline-inverted'
 							: 'timeline-left'
 						: isEven
-							? 'timeline-left'
-							: 'timeline-inverted';
+						? 'timeline-left'
+						: 'timeline-inverted';
 				}
 
-				const needsUpdate = Object.keys(updates).some(
-					(key) => block.attributes?.[key] !== updates[key]
+				const needsUpdate = Object.keys( updates ).some(
+					( key ) => block.attributes?.[ key ] !== updates[ key ]
 				);
 
-				if (needsUpdate) {
-					updateBlockAttributes(block.clientId, updates);
+				if ( needsUpdate ) {
+					updateBlockAttributes( block.clientId, updates );
 				}
-			});
+			} );
 		},
-		[innerBlocks, updateBlockAttributes, direction, onTheOneSide]
+		[ innerBlocks, updateBlockAttributes, direction, onTheOneSide ]
 	);
 
-	useLayoutEffect(() => {
-		syncToChildren({
+	useLayoutEffect( () => {
+		syncToChildren( {
 			showOtherSide,
 			showMedia,
 			lineColor,
@@ -108,7 +108,7 @@ export default function Edit({ attributes, setAttributes, clientId }) {
 			animationMarker,
 			animationMarkerColor,
 			animationOtherSideSticky,
-		});
+		} );
 	}, [
 		showOtherSide,
 		showMedia,
@@ -126,14 +126,14 @@ export default function Edit({ attributes, setAttributes, clientId }) {
 		animationMarkerColor,
 		animationOtherSideSticky,
 		syncToChildren,
-	]);
+	] );
 
-	useEffect(() => {
-		if (!showMarker && animationMarker) {
-			setAttributes({ animationMarker: false });
+	useEffect( () => {
+		if ( ! showMarker && animationMarker ) {
+			setAttributes( { animationMarker: false } );
 		}
 
-		if (!animationTimeline || !wrapperRef.current) {
+		if ( ! animationTimeline || ! wrapperRef.current ) {
 			return undefined;
 		}
 
@@ -141,17 +141,17 @@ export default function Edit({ attributes, setAttributes, clientId }) {
 
 		try {
 			const el = wrapperRef.current;
-			if (typeof initTimelineAnimation === 'function') {
-				destroyFn = initTimelineAnimation(el);
-			} else if (typeof initAllWidgets === 'function') {
-				destroyFn = initAllWidgets(el);
+			if ( typeof initTimelineAnimation === 'function' ) {
+				destroyFn = initTimelineAnimation( el );
+			} else if ( typeof initAllWidgets === 'function' ) {
+				destroyFn = initAllWidgets( el );
 			}
-		} catch (err) {
-			console.error('Timeline animation init failed', err);
+		} catch ( err ) {
+			console.error( 'Timeline animation init failed', err );
 		}
 
 		return () => {
-			if (typeof destroyFn === 'function') {
+			if ( typeof destroyFn === 'function' ) {
 				destroyFn();
 			}
 		};
@@ -161,42 +161,53 @@ export default function Edit({ attributes, setAttributes, clientId }) {
 		showMarker,
 		animationMarker,
 		setAttributes,
-	]);
+	] );
 
-	const marginStyle = convertMarginAttrToStyle(attributes.style);
-	const outerProps = useBlockProps({ style: marginStyle });
+	const marginStyle = convertMarginAttrToStyle( attributes.style );
+	const outerProps = useBlockProps( { style: marginStyle } );
 
 	return (
-		<div {...outerProps}>
+		<div { ...outerProps }>
 			<div
 				className="timeline-wrapper"
-				ref={wrapperRef}
-				style={{
+				ref={ wrapperRef }
+				style={ {
 					'--timeline-line-color': lineColor || '#F6F6F8',
-					'--timeline-line-width': `${Math.max(1, Number(lineWidth) || 4)}px`,
+					'--timeline-line-width': `${ Math.max(
+						1,
+						Number( lineWidth ) || 4
+					) }px`,
 					'--timeline-marker-color': markerColor || '#F6F6F8',
-					'--marker-size': `${Math.max(1, Number(markerSize) || 30)}px`,
+					'--marker-size': `${ Math.max(
+						1,
+						Number( markerSize ) || 30
+					) }px`,
 
-					'--timeline-line-active-color': animationLineColor || '#F37321',
-					'--timeline-marker-active-color': animationMarkerColor || '#F37321',
-				}}
+					'--timeline-line-active-color':
+						animationLineColor || '#F37321',
+					'--timeline-marker-active-color':
+						animationMarkerColor || '#F37321',
+				} }
 			>
 				<InspectorControls>
 					<PanelBody
-						title={__('Timeline Settings', 'timeline-full-widget')}
+						title={ __(
+							'Timeline Settings',
+							'timeline-full-widget'
+						) }
 					>
-						{[
+						{ [
 							{
 								label: __(
-									'Display Images',
+									'Show Media',
 									'timeline-full-widget'
 								),
 								help: showMedia
-									? __('On', 'timeline-full-widget')
-									: __('Off', 'timeline-full-widget'),
+									? __( 'On', 'timeline-full-widget' )
+									: __( 'Off', 'timeline-full-widget' ),
 								checked: showMedia,
-								onChange: (val) =>
-									setAttributes({ showMedia: val }),
+								onChange: ( val ) =>
+									setAttributes( { showMedia: val } ),
 							},
 							{
 								label: __(
@@ -204,11 +215,11 @@ export default function Edit({ attributes, setAttributes, clientId }) {
 									'timeline-full-widget'
 								),
 								help: direction
-									? __('Right', 'timeline-full-widget')
-									: __('Left', 'timeline-full-widget'),
+									? __( 'Right', 'timeline-full-widget' )
+									: __( 'Left', 'timeline-full-widget' ),
 								checked: direction,
-								onChange: (val) =>
-									setAttributes({ direction: val }),
+								onChange: ( val ) =>
+									setAttributes( { direction: val } ),
 							},
 							{
 								label: __(
@@ -216,11 +227,11 @@ export default function Edit({ attributes, setAttributes, clientId }) {
 									'timeline-full-widget'
 								),
 								help: onTheOneSide
-									? __('Yes', 'timeline-full-widget')
-									: __('No', 'timeline-full-widget'),
+									? __( 'Yes', 'timeline-full-widget' )
+									: __( 'No', 'timeline-full-widget' ),
 								checked: onTheOneSide,
-								onChange: (val) =>
-									setAttributes({ onTheOneSide: val }),
+								onChange: ( val ) =>
+									setAttributes( { onTheOneSide: val } ),
 							},
 							{
 								label: __(
@@ -228,11 +239,11 @@ export default function Edit({ attributes, setAttributes, clientId }) {
 									'timeline-full-widget'
 								),
 								help: showOtherSide
-									? __('Yes', 'timeline-full-widget')
-									: __('No', 'timeline-full-widget'),
+									? __( 'Yes', 'timeline-full-widget' )
+									: __( 'No', 'timeline-full-widget' ),
 								checked: showOtherSide,
-								onChange: (val) =>
-									setAttributes({ showOtherSide: val }),
+								onChange: ( val ) =>
+									setAttributes( { showOtherSide: val } ),
 							},
 							{
 								label: __(
@@ -240,11 +251,11 @@ export default function Edit({ attributes, setAttributes, clientId }) {
 									'timeline-full-widget'
 								),
 								help: animationTimeline
-									? __('Yes', 'timeline-full-widget')
-									: __('No', 'timeline-full-widget'),
+									? __( 'Yes', 'timeline-full-widget' )
+									: __( 'No', 'timeline-full-widget' ),
 								checked: animationTimeline,
-								onChange: (val) =>
-									setAttributes({ animationTimeline: val }),
+								onChange: ( val ) =>
+									setAttributes( { animationTimeline: val } ),
 							},
 							{
 								label: __(
@@ -252,116 +263,125 @@ export default function Edit({ attributes, setAttributes, clientId }) {
 									'timeline-full-widget'
 								),
 								help: showMarker
-									? __('Yes', 'timeline-full-widget')
-									: __('No', 'timeline-full-widget'),
+									? __( 'Yes', 'timeline-full-widget' )
+									: __( 'No', 'timeline-full-widget' ),
 								checked: showMarker,
-								onChange: (val) =>
-									setAttributes({ showMarker: val }),
+								onChange: ( val ) =>
+									setAttributes( { showMarker: val } ),
 							},
 							showOtherSide && {
 								label: __(
-									'Other Side Sticky',
+									'Sticky Side Content',
 									'timeline-full-widget'
 								),
 								help: animationOtherSideSticky
-									? __('Yes', 'timeline-full-widget')
-									: __('No', 'timeline-full-widget'),
+									? __( 'Yes', 'timeline-full-widget' )
+									: __( 'No', 'timeline-full-widget' ),
 								checked: animationOtherSideSticky,
-								onChange: (val) =>
-									setAttributes({
+								onChange: ( val ) =>
+									setAttributes( {
 										animationOtherSideSticky: val,
-									}),
+									} ),
 							},
 						]
-							.filter(Boolean)
-							.map((ctrl, i) => (
+							.filter( Boolean )
+							.map( ( ctrl, i ) => (
 								<ToggleControl
-									key={i}
-									{...ctrl}
+									key={ i }
+									{ ...ctrl }
 									__nextHasNoMarginBottom
 								/>
-							))}
+							) ) }
 
 						<RangeControl
-							label={__('Line Width', 'timeline-full-widget')}
-							help={__(
+							label={ __( 'Line Width', 'timeline-full-widget' ) }
+							help={ __(
 								'Minimum value is 1px.',
 								'timeline-full-widget'
-							)}
-							value={lineWidth}
-							onChange={(value) =>
-								setAttributes({
-									lineWidth: Math.max(1, Number(value) || 4),
-								})
+							) }
+							value={ lineWidth }
+							onChange={ ( value ) =>
+								setAttributes( {
+									lineWidth: Math.max(
+										1,
+										Number( value ) || 4
+									),
+								} )
 							}
-							min={1}
-							max={20}
-							step={1}
+							min={ 1 }
+							max={ 20 }
+							step={ 1 }
 							__nextHasNoMarginBottom
 						/>
 
 						<RangeControl
-							label={__('Marker Size', 'timeline-full-widget')}
-							help={__(
+							label={ __(
+								'Marker Size',
+								'timeline-full-widget'
+							) }
+							help={ __(
 								'Minimum value is 2px.',
 								'timeline-full-widget'
-							)}
-							value={markerSize}
-							onChange={(value) =>
-								setAttributes({
-									markerSize: Math.max(1, Number(value) || 30),
-								})
+							) }
+							value={ markerSize }
+							onChange={ ( value ) =>
+								setAttributes( {
+									markerSize: Math.max(
+										1,
+										Number( value ) || 30
+									),
+								} )
 							}
-							min={2}
-							max={80}
-							step={1}
+							min={ 2 }
+							max={ 80 }
+							step={ 1 }
 							__nextHasNoMarginBottom
 						/>
 
 						<PanelColorSettings
-							title={__(
+							title={ __(
 								'Timeline Colors',
 								'timeline-full-widget'
-							)}
-							colorSettings={[
+							) }
+							colorSettings={ [
 								{
 									value: lineColor,
-									onChange: (color) =>
-										setAttributes({ lineColor: color }),
+									onChange: ( color ) =>
+										setAttributes( { lineColor: color } ),
 									label: __(
 										'Line Color',
 										'timeline-full-widget'
 									),
 								},
-								showMarker && !markerUnique
+								showMarker && ! markerUnique
 									? {
 											value: markerColor,
-											onChange: (color) =>
-												setAttributes({
+											onChange: ( color ) =>
+												setAttributes( {
 													markerColor: color,
-												}),
+												} ),
 											label: __(
 												'Marker Color',
 												'timeline-full-widget'
 											),
-										}
+									  }
 									: null,
-							].filter(Boolean)}
+							].filter( Boolean ) }
 						/>
 
-						{animationTimeline && (
+						{ animationTimeline && (
 							<PanelColorSettings
-								title={__(
+								title={ __(
 									'Timeline Animation Colors',
 									'timeline-full-widget'
-								)}
-								colorSettings={[
+								) }
+								colorSettings={ [
 									{
 										value: animationLineColor,
-										onChange: (color) =>
-											setAttributes({
+										onChange: ( color ) =>
+											setAttributes( {
 												animationLineColor: color,
-											}),
+											} ),
 										label: __(
 											'Animation Line Color',
 											'timeline-full-widget'
@@ -369,59 +389,59 @@ export default function Edit({ attributes, setAttributes, clientId }) {
 									},
 									showMarker &&
 									animationMarker &&
-									!markerUnique
+									! markerUnique
 										? {
 												value: animationMarkerColor,
-												onChange: (color) =>
-													setAttributes({
+												onChange: ( color ) =>
+													setAttributes( {
 														animationMarkerColor:
 															color,
-													}),
+													} ),
 												label: __(
 													'Animation Marker Color',
 													'timeline-full-widget'
 												),
-											}
+										  }
 										: null,
-								].filter(Boolean)}
+								].filter( Boolean ) }
 							/>
-						)}
+						) }
 					</PanelBody>
-					{showMarker && (
+					{ showMarker && (
 						<PanelBody
-							title={__(
+							title={ __(
 								'Marker Settings',
 								'timeline-full-widget'
-							)}
+							) }
 						>
-							{[
+							{ [
 								{
 									label: __(
-										'Sticky Markers',
+										'Sticky timeline markers',
 										'timeline-full-widget'
 									),
 									help: animationMarker
-										? __('Yes', 'timeline-full-widget')
-										: __('No', 'timeline-full-widget'),
+										? __( 'Yes', 'timeline-full-widget' )
+										: __( 'No', 'timeline-full-widget' ),
 									checked: animationMarker,
-									onChange: (val) =>
-										setAttributes({
+									onChange: ( val ) =>
+										setAttributes( {
 											animationMarker: val,
-										}),
+										} ),
 								},
 								{
 									label: __(
-										'Unique Marker',
+										'Use custom marker',
 										'timeline-full-widget'
 									),
 									help: markerUnique
-										? __('Yes', 'timeline-full-widget')
-										: __('No', 'timeline-full-widget'),
+										? __( 'Yes', 'timeline-full-widget' )
+										: __( 'No', 'timeline-full-widget' ),
 									checked: markerUnique,
-									onChange: (val) =>
-										setAttributes({
+									onChange: ( val ) =>
+										setAttributes( {
 											markerUnique: val,
-										}),
+										} ),
 								},
 								{
 									label: __(
@@ -429,45 +449,45 @@ export default function Edit({ attributes, setAttributes, clientId }) {
 										'timeline-full-widget'
 									),
 									help: showStepNumbers
-										? __('Yes', 'timeline-full-widget')
-										: __('No', 'timeline-full-widget'),
+										? __( 'Yes', 'timeline-full-widget' )
+										: __( 'No', 'timeline-full-widget' ),
 									checked: showStepNumbers,
-									onChange: (val) =>
-										setAttributes({
+									onChange: ( val ) =>
+										setAttributes( {
 											showStepNumbers: val,
-										}),
+										} ),
 								},
 							]
-								.filter(Boolean)
-								.map((ctrl, i) => (
+								.filter( Boolean )
+								.map( ( ctrl, i ) => (
 									<ToggleControl
-										key={i}
-										{...ctrl}
+										key={ i }
+										{ ...ctrl }
 										__nextHasNoMarginBottom
 									/>
-								))}
+								) ) }
 						</PanelBody>
-					)}
+					) }
 				</InspectorControls>
 
-				{animationTimeline && (
+				{ animationTimeline && (
 					<div className="timeline-line-animation" />
-				)}
+				) }
 
 				<ul
-					className={[
+					className={ [
 						'timeline',
 						hasAnimatedMarkers && 'timeline-animation-marker',
 						animationOtherSideSticky &&
 							'timeline-animation-other-side-sticky',
 						showStepNumbers && 'timeline-numbers',
 					]
-						.filter(Boolean)
-						.join(' ')}
+						.filter( Boolean )
+						.join( ' ' ) }
 				>
 					<InnerBlocks
-						allowedBlocks={['za/timeline-item']}
-						template={[
+						allowedBlocks={ [ 'za/timeline-item' ] }
+						template={ [
 							[
 								'za/timeline-item',
 								{
@@ -496,9 +516,9 @@ export default function Edit({ attributes, setAttributes, clientId }) {
 									markerUnique,
 								},
 							],
-						]}
-						templateLock={false}
-						renderAppender={InnerBlocks.ButtonBlockAppender}
+						] }
+						templateLock={ false }
+						renderAppender={ InnerBlocks.ButtonBlockAppender }
 					/>
 				</ul>
 			</div>

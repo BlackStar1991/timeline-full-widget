@@ -7,7 +7,7 @@ import '../assets/css/core/style.css';
 import './style.scss';
 import './editor.scss';
 
-registerBlockType('za/timeline-full-widget', {
+registerBlockType( 'za/timeline-full-widget', {
 	title: 'Timeline',
 	icon: (
 		<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
@@ -17,7 +17,7 @@ registerBlockType('za/timeline-full-widget', {
 	category: 'widgets',
 	supports: {
 		html: false,
-		align: ['wide', 'full'],
+		align: [ 'wide', 'full' ],
 		anchor: true,
 		spacing: {
 			margin: true,
@@ -25,4 +25,4 @@ registerBlockType('za/timeline-full-widget', {
 	},
 	edit: Edit,
 	save: Save,
-});
+} );

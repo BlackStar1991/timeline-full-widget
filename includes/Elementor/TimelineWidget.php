@@ -186,7 +186,7 @@ final class TimelineWidget extends Widget_Base
         $repeater->add_control(
                 'tl_card_change_direction',
                 [
-                        'label' => __('Reverse media and content', 'timeline-full-widget'),
+                        'label' => __('Reverse media and content order', 'timeline-full-widget'),
                         'type' => Controls_Manager::SWITCHER,
                         'label_on' => __('Yes', 'timeline-full-widget'),
                         'label_off' => __('No', 'timeline-full-widget'),
@@ -208,7 +208,7 @@ final class TimelineWidget extends Widget_Base
         $repeater->add_control(
                 'media_link_url',
                 [
-                        'label' => __('Link for media', 'timeline-full-widget'),
+                        'label' => __('Media link', 'timeline-full-widget'),
                         'type' => Controls_Manager::URL,
                         'placeholder' => 'https://example.com',
                         'show_external' => true,
@@ -234,7 +234,7 @@ final class TimelineWidget extends Widget_Base
         $repeater->add_control(
                 'title_link_url',
                 [
-                        'label' => __('Link for title', 'timeline-full-widget'),
+                        'label' => __('Title link', 'timeline-full-widget'),
                         'type' => Controls_Manager::URL,
                         'placeholder' => 'https://example.com',
                         'show_external' => true,
@@ -264,7 +264,7 @@ final class TimelineWidget extends Widget_Base
         $repeater->add_control(
                 'marker_image',
                 [
-                        'label' => __('Marker Image', 'timeline-full-widget'),
+                        'label' => __('Custom marker image', 'timeline-full-widget'),
                         'type' => Controls_Manager::MEDIA,
                         'media_types' => ['image'],
 
@@ -277,7 +277,7 @@ final class TimelineWidget extends Widget_Base
                         'type' => Controls_Manager::RAW_HTML,
                         'raw' => sprintf(
                                 '<div class="elementor-control-description">%s</div>',
-                                esc_html__('Note: this image will be used only when "Unique Marker" (Style) is set to Yes. Recommend width size <=50px', 'timeline-full-widget')
+                                esc_html__('Note: this image is used only when “Use custom marker” is enabled. Recommended width: 50px or less.', 'timeline-full-widget')
                         ),
                         'content_classes' => 'elementor-control-descriptor',
                 ]
@@ -629,7 +629,7 @@ final class TimelineWidget extends Widget_Base
         $this->add_control(
                 'tl_content_horizontal_layout',
                 [
-                        'label' => __('Horizontal content layout', 'timeline-full-widget'),
+                        'label' => __('Use horizontal content layout', 'timeline-full-widget'),
                         'type' => Controls_Manager::SWITCHER,
                         'label_on' => __('Yes', 'timeline-full-widget'),
                         'label_off' => __('No', 'timeline-full-widget'),
@@ -666,7 +666,7 @@ final class TimelineWidget extends Widget_Base
         $this->add_control(
                 'tl_animation_timeline',
                 [
-                        'label' => __('Animate Line', 'timeline-full-widget'),
+                        'label' => __('Animate timeline line', 'timeline-full-widget'),
                         'type' => Controls_Manager::SWITCHER,
                         'label_on' => __('Yes', 'timeline-full-widget'),
                         'label_off' => __('No', 'timeline-full-widget'),
@@ -678,7 +678,7 @@ final class TimelineWidget extends Widget_Base
         $this->add_control(
                 'tl_show_marker',
                 [
-                        'label' => __('Show Marker', 'timeline-full-widget'),
+                        'label' => __('Show timeline marker', 'timeline-full-widget'),
                         'type' => Controls_Manager::SWITCHER,
                         'label_on' => __('Yes', 'timeline-full-widget'),
                         'label_off' => __('No', 'timeline-full-widget'),
@@ -690,7 +690,7 @@ final class TimelineWidget extends Widget_Base
         $this->add_control(
                 'tl_animation_marker',
                 [
-                        'label' => __('Animate Markers', 'timeline-full-widget'),
+                        'label' => __('Animate timeline markers', 'timeline-full-widget'),
                         'type' => Controls_Manager::SWITCHER,
                         'label_on' => __('Yes', 'timeline-full-widget'),
                         'label_off' => __('No', 'timeline-full-widget'),
@@ -717,7 +717,7 @@ final class TimelineWidget extends Widget_Base
         $this->add_control(
                 'tl_is_marker_unique',
                 [
-                        'label' => __('Use Custom Marker Image', 'timeline-full-widget'),
+                        'label' => __('Use custom marker image', 'timeline-full-widget'),
                         'type' => Controls_Manager::SWITCHER,
                         'label_on' => __('Yes', 'timeline-full-widget'),
                         'label_off' => __('No', 'timeline-full-widget'),

@@ -17,7 +17,7 @@ import {
 	resolveResponsiveValue,
 } from '../utils/normalizeResponsive';
 
-export default function Title({
+export default function Title( {
 	clientId,
 	title,
 	titleTag,
@@ -38,22 +38,22 @@ export default function Title({
 	setAttributes,
 	activeField,
 	setActiveField,
-}) {
-	const [isLinkPickerOpen, setIsLinkPickerOpen] = useState(false);
+} ) {
+	const [ isLinkPickerOpen, setIsLinkPickerOpen ] = useState( false );
 	const device = useViewport();
 
 	const normalizedFontSize = useMemo(
-		() => normalizeResponsive(titleFontSize),
-		[titleFontSize]
+		() => normalizeResponsive( titleFontSize ),
+		[ titleFontSize ]
 	);
 
 	const resolvedFontSize = useMemo(
-		() => resolveResponsiveValue(normalizedFontSize, device),
-		[normalizedFontSize, device]
+		() => resolveResponsiveValue( normalizedFontSize, device ),
+		[ normalizedFontSize, device ]
 	);
 
 	const selectedBlockClientId = useSelect(
-		(select) => select('core/block-editor').getSelectedBlockClientId(),
+		( select ) => select( 'core/block-editor' ).getSelectedBlockClientId(),
 		[]
 	);
 
@@ -62,7 +62,7 @@ export default function Title({
 
 	const styleObj = useMemo(
 		() =>
-			buildStyleObject({
+			buildStyleObject( {
 				titleInlineStyle,
 				titleFontSize: resolvedFontSize,
 				titleFontUnit,
@@ -73,7 +73,7 @@ export default function Title({
 				titleMarginBottom,
 				titleColor,
 				titleFontFamily,
-			}),
+			} ),
 		[
 			titleInlineStyle,
 			resolvedFontSize,
@@ -88,22 +88,22 @@ export default function Title({
 		]
 	);
 
-	const linkPopover = useMemo(() => {
-		if (!isLinkPickerOpen) {
+	const linkPopover = useMemo( () => {
+		if ( ! isLinkPickerOpen ) {
 			return null;
 		}
 
 		return (
 			<Popover
 				position="bottom center"
-				onClose={() => setIsLinkPickerOpen(false)}
+				onClose={ () => setIsLinkPickerOpen( false ) }
 			>
 				<LinkControl
-					value={{
+					value={ {
 						url: linkUrl,
 						opensInNewTab: linkTarget === '_blank',
-					}}
-					settings={[
+					} }
+					settings={ [
 						{
 							id: 'opensInNewTab',
 							title: __(
@@ -111,58 +111,60 @@ export default function Title({
 								'timeline-full-widget'
 							),
 						},
-					]}
-					onChange={(newVal) => {
+					] }
+					onChange={ ( newVal ) => {
 						const linkAttrs = getSafeLinkAttributes(
 							newVal?.url || '',
 							rel || '',
 							newVal?.opensInNewTab ? '_blank' : ''
 						);
 
-						setAttributes({
+						setAttributes( {
 							linkUrl: linkAttrs.href,
 							linkTarget: linkAttrs.target,
 							rel: linkAttrs.rel,
-						});
-					}}
+						} );
+					} }
 				/>
 			</Popover>
 		);
-	}, [isLinkPickerOpen, linkUrl, linkTarget, rel, setAttributes]);
+	}, [ isLinkPickerOpen, linkUrl, linkTarget, rel, setAttributes ] );
 
 	return (
 		<>
 			<BlockControls group="block">
-				{titleTag === 'a' && (
+				{ titleTag === 'a' && (
 					<ToolbarButton
-						icon={linkIcon}
-						label={__('Edit link', 'timeline-full-widget')}
-						onClick={() => setIsLinkPickerOpen((prev) => !prev)}
-						isPressed={isLinkPickerOpen}
+						icon={ linkIcon }
+						label={ __( 'Edit link', 'timeline-full-widget' ) }
+						onClick={ () =>
+							setIsLinkPickerOpen( ( prev ) => ! prev )
+						}
+						isPressed={ isLinkPickerOpen }
 					/>
-				)}
+				) }
 
-				{showAlignmentForTitle && (
+				{ showAlignmentForTitle && (
 					<AlignmentToolbar
-						value={titleAlign}
-						onChange={(newAlign) =>
-							setAttributes({ titleAlign: newAlign || 'left' })
+						value={ titleAlign }
+						onChange={ ( newAlign ) =>
+							setAttributes( { titleAlign: newAlign || 'left' } )
 						}
 					/>
-				)}
+				) }
 			</BlockControls>
 
-			{linkPopover}
+			{ linkPopover }
 
 			<RichText
-				tagName={titleTag === 'a' ? 'a' : titleTag || 'h3'}
-				className={`t-text-align-${titleAlign} tl-title`}
-				value={title}
-				allowedFormats={[]}
-				placeholder={__('Timeline Item', 'timeline-full-widget')}
-				onChange={(val) => setAttributes({ title: val })}
-				onFocus={() => setActiveField('title')}
-				style={styleObj}
+				tagName={ titleTag === 'a' ? 'a' : titleTag || 'h3' }
+				className={ `t-text-align-${ titleAlign } tl-title` }
+				value={ title }
+				allowedFormats={ [] }
+				placeholder={ __( 'Timeline Item', 'timeline-full-widget' ) }
+				onChange={ ( val ) => setAttributes( { title: val } ) }
+				onFocus={ () => setActiveField( 'title' ) }
+				style={ styleObj }
 			/>
 		</>
 	);

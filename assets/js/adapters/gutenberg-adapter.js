@@ -5,26 +5,26 @@ import { initAllWidgets } from '../core/animation.js';
 // This avoids the "listener missed because script loaded after DOMContentLoaded" problem.
 function boot() {
 	try {
-		initAllWidgets(document);
-	} catch (e) {
+		initAllWidgets( document );
+	} catch ( e ) {
 		// fail silently in production; you can console.error during debug
-		if (typeof console !== 'undefined') {
-			console.debug('za-timeline: initAllWidgets error', e);
+		if ( typeof console !== 'undefined' ) {
+			console.debug( 'za-timeline: initAllWidgets error', e );
 		}
 	}
 }
 
-if (document.readyState === 'loading') {
-	document.addEventListener('DOMContentLoaded', boot, {
+if ( document.readyState === 'loading' ) {
+	document.addEventListener( 'DOMContentLoaded', boot, {
 		once: true,
 		passive: true,
-	});
+	} );
 } else {
 	// document already interactive/complete
 	boot();
 }
 
 // Export helper for editors/tests
-export function initGutenbergForRoot(root = document) {
-	return initAllWidgets(root);
+export function initGutenbergForRoot( root = document ) {
+	return initAllWidgets( root );
 }

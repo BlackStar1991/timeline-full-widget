@@ -1,58 +1,58 @@
 /* animation.js — ZA timeline */
 
 const DEBUG = false;
-function log(...args) {
-	if (!DEBUG) {
+function log( ...args ) {
+	if ( ! DEBUG ) {
 		return;
 	}
 	try {
-		console.log('[za-timeline]', ...args);
-	} catch (e) {}
+		console.log( '[za-timeline]', ...args );
+	} catch ( e ) {}
 }
 
-export function initTimelineAnimation(scopeEl) {
-	const el = scopeEl && scopeEl.jquery ? scopeEl[0] : scopeEl;
-	if (!el || el.nodeType !== 1) {
+export function initTimelineAnimation( scopeEl ) {
+	const el = scopeEl && scopeEl.jquery ? scopeEl[ 0 ] : scopeEl;
+	if ( ! el || el.nodeType !== 1 ) {
 		return null;
 	}
-	if (el.__zaTimelineDestroy) {
+	if ( el.__zaTimelineDestroy ) {
 		return el.__zaTimelineDestroy;
 	}
 
 	// ---- helpers ----
-	const findWrapper = (node) => {
-		if (!node) {
+	const findWrapper = ( node ) => {
+		if ( ! node ) {
 			return null;
 		}
 		if (
 			node.classList &&
-			(node.classList.contains('timeline-wrapper') ||
-				node.classList.contains('timeline'))
+			( node.classList.contains( 'timeline-wrapper' ) ||
+				node.classList.contains( 'timeline' ) )
 		) {
 			return node;
 		}
-		if (node.querySelector) {
+		if ( node.querySelector ) {
 			return (
-				node.querySelector('.timeline-wrapper') ||
-				node.querySelector('.timeline')
+				node.querySelector( '.timeline-wrapper' ) ||
+				node.querySelector( '.timeline' )
 			);
 		}
 		return null;
 	};
 
-	const getScrollParent = (node) => {
-		if (!node) {
+	const getScrollParent = ( node ) => {
+		if ( ! node ) {
 			return window;
 		}
 		let p = node.parentElement;
-		while (p) {
+		while ( p ) {
 			try {
-				const style = window.getComputedStyle(p);
+				const style = window.getComputedStyle( p );
 				const y = style.overflowY;
-				if (y === 'auto' || y === 'scroll' || y === 'overlay') {
+				if ( y === 'auto' || y === 'scroll' || y === 'overlay' ) {
 					return p;
 				}
-			} catch (e) {
+			} catch ( e ) {
 				// access denied? skip
 			}
 			p = p.parentElement;
@@ -60,29 +60,29 @@ export function initTimelineAnimation(scopeEl) {
 		return window;
 	};
 
-	const wrapper = findWrapper(el);
-	if (!wrapper) {
+	const wrapper = findWrapper( el );
+	if ( ! wrapper ) {
 		return null;
 	}
 
 	const line =
-		wrapper.querySelector('.timeline-line-animation') ||
-		(el !== wrapper &&
+		wrapper.querySelector( '.timeline-line-animation' ) ||
+		( el !== wrapper &&
 			el.querySelector &&
-			el.querySelector('.timeline-line-animation'));
-	if (!line) {
+			el.querySelector( '.timeline-line-animation' ) );
+	if ( ! line ) {
 		return null;
 	}
 
-	let scrollParent = getScrollParent(wrapper);
+	let scrollParent = getScrollParent( wrapper );
 
-	const shouldFallbackToWindow = (rootEl) => {
-		if (!rootEl || rootEl === window) {
+	const shouldFallbackToWindow = ( rootEl ) => {
+		if ( ! rootEl || rootEl === window ) {
 			return false;
 		}
 		try {
 			const r = rootEl.getBoundingClientRect();
-			if (!r || r.height < 2) {
+			if ( ! r || r.height < 2 ) {
 				return true;
 			}
 			if (
@@ -91,12 +91,12 @@ export function initTimelineAnimation(scopeEl) {
 			) {
 				return true;
 			}
-		} catch (e) {
+		} catch ( e ) {
 			return true;
 		}
 		return false;
 	};
-	if (shouldFallbackToWindow(scrollParent)) {
+	if ( shouldFallbackToWindow( scrollParent ) ) {
 		log(
 			'fallback scrollParent => window (detected unsuitable element)',
 			scrollParent
@@ -107,17 +107,17 @@ export function initTimelineAnimation(scopeEl) {
 	const isInIframe = window.self !== window.top;
 	let parentWindow = null;
 	try {
-		if (isInIframe) {
+		if ( isInIframe ) {
 			parentWindow = window.parent;
 			void parentWindow.document;
-			log('Inside iframe, parent window is accessible');
+			log( 'Inside iframe, parent window is accessible' );
 		}
-	} catch (e) {
-		log('Inside iframe, but parent window not accessible (CORS)', e);
+	} catch ( e ) {
+		log( 'Inside iframe, but parent window not accessible (CORS)', e );
 		parentWindow = null;
 	}
 
-	const canUseParentCoords = !!(
+	const canUseParentCoords = !! (
 		isInIframe &&
 		parentWindow &&
 		window.frameElement &&
@@ -133,16 +133,16 @@ export function initTimelineAnimation(scopeEl) {
 	let lastTarget = -1;
 	let resizeTimer = null;
 
-	let triggers = Array.from(wrapper.querySelectorAll('.tl-trigger'));
+	let triggers = Array.from( wrapper.querySelectorAll( '.tl-trigger' ) );
 	let items = Array.from(
-		wrapper.querySelectorAll('li.timeline-item, .timeline-item')
-	).map((it) => ({
+		wrapper.querySelectorAll( 'li.timeline-item, .timeline-item' )
+	).map( ( it ) => ( {
 		el: it,
 		mark:
-			it.querySelector('.tl-mark') ||
-			it.querySelector('.tl-trigger') ||
+			it.querySelector( '.tl-mark' ) ||
+			it.querySelector( '.tl-trigger' ) ||
 			it,
-	}));
+	} ) );
 
 	let observer = null;
 	try {
@@ -151,53 +151,53 @@ export function initTimelineAnimation(scopeEl) {
 			rootMargin: '-40% 0px -40% 0px',
 			threshold: 0,
 		};
-		observer = new IntersectionObserver((entries) => {
-			if (!DEBUG) {
+		observer = new IntersectionObserver( ( entries ) => {
+			if ( ! DEBUG ) {
 				return;
 			}
-			entries.forEach((entry) => {
+			entries.forEach( ( entry ) => {
 				const trg = entry.target;
 				const parentBlock =
-					trg.closest('li') ||
-					trg.closest('.timeline-item') ||
-					trg.closest('.wp-block') ||
-					trg.closest('.elementor-widget');
-				if (!parentBlock) {
+					trg.closest( 'li' ) ||
+					trg.closest( '.timeline-item' ) ||
+					trg.closest( '.wp-block' ) ||
+					trg.closest( '.elementor-widget' );
+				if ( ! parentBlock ) {
 					return;
 				}
 				try {
-					console.log('[za-timeline][IO]', {
+					console.log( '[za-timeline][IO]', {
 						isIntersecting: entry.isIntersecting,
 						ratio: entry.intersectionRatio,
 						triggerRect: trg.getBoundingClientRect(),
 						parentBlock,
-					});
-				} catch (e) {}
-			});
-		}, ioOptions);
-	} catch (e) {
+					} );
+				} catch ( e ) {}
+			} );
+		}, ioOptions );
+	} catch ( e ) {
 		observer = null;
-		log('IO creation failed', e);
+		log( 'IO creation failed', e );
 	}
 
 	const observeTriggers = () => {
-		if (!observer) {
+		if ( ! observer ) {
 			return;
 		}
-		for (let i = 0; i < triggers.length; i++) {
+		for ( let i = 0; i < triggers.length; i++ ) {
 			try {
-				observer.observe(triggers[i]);
-			} catch (e) {}
+				observer.observe( triggers[ i ] );
+			} catch ( e ) {}
 		}
 	};
 	const unobserveTriggers = () => {
-		if (!observer) {
+		if ( ! observer ) {
 			return;
 		}
-		for (let i = 0; i < triggers.length; i++) {
+		for ( let i = 0; i < triggers.length; i++ ) {
 			try {
-				observer.unobserve(triggers[i]);
-			} catch (e) {}
+				observer.unobserve( triggers[ i ] );
+			} catch ( e ) {}
 		}
 	};
 
@@ -205,22 +205,22 @@ export function initTimelineAnimation(scopeEl) {
 	const getIframeElementRect = () => {
 		try {
 			const fe = window.frameElement;
-			if (!fe || typeof fe.getBoundingClientRect !== 'function') {
+			if ( ! fe || typeof fe.getBoundingClientRect !== 'function' ) {
 				return null;
 			}
 			return fe.getBoundingClientRect();
-		} catch (e) {
+		} catch ( e ) {
 			return null;
 		}
 	};
 
 	// convert rect (from el.getBoundingClientRect() in iframe coords) to parent viewport coords
-	const rectInParent = (rect) => {
-		if (!canUseParentCoords) {
+	const rectInParent = ( rect ) => {
+		if ( ! canUseParentCoords ) {
 			return rect;
 		}
 		const iframeRect = getIframeElementRect();
-		if (!iframeRect) {
+		if ( ! iframeRect ) {
 			return rect;
 		}
 		return {
@@ -235,20 +235,20 @@ export function initTimelineAnimation(scopeEl) {
 
 	// root middle: parent window middle when available, otherwise based on scrollParent
 	const getRootMiddle = () => {
-		if (canUseParentCoords) {
+		if ( canUseParentCoords ) {
 			try {
 				return parentWindow.innerHeight / 2;
-			} catch (e) {
-				console.error('Failed to get parent window middle', e);
+			} catch ( e ) {
+				console.error( 'Failed to get parent window middle', e );
 			}
 		}
-		if (scrollParent === window) {
+		if ( scrollParent === window ) {
 			return window.innerHeight / 2;
 		}
 		try {
 			const r = scrollParent.getBoundingClientRect();
 			return r.top + r.height / 2;
-		} catch (e) {
+		} catch ( e ) {
 			return window.innerHeight / 2;
 		}
 	};
@@ -260,7 +260,7 @@ export function initTimelineAnimation(scopeEl) {
 
 	// update stuck classes — using parent coords when possible
 	function updateStuckByLine() {
-		if (!line || items.length === 0) {
+		if ( ! line || items.length === 0 ) {
 			return;
 		}
 
@@ -268,9 +268,9 @@ export function initTimelineAnimation(scopeEl) {
 		const lineRect = line.getBoundingClientRect();
 		let lineBottom = lineRect.top + lineRect.height;
 		let iframeOffsetTop = 0;
-		if (canUseParentCoords) {
+		if ( canUseParentCoords ) {
 			const iframeRect = getIframeElementRect();
-			if (iframeRect) {
+			if ( iframeRect ) {
 				iframeOffsetTop = iframeRect.top;
 				lineBottom += iframeOffsetTop;
 			}
@@ -281,36 +281,36 @@ export function initTimelineAnimation(scopeEl) {
 		// find best (closest to center) — single pass
 		let best = null;
 		let bestDist = Infinity;
-		for (let i = 0; i < items.length; i++) {
-			const itemRect = items[i].el.getBoundingClientRect(); // necessary read
+		for ( let i = 0; i < items.length; i++ ) {
+			const itemRect = items[ i ].el.getBoundingClientRect(); // necessary read
 			const center =
-				(itemRect.top + itemRect.bottom) / 2 +
-				(canUseParentCoords ? iframeOffsetTop : 0);
-			const d = Math.abs(center - rootMiddle);
-			if (d < bestDist) {
+				( itemRect.top + itemRect.bottom ) / 2 +
+				( canUseParentCoords ? iframeOffsetTop : 0 );
+			const d = Math.abs( center - rootMiddle );
+			if ( d < bestDist ) {
 				bestDist = d;
-				best = items[i].el;
+				best = items[ i ].el;
 			}
 		}
 
 		// loop items, update classes minimaly
-		for (let i = 0; i < items.length; i++) {
-			const { el: it, mark } = items[i];
+		for ( let i = 0; i < items.length; i++ ) {
+			const { el: it, mark } = items[ i ];
 			const markRect = mark.getBoundingClientRect();
-			let markCenter = (markRect.top + markRect.bottom) / 2;
-			if (canUseParentCoords) {
+			let markCenter = ( markRect.top + markRect.bottom ) / 2;
+			if ( canUseParentCoords ) {
 				markCenter += iframeOffsetTop;
 			}
 
 			const isCurrent = it === best;
 			const passed = markCenter <= lineBottom + EPS_ADD_PX;
-			const currently = it.classList.contains('is-stuck');
+			const currently = it.classList.contains( 'is-stuck' );
 
-			if ((passed || isCurrent) && !currently) {
-				it.classList.add('is-stuck');
-			} else if (!passed && currently) {
-				if (markCenter > lineBottom + EPS_REMOVE_PX && !isCurrent) {
-					it.classList.remove('is-stuck');
+			if ( ( passed || isCurrent ) && ! currently ) {
+				it.classList.add( 'is-stuck' );
+			} else if ( ! passed && currently ) {
+				if ( markCenter > lineBottom + EPS_REMOVE_PX && ! isCurrent ) {
+					it.classList.remove( 'is-stuck' );
 				}
 			}
 		}
@@ -319,21 +319,24 @@ export function initTimelineAnimation(scopeEl) {
 	// progress calc (uses parent coords when possible)
 	function getTargetProgress() {
 		const rect = wrapper.getBoundingClientRect();
-		if (canUseParentCoords) {
-			const r = rectInParent(rect);
+		if ( canUseParentCoords ) {
+			const r = rectInParent( rect );
 			const middle = parentWindow.innerHeight / 2;
-			if (r.top < middle && r.bottom > 0) {
-				return Math.max(0, Math.min(1, (middle - r.top) / r.height));
+			if ( r.top < middle && r.bottom > 0 ) {
+				return Math.max(
+					0,
+					Math.min( 1, ( middle - r.top ) / r.height )
+				);
 			}
 			return 0;
 		}
 
-		if (scrollParent === window) {
+		if ( scrollParent === window ) {
 			const middle = window.innerHeight / 2;
-			if (rect.top < middle && rect.bottom > 0) {
+			if ( rect.top < middle && rect.bottom > 0 ) {
 				return Math.max(
 					0,
-					Math.min(1, (middle - rect.top) / rect.height)
+					Math.min( 1, ( middle - rect.top ) / rect.height )
 				);
 			}
 			return 0;
@@ -341,18 +344,18 @@ export function initTimelineAnimation(scopeEl) {
 		try {
 			const rootRect = scrollParent.getBoundingClientRect();
 			const rootMiddle = rootRect.top + rootRect.height / 2;
-			if (rect.top < rootMiddle && rect.bottom > rootRect.top) {
+			if ( rect.top < rootMiddle && rect.bottom > rootRect.top ) {
 				return Math.max(
 					0,
-					Math.min(1, (rootMiddle - rect.top) / rect.height)
+					Math.min( 1, ( rootMiddle - rect.top ) / rect.height )
 				);
 			}
-		} catch (e) {
+		} catch ( e ) {
 			const middle = window.innerHeight / 2;
-			if (rect.top < middle && rect.bottom > 0) {
+			if ( rect.top < middle && rect.bottom > 0 ) {
 				return Math.max(
 					0,
-					Math.min(1, (middle - rect.top) / rect.height)
+					Math.min( 1, ( middle - rect.top ) / rect.height )
 				);
 			}
 		}
@@ -365,9 +368,9 @@ export function initTimelineAnimation(scopeEl) {
 		const target = getTargetProgress();
 
 		// if no change and current ~ target — finish
-		if (target === lastTarget && Math.abs(current - target) < 0.0005) {
+		if ( target === lastTarget && Math.abs( current - target ) < 0.0005 ) {
 			current = target;
-			line.style.transform = `translateX(-50%) scaleY(${current})`;
+			line.style.transform = `translateX(-50%) scaleY(${ current })`;
 			updateStuckByLine();
 			running = false;
 			return;
@@ -375,35 +378,35 @@ export function initTimelineAnimation(scopeEl) {
 		lastTarget = target;
 
 		const LERP = 0.12;
-		current += (target - current) * LERP;
-		if (Math.abs(current - target) < 0.001) {
+		current += ( target - current ) * LERP;
+		if ( Math.abs( current - target ) < 0.001 ) {
 			current = target;
 		}
-		line.style.transform = `translateX(-50%) scaleY(${current})`;
+		line.style.transform = `translateX(-50%) scaleY(${ current })`;
 
 		updateStuckByLine();
 
-		if (running) {
-			rafId = requestAnimationFrame(frame);
-		} else if (Math.abs(current - target) > 0.0005) {
-			rafId = requestAnimationFrame(frame);
+		if ( running ) {
+			rafId = requestAnimationFrame( frame );
+		} else if ( Math.abs( current - target ) > 0.0005 ) {
+			rafId = requestAnimationFrame( frame );
 		}
 	}
 
 	function startLoop() {
-		if (running) {
+		if ( running ) {
 			return;
 		}
 		running = true;
 		lastTarget = -1;
-		if (!rafId) {
-			rafId = requestAnimationFrame(frame);
+		if ( ! rafId ) {
+			rafId = requestAnimationFrame( frame );
 		}
 	}
 	function stopLoop() {
 		running = false;
-		if (rafId) {
-			cancelAnimationFrame(rafId);
+		if ( rafId ) {
+			cancelAnimationFrame( rafId );
 			rafId = null;
 		}
 	}
@@ -411,38 +414,38 @@ export function initTimelineAnimation(scopeEl) {
 	// debounced stop after resize/scroll activity ends
 	function onScrollOrResize() {
 		startLoop();
-		clearTimeout(resizeTimer);
-		resizeTimer = setTimeout(() => stopLoop(), 700);
+		clearTimeout( resizeTimer );
+		resizeTimer = setTimeout( () => stopLoop(), 700 );
 	}
 
 	// observe triggers + visibility
-	if (triggers.length) {
+	if ( triggers.length ) {
 		observeTriggers();
 	}
 
 	let visObserver = null;
 	try {
 		visObserver = new IntersectionObserver(
-			(entries) => {
-				entries.forEach((entry) => {
-					if (entry.target !== wrapper) {
+			( entries ) => {
+				entries.forEach( ( entry ) => {
+					if ( entry.target !== wrapper ) {
 						return;
 					}
-					if (entry.isIntersecting) {
+					if ( entry.isIntersecting ) {
 						startLoop();
 					} else {
 						stopLoop();
 					}
-				});
+				} );
 			},
 			{
 				root: scrollParent === window ? null : scrollParent,
 				threshold: 0,
 			}
 		);
-		visObserver.observe(wrapper);
-	} catch (e) {
-		log('visObserver failed', e);
+		visObserver.observe( wrapper );
+	} catch ( e ) {
+		log( 'visObserver failed', e );
 		visObserver = null;
 	}
 
@@ -450,99 +453,101 @@ export function initTimelineAnimation(scopeEl) {
 	const parentHandlersAdded = { scroll: false, resize: false };
 
 	try {
-		if (scrollParent === window) {
-			window.addEventListener('scroll', onScrollOrResize, {
+		if ( scrollParent === window ) {
+			window.addEventListener( 'scroll', onScrollOrResize, {
 				passive: true,
-			});
-			window.addEventListener('resize', onScrollOrResize);
+			} );
+			window.addEventListener( 'resize', onScrollOrResize );
 
-			if (isInIframe && parentWindow) {
+			if ( isInIframe && parentWindow ) {
 				// Add listeners to parentWindow — only if accessible
-				log('Adding scroll/resize listeners to parent window');
-				parentWindow.addEventListener('scroll', onScrollOrResize, {
+				log( 'Adding scroll/resize listeners to parent window' );
+				parentWindow.addEventListener( 'scroll', onScrollOrResize, {
 					passive: true,
-				});
-				parentWindow.addEventListener('resize', onScrollOrResize);
+				} );
+				parentWindow.addEventListener( 'resize', onScrollOrResize );
 				parentHandlersAdded.scroll = true;
 				parentHandlersAdded.resize = true;
 			}
 		} else {
-			scrollParent.addEventListener('scroll', onScrollOrResize, {
+			scrollParent.addEventListener( 'scroll', onScrollOrResize, {
 				passive: true,
-			});
-			window.addEventListener('resize', onScrollOrResize);
+			} );
+			window.addEventListener( 'resize', onScrollOrResize );
 
-			if (isInIframe && parentWindow) {
+			if ( isInIframe && parentWindow ) {
 				log(
 					'Adding scroll/resize listeners to parent window (custom scrollParent case)'
 				);
-				parentWindow.addEventListener('scroll', onScrollOrResize, {
+				parentWindow.addEventListener( 'scroll', onScrollOrResize, {
 					passive: true,
-				});
-				parentWindow.addEventListener('resize', onScrollOrResize);
+				} );
+				parentWindow.addEventListener( 'resize', onScrollOrResize );
 				parentHandlersAdded.scroll = true;
 				parentHandlersAdded.resize = true;
 			}
 		}
-	} catch (e) {
+	} catch ( e ) {
 		// fallback to window
-		window.addEventListener('scroll', onScrollOrResize, { passive: true });
-		window.addEventListener('resize', onScrollOrResize);
+		window.addEventListener( 'scroll', onScrollOrResize, {
+			passive: true,
+		} );
+		window.addEventListener( 'resize', onScrollOrResize );
 		scrollParent = window;
-		log('fallback listeners => window', e);
+		log( 'fallback listeners => window', e );
 	}
 
 	// mutation observer: update cached triggers/items
-	const mo = new MutationObserver((mutations) => {
+	const mo = new MutationObserver( ( mutations ) => {
 		let changed = false;
-		for (let i = 0; i < mutations.length; i++) {
-			const m = mutations[i];
+		for ( let i = 0; i < mutations.length; i++ ) {
+			const m = mutations[ i ];
 			if (
 				m.type === 'childList' &&
-				(m.addedNodes.length || m.removedNodes.length)
+				( m.addedNodes.length || m.removedNodes.length )
 			) {
 				changed = true;
 				break;
 			}
 		}
-		if (!changed) {
+		if ( ! changed ) {
 			return;
 		}
 		unobserveTriggers();
-		triggers = Array.from(wrapper.querySelectorAll('.tl-trigger'));
+		triggers = Array.from( wrapper.querySelectorAll( '.tl-trigger' ) );
 		items = Array.from(
-			wrapper.querySelectorAll('li.timeline-item, .timeline-item')
-		).map((it) => ({
+			wrapper.querySelectorAll( 'li.timeline-item, .timeline-item' )
+		).map( ( it ) => ( {
 			el: it,
 			mark:
-				it.querySelector('.tl-mark') ||
-				it.querySelector('.tl-trigger') ||
+				it.querySelector( '.tl-mark' ) ||
+				it.querySelector( '.tl-trigger' ) ||
 				it,
-		}));
-		if (triggers.length) {
+		} ) );
+		if ( triggers.length ) {
 			observeTriggers();
 		}
 		updateStuckByLine();
 		startLoop();
-	});
-	mo.observe(wrapper, { childList: true, subtree: true });
+	} );
+	mo.observe( wrapper, { childList: true, subtree: true } );
 
-	console.debug('[ZA] animation.js initTimelineAnimation executed', {
+	console.debug( '[ZA] animation.js initTimelineAnimation executed', {
 		inIframe: isInIframe,
 		canUseParentCoords,
-	});
+	} );
 
 	// initial start if visible (use parent coords when available)
-	(function startIfVisible() {
+	( function startIfVisible() {
 		const rect = wrapper.getBoundingClientRect();
-		if (canUseParentCoords) {
-			const r = rectInParent(rect);
+		if ( canUseParentCoords ) {
+			const r = rectInParent( rect );
 			const inViewport =
 				r.bottom > 0 &&
 				r.top <
-					(parentWindow.innerHeight ||
-						parentWindow.document.documentElement.clientHeight);
-			if (inViewport) {
+					( parentWindow.innerHeight ||
+						parentWindow.document.documentElement.clientHeight );
+			if ( inViewport ) {
 				updateStuckByLine();
 				startLoop();
 			}
@@ -551,46 +556,52 @@ export function initTimelineAnimation(scopeEl) {
 		const inViewport =
 			rect.bottom > 0 &&
 			rect.top <
-				(window.innerHeight || document.documentElement.clientHeight);
-		if (inViewport) {
+				( window.innerHeight || document.documentElement.clientHeight );
+		if ( inViewport ) {
 			updateStuckByLine();
 			startLoop();
 		}
-	})();
+	} )();
 
 	// destroy
 	function destroy() {
 		stopLoop();
-		if (observer) {
+		if ( observer ) {
 			try {
 				observer.disconnect();
-			} catch (e) {}
+			} catch ( e ) {}
 		}
-		if (visObserver) {
+		if ( visObserver ) {
 			try {
 				visObserver.disconnect();
-			} catch (e) {}
+			} catch ( e ) {}
 		}
 		try {
 			mo.disconnect();
-		} catch (e) {}
+		} catch ( e ) {}
 
 		try {
-			if (scrollParent === window) {
-				window.removeEventListener('scroll', onScrollOrResize, {
+			if ( scrollParent === window ) {
+				window.removeEventListener( 'scroll', onScrollOrResize, {
 					passive: true,
-				});
-				window.removeEventListener('resize', onScrollOrResize);
+				} );
+				window.removeEventListener( 'resize', onScrollOrResize );
 
-				if (isInIframe && parentWindow && parentHandlersAdded.scroll) {
-					log('Removing scroll/resize listeners from parent window');
+				if (
+					isInIframe &&
+					parentWindow &&
+					parentHandlersAdded.scroll
+				) {
+					log(
+						'Removing scroll/resize listeners from parent window'
+					);
 					try {
 						parentWindow.removeEventListener(
 							'scroll',
 							onScrollOrResize,
 							{ passive: true }
 						);
-					} catch (e) {
+					} catch ( e ) {
 						parentWindow.removeEventListener(
 							'scroll',
 							onScrollOrResize
@@ -601,15 +612,19 @@ export function initTimelineAnimation(scopeEl) {
 							'resize',
 							onScrollOrResize
 						);
-					} catch (e) {}
+					} catch ( e ) {}
 				}
 			} else {
-				scrollParent.removeEventListener('scroll', onScrollOrResize, {
+				scrollParent.removeEventListener( 'scroll', onScrollOrResize, {
 					passive: true,
-				});
-				window.removeEventListener('resize', onScrollOrResize);
+				} );
+				window.removeEventListener( 'resize', onScrollOrResize );
 
-				if (isInIframe && parentWindow && parentHandlersAdded.scroll) {
+				if (
+					isInIframe &&
+					parentWindow &&
+					parentHandlersAdded.scroll
+				) {
 					log(
 						'Removing scroll/resize listeners from parent window (custom scrollParent case)'
 					);
@@ -619,7 +634,7 @@ export function initTimelineAnimation(scopeEl) {
 							onScrollOrResize,
 							{ passive: true }
 						);
-					} catch (e) {
+					} catch ( e ) {
 						parentWindow.removeEventListener(
 							'scroll',
 							onScrollOrResize
@@ -630,22 +645,22 @@ export function initTimelineAnimation(scopeEl) {
 							'resize',
 							onScrollOrResize
 						);
-					} catch (e) {}
+					} catch ( e ) {}
 				}
 			}
-		} catch (e) {
+		} catch ( e ) {
 			/* ignore */
 		}
 
 		// remove stuck class if present
 		try {
-			if (currentStuckEl) {
-				currentStuckEl.classList.remove('is-stuck');
+			if ( currentStuckEl ) {
+				currentStuckEl.classList.remove( 'is-stuck' );
 			}
-		} catch (e) {}
+		} catch ( e ) {}
 		try {
 			delete el.__zaTimelineDestroy;
-		} catch (e) {
+		} catch ( e ) {
 			el.__zaTimelineDestroy = undefined;
 		}
 	}
@@ -658,29 +673,29 @@ export function initTimelineAnimation(scopeEl) {
  * Initialize all timeline widgets in a document
  * @param doc
  */
-export function initAllWidgets(doc = document) {
+export function initAllWidgets( doc = document ) {
 	try {
-		log('[ZA animation.js] initAllWidgets called', doc);
-		const wrappers = doc.querySelectorAll('.timeline-wrapper');
-		log('[ZA animation.js] Found wrappers:', wrappers.length);
-		wrappers.forEach((wrapper, index) => {
-			log('[ZA animation.js] Initializing wrapper #' + index, wrapper);
+		log( '[ZA animation.js] initAllWidgets called', doc );
+		const wrappers = doc.querySelectorAll( '.timeline-wrapper' );
+		log( '[ZA animation.js] Found wrappers:', wrappers.length );
+		wrappers.forEach( ( wrapper, index ) => {
+			log( '[ZA animation.js] Initializing wrapper #' + index, wrapper );
 			try {
-				const destroy = initTimelineAnimation(wrapper);
+				const destroy = initTimelineAnimation( wrapper );
 				log(
 					'[ZA animation.js] Wrapper #' +
 						index +
 						' initialized, destroy fn:',
 					typeof destroy
 				);
-			} catch (e) {
+			} catch ( e ) {
 				console.error(
 					'[za-timeline] initAllWidgets wrapper init failed',
 					e
 				);
 			}
-		});
-	} catch (e) {
-		console.error('[za-timeline] initAllWidgets failed', e);
+		} );
+	} catch ( e ) {
+		console.error( '[za-timeline] initAllWidgets failed', e );
 	}
 }

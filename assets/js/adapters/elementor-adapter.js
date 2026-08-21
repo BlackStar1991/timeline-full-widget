@@ -13,7 +13,7 @@ const DEBUG = false;
 const adapterUrl =
 	typeof import.meta !== 'undefined' && import.meta.url
 		? import.meta.url
-		: (document.currentScript && document.currentScript.src) || null;
+		: ( document.currentScript && document.currentScript.src ) || null;
 
 // selectors to find preview iframe (try several variations)
 const IFRAME_SELECTORS = [
@@ -28,26 +28,26 @@ const IFRAME_SELECTORS = [
 // Keep track of injected/processed iframes to avoid duplicates
 const injectedIframes = new WeakSet();
 
-function log(...args) {
-	if (DEBUG) {
-		console.log('za-timeline:', ...args);
+function log( ...args ) {
+	if ( DEBUG ) {
+		console.log( 'za-timeline:', ...args );
 	}
 }
 
-function queryFirst(selectors, root = document) {
-	for (const sel of selectors) {
+function queryFirst( selectors, root = document ) {
+	for ( const sel of selectors ) {
 		try {
-			const el = root.querySelector(sel);
-			if (el) {
+			const el = root.querySelector( sel );
+			if ( el ) {
 				return el;
 			}
-		} catch (e) {}
+		} catch ( e ) {}
 	}
 	return null;
 }
 
 function isEditorParentWindow() {
-	return !!(
+	return !! (
 		window.elementorFrontend &&
 		window.elementorFrontend.isEditMode &&
 		window.elementorFrontend.isEditMode()
@@ -60,80 +60,80 @@ function isEditorParentWindow() {
  * @param iframe
  * @param timeout
  */
-function waitForIframeReady(iframe, timeout = 4000) {
-	return new Promise((resolve, reject) => {
-		if (!iframe) {
-			return reject(new Error('no iframe'));
+function waitForIframeReady( iframe, timeout = 4000 ) {
+	return new Promise( ( resolve, reject ) => {
+		if ( ! iframe ) {
+			return reject( new Error( 'no iframe' ) );
 		}
 		try {
 			const tryResolve = () => {
 				const doc = iframe.contentDocument;
 				if (
 					doc &&
-					(doc.readyState === 'interactive' ||
-						doc.readyState === 'complete')
+					( doc.readyState === 'interactive' ||
+						doc.readyState === 'complete' )
 				) {
-					resolve(iframe);
+					resolve( iframe );
 					return true;
 				}
 				return false;
 			};
 
-			if (tryResolve()) {
+			if ( tryResolve() ) {
 				return;
 			}
 
 			const onLoad = () => {
 				cleanup();
-				resolve(iframe);
+				resolve( iframe );
 			};
-			const onError = (e) => {
+			const onError = ( e ) => {
 				cleanup();
-				reject(e || new Error('iframe load error'));
+				reject( e || new Error( 'iframe load error' ) );
 			};
 
 			const cleanup = () => {
 				try {
-					iframe.removeEventListener('load', onLoad);
-				} catch (e) {}
+					iframe.removeEventListener( 'load', onLoad );
+				} catch ( e ) {}
 				try {
-					iframe.removeEventListener('error', onError);
-				} catch (e) {}
-				if (timer) {
-					clearTimeout(timer);
+					iframe.removeEventListener( 'error', onError );
+				} catch ( e ) {}
+				if ( timer ) {
+					clearTimeout( timer );
 				}
 			};
 
-			iframe.addEventListener('load', onLoad, { passive: true });
-			iframe.addEventListener('error', onError, { passive: true });
+			iframe.addEventListener( 'load', onLoad, { passive: true } );
+			iframe.addEventListener( 'error', onError, { passive: true } );
 
-			const timer = setTimeout(() => {
-				if (tryResolve()) {
-					resolve(iframe);
+			const timer = setTimeout( () => {
+				if ( tryResolve() ) {
+					resolve( iframe );
 				} else {
 					cleanup();
-					reject(new Error('iframe ready timeout'));
+					reject( new Error( 'iframe ready timeout' ) );
 				}
-			}, timeout);
-		} catch (e) {
-			reject(e);
+			}, timeout );
+		} catch ( e ) {
+			reject( e );
 		}
-	});
+	} );
 }
 
 /**
  * Ensure iframe is same-origin and contentDocument accessible.
  * @param iframe
  */
-function safeIframeContext(iframe) {
+function safeIframeContext( iframe ) {
 	try {
 		const win = iframe.contentWindow;
 		const doc = iframe.contentDocument;
-		if (!win || !doc) {
+		if ( ! win || ! doc ) {
 			return null;
 		}
 		return { win, doc };
-	} catch (e) {
+	} catch ( e ) {
 		return null;
 	}
 }
@@ -143,56 +143,56 @@ function safeIframeContext(iframe) {
  * Returns true if injected or already present, false on failure (cross-origin, error).
  * @param iframe
  */
-async function injectAdapterIntoIframe(iframe) {
-	if (!iframe || !adapterUrl) {
+async function injectAdapterIntoIframe( iframe ) {
+	if ( ! iframe || ! adapterUrl ) {
 		return false;
 	}
-	if (injectedIframes.has(iframe)) {
-		log('already injected for iframe');
+	if ( injectedIframes.has( iframe ) ) {
+		log( 'already injected for iframe' );
 		return true;
 	}
 
-	const ctx = safeIframeContext(iframe);
-	if (!ctx) {
-		log('cannot access iframe (cross-origin?)');
+	const ctx = safeIframeContext( iframe );
+	if ( ! ctx ) {
+		log( 'cannot access iframe (cross-origin?)' );
 		return false;
 	}
 
 	try {
 		// Wait for iframe ready (best-effort)
-		await waitForIframeReady(iframe).catch(() => null);
+		await waitForIframeReady( iframe ).catch( () => null );
 		const { doc } = ctx;
 		// Avoid duplicates: check module scripts with same src
 		const existing = Array.from(
-			doc.querySelectorAll('script[type="module"][src]')
-		).some((s) => {
-			const src = s.getAttribute('src') || s.src;
+			doc.querySelectorAll( 'script[type="module"][src]' )
+		).some( ( s ) => {
+			const src = s.getAttribute( 'src' ) || s.src;
 			return src === adapterUrl;
-		});
-		if (existing) {
-			injectedIframes.add(iframe);
-			log('adapter already present in iframe');
+		} );
+		if ( existing ) {
+			injectedIframes.add( iframe );
+			log( 'adapter already present in iframe' );
 			return true;
 		}
 
-		const s = doc.createElement('script');
+		const s = doc.createElement( 'script' );
 		s.type = 'module';
 		s.src = adapterUrl;
 		s.async = true;
 
 		// handle load/error to flip flag if necessary
 		const onError = () => {
-			injectedIframes.delete(iframe);
-			log('adapter injection error');
+			injectedIframes.delete( iframe );
+			log( 'adapter injection error' );
 		};
-		s.addEventListener('error', onError, { once: true });
+		s.addEventListener( 'error', onError, { once: true } );
 
-		(doc.head || doc.documentElement).appendChild(s);
-		injectedIframes.add(iframe);
-		log('injected adapter into iframe');
+		( doc.head || doc.documentElement ).appendChild( s );
+		injectedIframes.add( iframe );
+		log( 'injected adapter into iframe' );
 		return true;
-	} catch (e) {
-		log('injectAdapterIntoIframe failed', e);
+	} catch ( e ) {
+		log( 'injectAdapterIntoIframe failed', e );
 		return false;
 	}
 }
@@ -203,11 +203,11 @@ async function injectAdapterIntoIframe(iframe) {
  */
 function initInsideIframe() {
 	try {
-		initAllWidgets(document);
-		log('initAllWidgets in iframe');
-	} catch (e) {
-		if (DEBUG) {
-			console.error('initAllWidgets inside iframe failed', e);
+		initAllWidgets( document );
+		log( 'initAllWidgets in iframe' );
+	} catch ( e ) {
+		if ( DEBUG ) {
+			console.error( 'initAllWidgets inside iframe failed', e );
 		}
 	}
 
@@ -219,25 +219,25 @@ function initInsideIframe() {
 		) {
 			window.elementorFrontend.hooks.addAction(
 				'frontend/element_ready/za-timeline.default',
-				(scope) => {
+				( scope ) => {
 					try {
-						const el = scope && scope.jquery ? scope[0] : scope;
-						if (el) {
-							initTimelineAnimation(el);
+						const el = scope && scope.jquery ? scope[ 0 ] : scope;
+						if ( el ) {
+							initTimelineAnimation( el );
 						} else {
-							initAllWidgets(document);
+							initAllWidgets( document );
 						}
-					} catch (e) {
-						if (DEBUG) {
-							console.error('hook init error inside iframe', e);
+					} catch ( e ) {
+						if ( DEBUG ) {
+							console.error( 'hook init error inside iframe', e );
 						}
 					}
 				}
 			);
-			log('hooked elementorFrontend inside iframe');
+			log( 'hooked elementorFrontend inside iframe' );
 		}
-	} catch (e) {
-		if (DEBUG) {
+	} catch ( e ) {
+		if ( DEBUG ) {
 			console.warn(
 				'could not attach elementorFrontend hook inside iframe',
 				e
@@ -249,31 +249,34 @@ function initInsideIframe() {
 	try {
 		let t = null;
 		const debounced = () => {
-			if (t) {
-				clearTimeout(t);
+			if ( t ) {
+				clearTimeout( t );
 			}
-			t = setTimeout(() => {
+			t = setTimeout( () => {
 				try {
-					initAllWidgets(document);
-				} catch (e) {
-					if (DEBUG) {
-						console.error(e);
+					initAllWidgets( document );
+				} catch ( e ) {
+					if ( DEBUG ) {
+						console.error( e );
 					}
 				}
 				t = null;
-			}, 80);
+			}, 80 );
 		};
-		const mo = new MutationObserver(debounced);
-		mo.observe(document.body || document.documentElement, {
+		const mo = new MutationObserver( debounced );
+		mo.observe( document.body || document.documentElement, {
 			childList: true,
 			subtree: true,
-		});
+		} );
 		// store for debugging/cleanup
 		window.__zaTimelineMO = mo;
-		log('installed MutationObserver inside iframe');
-	} catch (e) {
-		if (DEBUG) {
-			console.warn('could not install MutationObserver inside iframe', e);
+		log( 'installed MutationObserver inside iframe' );
+	} catch ( e ) {
+		if ( DEBUG ) {
+			console.warn(
+				'could not install MutationObserver inside iframe',
+				e
+			);
 		}
 	}
 }
@@ -283,17 +286,17 @@ function initInsideIframe() {
  * Observes DOM for iframe addition; falls back to polling if MutationObserver not available.
  */
 function initParentEditorInjection() {
-	if (!isEditorParentWindow()) {
+	if ( ! isEditorParentWindow() ) {
 		return;
 	}
 
 	// try inject once
 	const tryInjectOnce = async () => {
-		const iframe = queryFirst(IFRAME_SELECTORS, document);
-		if (!iframe) {
+		const iframe = queryFirst( IFRAME_SELECTORS, document );
+		if ( ! iframe ) {
 			return false;
 		}
-		const ok = await injectAdapterIntoIframe(iframe);
+		const ok = await injectAdapterIntoIframe( iframe );
 		return ok;
 	};
 
@@ -302,27 +305,27 @@ function initParentEditorInjection() {
 
 	// MutationObserver: watch for iframes insertion
 	try {
-		const mo = new MutationObserver(async (mutations, observer) => {
+		const mo = new MutationObserver( async ( mutations, observer ) => {
 			const ok = await tryInjectOnce();
-			if (ok) {
+			if ( ok ) {
 				observer.disconnect();
 			}
-		});
-		mo.observe(document.body, { childList: true, subtree: true });
-	} catch (e) {
+		} );
+		mo.observe( document.body, { childList: true, subtree: true } );
+	} catch ( e ) {
 		// fallback polling
 		let tries = 0;
 		const maxTries = 20;
-		const interval = setInterval(async () => {
+		const interval = setInterval( async () => {
 			tries++;
-			const iframe = queryFirst(IFRAME_SELECTORS, document);
-			if (iframe) {
-				await injectAdapterIntoIframe(iframe);
-				clearInterval(interval);
-			} else if (tries > maxTries) {
-				clearInterval(interval);
+			const iframe = queryFirst( IFRAME_SELECTORS, document );
+			if ( iframe ) {
+				await injectAdapterIntoIframe( iframe );
+				clearInterval( interval );
+			} else if ( tries > maxTries ) {
+				clearInterval( interval );
 			}
-		}, 250);
+		}, 250 );
 	}
 }
 
@@ -338,10 +341,10 @@ function initParentContext() {
 
 	// initialize widgets on this (parent) document (front-end or editor parent)
 	try {
-		initAllWidgets(document);
-	} catch (e) {
-		if (DEBUG) {
-			console.error('initAllWidgets parent failed', e);
+		initAllWidgets( document );
+	} catch ( e ) {
+		if ( DEBUG ) {
+			console.error( 'initAllWidgets parent failed', e );
 		}
 	}
 
@@ -353,25 +356,28 @@ function initParentContext() {
 		) {
 			window.elementorFrontend.hooks.addAction(
 				'frontend/element_ready/za-timeline.default',
-				(scope) => {
+				( scope ) => {
 					try {
-						const el = scope && scope.jquery ? scope[0] : scope;
-						if (el) {
-							initTimelineAnimation(el);
+						const el = scope && scope.jquery ? scope[ 0 ] : scope;
+						if ( el ) {
+							initTimelineAnimation( el );
 						} else {
-							initAllWidgets(document);
+							initAllWidgets( document );
 						}
-					} catch (e) {
-						if (DEBUG) {
-							console.error('elementor hook error in parent', e);
+					} catch ( e ) {
+						if ( DEBUG ) {
+							console.error(
+								'elementor hook error in parent',
+								e
+							);
 						}
 					}
 				}
 			);
-			log('hooked elementorFrontend on parent');
+			log( 'hooked elementorFrontend on parent' );
 		}
-	} catch (e) {
-		if (DEBUG) {
+	} catch ( e ) {
+		if ( DEBUG ) {
 			console.warn(
 				'could not attach elementorFrontend hook on parent',
 				e
@@ -384,7 +390,7 @@ function initParentContext() {
 
 const runningInIframe = window.self !== window.top;
 
-if (runningInIframe) {
+if ( runningInIframe ) {
 	initInsideIframe();
 } else {
 	initParentContext();

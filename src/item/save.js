@@ -4,7 +4,7 @@ import { isBlobURL } from '@wordpress/blob';
 import { getSafeLinkAttributes, buildStyleObject } from './utils';
 import { createElement as el } from '@wordpress/element';
 
-export default function Save({ attributes }) {
+export default function Save( { attributes } ) {
 	const {
 		textAlignClass,
 		title,
@@ -50,25 +50,25 @@ export default function Save({ attributes }) {
 		reverseMediaContent,
 	} = attributes;
 
-	const classes = ['timeline-item', position];
-	if (textAlignClass) {
-		classes.push(`t-text-align-${textAlignClass}`);
+	const classes = [ 'timeline-item', position ];
+	if ( textAlignClass ) {
+		classes.push( `t-text-align-${ textAlignClass }` );
 	}
-	const className = Array.from(new Set(classes)).join(' ');
+	const className = Array.from( new Set( classes ) ).join( ' ' );
 	const contentClasses = [
 		'tl-content',
 		horizontalContentLayout ? 'tl-content-horizontal' : '',
 		reverseMediaContent ? 'tl-reverse' : '',
 	]
-		.filter(Boolean)
-		.join(' ');
-	const linkProps = getSafeLinkAttributes(linkUrl, rel, linkTarget);
+		.filter( Boolean )
+		.join( ' ' );
+	const linkProps = getSafeLinkAttributes( linkUrl, rel, linkTarget );
 	const mediaLinkProps = getSafeLinkAttributes(
 		mediaLinkUrl,
 		mediaLinkRel,
 		mediaLinkTarget
 	);
-	const styleObj = buildStyleObject({
+	const styleObj = buildStyleObject( {
 		titleInlineStyle,
 		titleFontSize,
 		titleFontWeight,
@@ -78,51 +78,53 @@ export default function Save({ attributes }) {
 		titleLetterSpacing,
 		titleFontFamily,
 		titleColor,
-	});
+	} );
 
 	const isVideoByMime =
-		typeof mediaMime === 'string' && mediaMime.indexOf('video/') === 0;
+		typeof mediaMime === 'string' && mediaMime.indexOf( 'video/' ) === 0;
 	const isVideoByType = mediaType === 'video';
 	const isVideoByExt =
 		typeof mediaUrl === 'string' &&
-		/\.(mp4|webm|ogv|ogg)(?:[\?#]|$)/i.test(mediaUrl);
+		/\.(mp4|webm|ogv|ogg)(?:[\?#]|$)/i.test( mediaUrl );
 	const isVideo = isVideoByType || isVideoByMime || isVideoByExt;
 
 	let sourceType = mediaMime || undefined;
-	if (!sourceType && isVideo && mediaUrl) {
-		const extMatch = mediaUrl.match(/\.([0-9a-z]+)(?:[\?#]|$)/i);
-		if (extMatch) {
-			const ext = extMatch[1].toLowerCase();
-			if (ext === 'mp4') {
+	if ( ! sourceType && isVideo && mediaUrl ) {
+		const extMatch = mediaUrl.match( /\.([0-9a-z]+)(?:[\?#]|$)/i );
+		if ( extMatch ) {
+			const ext = extMatch[ 1 ].toLowerCase();
+			if ( ext === 'mp4' ) {
 				sourceType = 'video/mp4';
 			}
-			if (ext === 'webm') {
+			if ( ext === 'webm' ) {
 				sourceType = 'video/webm';
 			}
-			if (ext === 'ogv' || ext === 'ogg') {
+			if ( ext === 'ogv' || ext === 'ogg' ) {
 				sourceType = 'video/ogg';
 			}
 		}
 	}
-	const blockProps = useBlockProps.save({
+	const blockProps = useBlockProps.save( {
 		className,
-	});
+	} );
 
 	const mediaContent =
 		showMedia && mediaUrl
-			? (() => {
+			? ( () => {
 					const mediaElement = (
 						<div
-							className={`timeline_pic ${
-								isBlobURL(mediaUrl) ? 'image-loading' : 'loaded'
-							}`}
+							className={ `timeline_pic ${
+								isBlobURL( mediaUrl )
+									? 'image-loading'
+									: 'loaded'
+							}` }
 						>
-							{isVideo ? (
+							{ isVideo ? (
 								el(
 									'video',
 									{
 										id: mediaId
-											? `video_${mediaId}`
+											? `video_${ mediaId }`
 											: undefined,
 										poster: videoPoster || undefined,
 										autoPlay: true,
@@ -136,100 +138,102 @@ export default function Save({ attributes }) {
 										},
 									},
 									mediaUrl
-										? el('source', {
+										? el( 'source', {
 												src: mediaUrl,
 												type: sourceType,
-											})
+										  } )
 										: null,
 									'Your browser does not support the video tag.'
 								)
 							) : (
 								<img
-									id={mediaId ? `img_${mediaId}` : undefined}
-									{...(mediaWidth
+									id={
+										mediaId ? `img_${ mediaId }` : undefined
+									}
+									{ ...( mediaWidth
 										? {
 												style: { width: mediaWidth },
-											}
-										: {})}
-									src={mediaUrl}
-									alt={imageAlt || ''}
+										  }
+										: {} ) }
+									src={ mediaUrl }
+									alt={ imageAlt || '' }
 								/>
-							)}
+							) }
 						</div>
 					);
 
-					if (isMediaWrapToLink && mediaLinkProps.href) {
+					if ( isMediaWrapToLink && mediaLinkProps.href ) {
 						return (
 							<a
 								className="timeline-media-link"
-								{...mediaLinkProps}
+								{ ...mediaLinkProps }
 							>
-								{mediaElement}
+								{ mediaElement }
 							</a>
 						);
 					}
 
 					return mediaElement;
-				})()
+			  } )()
 			: null;
 	return (
-		<li {...blockProps}>
+		<li { ...blockProps }>
 			<div className="timeline-side">
-				{showOtherSide && (
+				{ showOtherSide && (
 					<RichText.Content
 						tagName="p"
-						className={`t-text-align-${sideTextAlign} `}
-						value={otherSiteTitle}
+						className={ `t-text-align-${ sideTextAlign } ` }
+						value={ otherSiteTitle }
 					/>
-				)}
+				) }
 			</div>
 			<div className="tl-trigger"></div>
-			{showMarker && (
+			{ showMarker && (
 				<div
 					className="tl-mark"
-					id={mediaId ? `marker_${markerId}` : undefined}
+					id={ mediaId ? `marker_${ markerId }` : undefined }
 				>
-					{markerUnique && markerUrl && (
-						<img src={markerUrl} alt={markerAlt || ''} />
-					)}
+					{ markerUnique && markerUrl && (
+						<img src={ markerUrl } alt={ markerAlt || '' } />
+					) }
 				</div>
-			)}
+			) }
 			<div
 				className="timeline-panel"
-				{...(itemBackgroundColor
+				{ ...( itemBackgroundColor
 					? {
 							style: {
 								backgroundColor: itemBackgroundColor,
 							},
-						}
-					: {})}
+					  }
+					: {} ) }
 			>
-				<div className={contentClasses}>
-					{mediaContent}
+				<div className={ contentClasses }>
+					{ mediaContent }
 
 					<div className="tl-desc">
-						{titleTag === 'a' ? (
+						{ titleTag === 'a' ? (
 							<RichText.Content
 								tagName="a"
-								className={`t-text-align-${titleAlign} tl-title`}
-								value={title}
-								{...linkProps}
-								style={styleObj}
+								className={ `t-text-align-${ titleAlign } tl-title` }
+								value={ title }
+								{ ...linkProps }
+								style={ styleObj }
 							/>
 						) : (
 							<RichText.Content
-								tagName={titleTag}
-								className={`t-text-align-${titleAlign} tl-title`}
-								value={title}
-								style={styleObj}
+								tagName={ titleTag }
+								className={ `t-text-align-${ titleAlign } tl-title` }
+								value={ title }
+								style={ styleObj }
 							/>
-						)}
+						) }
 
 						<div
 							className="tl-desc-short"
-							{...(descriptionColor
+							{ ...( descriptionColor
 								? { style: { color: descriptionColor } }
-								: {})}
+								: {} ) }
 						>
 							<InnerBlocks.Content />
 						</div>

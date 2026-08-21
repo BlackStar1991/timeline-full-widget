@@ -2,12 +2,12 @@
 import { useSelect } from '@wordpress/data';
 import { useMemo } from '@wordpress/element';
 
-function normalizeFontEntry(f) {
+function normalizeFontEntry( f ) {
 	const name = f?.name || f?.label || f?.title || '';
 	const slug = f?.slug || null;
 	const family = f?.fontFamily || null;
 	const cleanFamily = family
-		? String(family).replace(/^["']|["']$/g, '')
+		? String( family ).replace( /^["']|["']$/g, '' )
 		: null;
 	const value = slug || cleanFamily || name;
 
@@ -19,8 +19,8 @@ function normalizeFontEntry(f) {
 	};
 }
 
-function extractFontsFromSettings(settings) {
-	if (!settings) {
+function extractFontsFromSettings( settings ) {
+	if ( ! settings ) {
 		return [];
 	}
 
@@ -35,62 +35,62 @@ function extractFontsFromSettings(settings) {
 
 	const found = [];
 
-	const pushFonts = (maybe) => {
-		if (!maybe) {
+	const pushFonts = ( maybe ) => {
+		if ( ! maybe ) {
 			return;
 		}
 
-		if (Array.isArray(maybe)) {
-			found.push(...maybe);
+		if ( Array.isArray( maybe ) ) {
+			found.push( ...maybe );
 			return;
 		}
 
-		if (maybe.fontFamilies) {
-			if (Array.isArray(maybe.fontFamilies)) {
-				found.push(...maybe.fontFamilies);
-			} else if (typeof maybe.fontFamilies === 'object') {
-				Object.values(maybe.fontFamilies).forEach((value) => {
-					if (Array.isArray(value)) {
-						found.push(...value);
+		if ( maybe.fontFamilies ) {
+			if ( Array.isArray( maybe.fontFamilies ) ) {
+				found.push( ...maybe.fontFamilies );
+			} else if ( typeof maybe.fontFamilies === 'object' ) {
+				Object.values( maybe.fontFamilies ).forEach( ( value ) => {
+					if ( Array.isArray( value ) ) {
+						found.push( ...value );
 					}
-				});
+				} );
 			}
 		}
 
 		if (
 			maybe.fontFamilies?.theme &&
-			Array.isArray(maybe.fontFamilies.theme)
+			Array.isArray( maybe.fontFamilies.theme )
 		) {
-			found.push(...maybe.fontFamilies.theme);
+			found.push( ...maybe.fontFamilies.theme );
 		}
 	};
 
-	candidates.forEach(pushFonts);
+	candidates.forEach( pushFonts );
 
-	const normalized = found.filter(Boolean).map(normalizeFontEntry);
+	const normalized = found.filter( Boolean ).map( normalizeFontEntry );
 	const uniqueMap = new Map();
 
-	normalized.forEach((font) => {
-		if (font.value && !uniqueMap.has(font.value)) {
-			uniqueMap.set(font.value, font);
+	normalized.forEach( ( font ) => {
+		if ( font.value && ! uniqueMap.has( font.value ) ) {
+			uniqueMap.set( font.value, font );
 		}
-	});
+	} );
 
-	return Array.from(uniqueMap.values());
+	return Array.from( uniqueMap.values() );
 }
 
 export default function useFontsFromSettings() {
-	const settings = useSelect((select) => {
+	const settings = useSelect( ( select ) => {
 		return (
-			select('core/block-editor')?.getSettings?.() ||
-			select('core/editor')?.getEditorSettings?.() ||
+			select( 'core/block-editor' )?.getSettings?.() ||
+			select( 'core/editor' )?.getEditorSettings?.() ||
 			null
 		);
-	}, []);
+	}, [] );
 
-	const fonts = useMemo(() => {
-		return extractFontsFromSettings(settings);
-	}, [settings]);
+	const fonts = useMemo( () => {
+		return extractFontsFromSettings( settings );
+	}, [ settings ] );
 
 	return fonts;
 }

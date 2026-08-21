@@ -1,7 +1,7 @@
 import { useBlockProps, InnerBlocks } from '@wordpress/block-editor';
 import { convertMarginAttrToStyle } from './item/utils';
 
-export default function Save({ attributes }) {
+export default function Save( { attributes } ) {
 	const {
 		lineColor,
 		lineWidth = 4,
@@ -19,36 +19,43 @@ export default function Save({ attributes }) {
 	const hasAnimatedMarkers =
 		showMarker && animationTimeline && animationMarker;
 
-	const marginStyle = convertMarginAttrToStyle(attributes.style);
-	const blockProps = useBlockProps.save({ style: marginStyle });
+	const marginStyle = convertMarginAttrToStyle( attributes.style );
+	const blockProps = useBlockProps.save( { style: marginStyle } );
 
 	return (
-		<div {...blockProps}>
+		<div { ...blockProps }>
 			<div
 				className="timeline-wrapper"
-				style={{
+				style={ {
 					'--timeline-line-color': lineColor || '#F6F6F8',
-					'--timeline-line-width': `${Math.max(1, Number(lineWidth) || 4)}px`,
+					'--timeline-line-width': `${ Math.max(
+						1,
+						Number( lineWidth ) || 4
+					) }px`,
 					'--timeline-marker-color': markerColor || '#F6F6F8',
-					'--marker-size': `${Math.max(1, Number(markerSize) || 30)}px`,
-					'--timeline-line-active-color': animationLineColor || '#F37321',
-					'--timeline-marker-active-color': animationMarkerColor || '#F37321',
-				}}
+					'--marker-size': `${ Math.max(
+						1,
+						Number( markerSize ) || 30
+					) }px`,
+					'--timeline-line-active-color':
+						animationLineColor || '#F37321',
+					'--timeline-marker-active-color':
+						animationMarkerColor || '#F37321',
+				} }
 			>
-				{animationTimeline && (
+				{ animationTimeline && (
 					<div className="timeline-line-animation"></div>
-				)}
+				) }
 
 				<ul
-					className={[
+					className={ [
 						'timeline',
 						hasAnimatedMarkers && 'timeline-animation-marker',
-						animationOtherSideSticky &&
-							'timeline-animation-other-side-sticky',
+						animationOtherSideSticky && 'timeline-animation-other-side-sticky',
 						showStepNumbers && 'timeline-numbers',
 					]
-						.filter(Boolean)
-						.join(' ')}
+						.filter( Boolean )
+						.join( ' ' ) }
 				>
 					<InnerBlocks.Content />
 				</ul>

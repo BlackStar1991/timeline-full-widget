@@ -4,12 +4,12 @@ import { __ } from '@wordpress/i18n';
 import { Edit } from './edit';
 import Save from './save';
 
-registerBlockType('za/timeline-item', {
+registerBlockType( 'za/timeline-item', {
 	apiVersion: 3,
-	title: __('Timeline Item', 'timeline-full-widget'),
-	description: __('Timeline Item Description', 'timeline-full-widget'),
+	title: __( 'Timeline Item', 'timeline-full-widget' ),
+	description: __( 'Timeline Item Description', 'timeline-full-widget' ),
 	icon: 'universal-access',
-	parent: ['za/timeline-full-widget'],
+	parent: [ 'za/timeline-full-widget' ],
 	supports: {
 		html: false,
 		reusable: false,
@@ -195,4 +195,4 @@ registerBlockType('za/timeline-item', {
 	},
 	edit: Edit,
 	save: Save,
-});
+} );
