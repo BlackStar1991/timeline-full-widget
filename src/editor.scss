@@ -12,18 +12,15 @@
   text-align: inherit !important;
 }
 
-.components-font-size-picker{
-  display: block!important;
-  margin-bottom: 16px!important;
-}
-
-
 .timeline .block-editor-block-list__block:not(:first-child) {
   margin-top: 40px;
 }
 
 .tl-title {
-  margin-bottom: 20px;
+  margin: 10px 0 0;
+  font-size: 22px;
+  line-height: 1.5;
+  font-weight: 700;
 }
 
 // for sticky marker
@@ -44,4 +41,40 @@
   justify-self: center;
   left: auto;
   transform: none;
+}
+// Timeline item uses internal area blocks for side and main content.
+.editor-styles-wrapper .timeline-item > .block-editor-inner-blocks,
+.editor-styles-wrapper .timeline-item > .block-editor-inner-blocks > .block-editor-block-list__layout {
+  display: contents;
+}
+
+.editor-styles-wrapper .timeline-side .block-editor-block-list__layout,
+.editor-styles-wrapper .tl-desc-short .block-editor-block-list__layout {
+  width: 100%;
+}
+
+
+.editor-styles-wrapper .timeline-side .block-list-appender,
+.editor-styles-wrapper .tl-desc-short .block-list-appender {
+  position: relative;
+  clear: both;
+  width: 100%;
+  margin-top: 10px;
+  z-index: 4;
+}
+
+.editor-styles-wrapper .timeline-side .block-list-appender .block-editor-button-block-appender,
+.editor-styles-wrapper .tl-desc-short .block-list-appender .block-editor-button-block-appender {
+  position: relative;
+  right: auto;
+  bottom: auto;
+  display: flex;
+  justify-content: center;
+  width: 100%;
+  min-height: 32px;
+}
+
+.editor-styles-wrapper .timeline-panel .block-list-appender,
+.editor-styles-wrapper .timeline-side .block-list-appender {
+  pointer-events: auto;
 }

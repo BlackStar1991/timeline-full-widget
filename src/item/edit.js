@@ -1,32 +1,26 @@
 // item/edit.js
 import {
 	useBlockProps,
-	RichText,
 	InspectorControls,
 	BlockControls,
-	MediaPlaceholder,
 	MediaReplaceFlow,
 	InnerBlocks,
 	PanelColorSettings,
-	AlignmentToolbar,
 	LinkControl,
 } from '@wordpress/block-editor';
+import { createBlock } from '@wordpress/blocks';
 import { __, sprintf } from '@wordpress/i18n';
 import { link as linkIcon, linkOff as unlinkIcon } from '@wordpress/icons';
 import { useSelect, useDispatch } from '@wordpress/data';
 import {
 	PanelBody,
-	SelectControl,
 	ToolbarButton,
 	ToggleControl,
-	Spinner,
 	Popover,
 } from '@wordpress/components';
-import { isBlobURL } from '@wordpress/blob';
 import { useState, useEffect, useMemo, useCallback } from '@wordpress/element';
 
-import Title from './title';
-import { parseStyleString, getSafeLinkAttributes } from './utils';
+import { getSafeLinkAttributes } from './utils';
 import {
 	ITEM_ATTRIBUTE_EXCLUSIONS,
 	collectDescendantStyleUpdates,
@@ -34,20 +28,40 @@ import {
 	getNoRecipientItemsNotice,
 	getNoSiblingItemsNotice,
 } from './style-inheritance';
+import {
+	CONTENT_AREA_BLOCK,
+	SIDE_AREA_BLOCK,
+	TIMELINE_ITEM_PARAGRAPH_TEMPLATE,
+	TIMELINE_ITEM_AREA_BLOCKS,
+	TIMELINE_ITEM_AREA_TEMPLATE,
+	getContentAreaAttributes,
+	getSideAreaAttributes,
+	shallowEqualAttributes,
+} from './areas/config';
+import { createLegacyTitleHeadingBlock } from './legacy-title-migration';
 
 import MediaSettingsPanel from './components/MediaSettingsPanel';
-import TitleTypographyPanel from './components/TitleTypographyPanel';
+
+
+function createEmptyParagraphBlock() {
+	return createBlock(
+		TIMELINE_ITEM_PARAGRAPH_TEMPLATE[ 0 ],
+		TIMELINE_ITEM_PARAGRAPH_TEMPLATE[ 1 ]
+	);
+}
+
+function getContentAreaInnerBlocks( attributes = {}, legacyBlocks = [] ) {
+	if ( legacyBlocks.length ) {
+		return [ createLegacyTitleHeadingBlock( attributes ), ...legacyBlocks ];
+	}
+
+	return [ createLegacyTitleHeadingBlock( attributes ), createEmptyParagraphBlock() ];
+}
 
 export function Edit( { clientId, attributes, setAttributes } ) {
 	const {
-		titleAlign,
-		title,
-		titleTag,
 		descriptionColor,
 		itemBackgroundColor,
-		linkUrl,
-		linkTarget,
-		rel,
 		mediaLinkUrl,
 		mediaLinkTarget,
 		mediaLinkRel,
@@ -62,16 +76,6 @@ export function Edit( { clientId, attributes, setAttributes } ) {
 		mediaMime,
 		mediaId,
 		onTheOneSide,
-		titleInlineStyle,
-		titleFontSize,
-		titleFontUnit,
-		titleFontWeight,
-		titleLineHeight,
-		titleLetterSpacing,
-		titleMarginTop,
-		titleMarginBottom,
-		titleColor,
-		titleFontFamily,
 		showMarker,
 		markerUnique,
 		markerUrl,
@@ -84,10 +88,11 @@ export function Edit( { clientId, attributes, setAttributes } ) {
 		reverseMediaContent,
 	} = attributes;
 
-	const [ activeField, setActiveField ] = useState( null );
 	const [ isMediaLinkPickerOpen, setIsMediaLinkPickerOpen ] =
 		useState( false );
-	const { updateBlockAttributes } = useDispatch( 'core/block-editor' );
+	const { replaceInnerBlocks, updateBlockAttributes } = useDispatch(
+		'core/block-editor'
+	);
 	const { createSuccessNotice, createErrorNotice } =
 		useDispatch( 'core/notices' );
 
@@ -149,61 +154,19 @@ export function Edit( { clientId, attributes, setAttributes } ) {
 	}, [ direction, blockIndex ] );
 
 	useEffect( () => {
-		const updates = {};
 		const computedPosition = onTheOneSide
 			? direction
 				? 'timeline-inverted'
 				: 'timeline-left'
 			: computedFallbackPosition;
 		if ( position !== computedPosition ) {
-			updates.position = computedPosition;
-		}
-
-		// pull inline style values once
-		const parsed = parseStyleString( titleInlineStyle || '' );
-		if ( parsed.fontSize && ! titleFontSize ) {
-			const m = parsed.fontSize.match( /^([\d.]+)(px|rem|em|%)?$/ );
-			updates.titleFontSize = m ? m[ 1 ] : parsed.fontSize;
-		}
-		if ( parsed.fontWeight && ! titleFontWeight ) {
-			updates.titleFontWeight = parsed.fontWeight;
-		}
-		if ( parsed.marginTop && ! titleMarginTop ) {
-			updates.titleMarginTop = parsed.marginTop.replace( /px$/, '' );
-		}
-		if ( parsed.marginBottom && ! titleMarginBottom ) {
-			updates.titleMarginBottom = parsed.marginBottom.replace(
-				/px$/,
-				''
-			);
-		}
-		if ( parsed.lineHeight && ! titleLineHeight ) {
-			updates.titleLineHeight = parsed.lineHeight;
-		}
-		if ( parsed.letterSpacing && ! titleLetterSpacing ) {
-			updates.titleLetterSpacing = parsed.letterSpacing;
-		}
-		if ( parsed.color && ! titleColor ) {
-			updates.titleColor = parsed.color;
-		}
-
-		if ( Object.keys( updates ).length ) {
-			setAttributes( updates );
+			setAttributes( { position: computedPosition } );
 		}
 	}, [
-		blockIndex,
 		direction,
 		onTheOneSide,
 		computedFallbackPosition,
 		position,
-		titleInlineStyle,
-		titleFontSize,
-		titleFontWeight,
-		titleLineHeight,
-		titleLetterSpacing,
-		titleMarginTop,
-		titleMarginBottom,
-		titleColor,
 		setAttributes,
 	] );
 
@@ -219,6 +182,104 @@ export function Edit( { clientId, attributes, setAttributes } ) {
 		() => getInheritableAttributes( attributes, ITEM_ATTRIBUTE_EXCLUSIONS ),
 		[ attributes ]
 	);
+
+	const areaBlocks = useMemo( () => {
+		const children = currentBlock?.innerBlocks || [];
+
+		return {
+			side: children.find( ( block ) => block.name === SIDE_AREA_BLOCK ),
+			content: children.find(
+				( block ) => block.name === CONTENT_AREA_BLOCK
+			),
+			legacy: children.filter(
+				( block ) => ! TIMELINE_ITEM_AREA_BLOCKS.includes( block.name )
+			),
+		};
+	}, [ currentBlock ] );
+
+	useEffect( () => {
+		if ( ! currentBlock ) {
+			return;
+		}
+
+		if (
+			areaBlocks.side &&
+			areaBlocks.content &&
+			! areaBlocks.legacy.length
+		) {
+			return;
+		}
+
+		const sideArea =
+			areaBlocks.side ||
+			createBlock(
+				SIDE_AREA_BLOCK,
+				getSideAreaAttributes( attributes ),
+				otherSiteTitle
+					? [
+						createBlock( 'core/paragraph', {
+							content: otherSiteTitle,
+						} ),
+					  ]
+					: []
+			);
+		const contentArea =
+			areaBlocks.content ||
+			createBlock(
+				CONTENT_AREA_BLOCK,
+				getContentAreaAttributes( attributes ),
+				getContentAreaInnerBlocks( attributes, areaBlocks.legacy )
+			);
+
+		replaceInnerBlocks( clientId, [ sideArea, contentArea ], false );
+	}, [
+		areaBlocks,
+		attributes,
+		clientId,
+		currentBlock,
+		otherSiteTitle,
+		replaceInnerBlocks,
+	] );
+
+	useEffect( () => {
+		if ( areaBlocks.side ) {
+			const nextSideAttributes = getSideAreaAttributes( attributes );
+			const currentSideAttributes = getSideAreaAttributes(
+				areaBlocks.side.attributes || {}
+			);
+
+			if (
+				! shallowEqualAttributes(
+					currentSideAttributes,
+					nextSideAttributes
+				)
+			) {
+				updateBlockAttributes(
+					areaBlocks.side.clientId,
+					nextSideAttributes
+				);
+			}
+		}
+
+		if ( areaBlocks.content ) {
+			const nextContentAttributes = getContentAreaAttributes( attributes );
+			const currentContentAttributes = getContentAreaAttributes(
+				areaBlocks.content.attributes || {}
+			);
+
+			if (
+				! shallowEqualAttributes(
+					currentContentAttributes,
+					nextContentAttributes
+				)
+			) {
+				updateBlockAttributes(
+					areaBlocks.content.clientId,
+					nextContentAttributes
+				);
+			}
+		}
+	}, [ areaBlocks, attributes, updateBlockAttributes ] );
 
 	const applyStylesToSiblingItems = useCallback( () => {
 		if ( ! parentId || timelineItemSiblings.length < 2 ) {
@@ -300,16 +361,6 @@ export function Edit( { clientId, attributes, setAttributes } ) {
 				mediaMime: media.mime,
 			} ),
 		[ setAttributes ]
-	);
-
-	const isVideo = useMemo(
-		() =>
-			mediaType === 'video' ||
-			( typeof mediaMime === 'string' &&
-				mediaMime.indexOf( 'video/' ) === 0 ) ||
-			( typeof mediaUrl === 'string' &&
-				/\.(mp4|webm|ogv|ogg)(?:[\?#]|$)/i.test( mediaUrl ) ),
-		[ mediaType, mediaMime, mediaUrl ]
 	);
 
 	const blockToolbarForMedia = useMemo( () => {
@@ -453,106 +504,6 @@ export function Edit( { clientId, attributes, setAttributes } ) {
 		);
 	}, [ applyStylesToSiblingItems, timelineItemSiblings.length ] );
 
-	const selectedBlockClientId = useSelect(
-		( s ) => s( 'core/block-editor' ).getSelectedBlockClientId(),
-		[]
-	);
-
-	const mediaLinkProps = useMemo(
-		() =>
-			getSafeLinkAttributes(
-				mediaLinkUrl,
-				mediaLinkRel,
-				mediaLinkTarget
-			),
-		[ mediaLinkUrl, mediaLinkRel, mediaLinkTarget ]
-	);
-
-	const mediaPreviewNode = useMemo( () => {
-		if ( ! showMedia || ! mediaUrl ) {
-			return null;
-		}
-
-		const mediaElement = (
-			<div
-				className={ `timeline_pic ${
-					isBlobURL( mediaUrl ) ? 'image-loading' : 'loaded'
-				}` }
-			>
-				{ isVideo ? (
-					<video
-						id={ mediaId ? `video_${ mediaId }` : undefined }
-						autoPlay
-						muted
-						loop
-						playsInline
-						preload="metadata"
-						poster={ videoPoster || undefined }
-						style={ {
-							width: mediaWidth || '100%',
-							height: 'auto',
-						} }
-					>
-						<source
-							src={ mediaUrl }
-							type={ mediaMime || undefined }
-						/>
-						{ __(
-							'Your browser does not support the video tag.',
-							'timeline-full-widget'
-						) }
-					</video>
-				) : (
-					<img
-						id={ mediaId ? `img_${ mediaId }` : undefined }
-						src={ mediaUrl }
-						alt={ imageAlt || '' }
-						style={ {
-							width: mediaWidth || undefined,
-							height: 'auto',
-						} }
-					/>
-				) }
-				{ isBlobURL( mediaUrl ) && <Spinner /> }
-			</div>
-		);
-
-		if ( isMediaWrapToLink && mediaLinkProps.href ) {
-			return (
-				<div
-					className="timeline-media-link"
-					role="link"
-					aria-label={ __(
-						'Linked media preview',
-						'timeline-full-widget'
-					) }
-				>
-					{ mediaElement }
-				</div>
-			);
-		}
-
-		return mediaElement;
-	}, [
-		showMedia,
-		mediaUrl,
-		isVideo,
-		mediaId,
-		videoPoster,
-		mediaWidth,
-		mediaMime,
-		imageAlt,
-		isMediaWrapToLink,
-		mediaLinkProps,
-	] );
-
-	const contentClasses = [
-		'tl-content',
-		horizontalContentLayout ? 'tl-content-horizontal' : '',
-		reverseMediaContent ? 'tl-reverse' : '',
-	]
-		.filter( Boolean )
-		.join( ' ' );
 
 	return (
 		<>
@@ -586,40 +537,10 @@ export function Edit( { clientId, attributes, setAttributes } ) {
 							} )
 						}
 					/>
-					<SelectControl
-						label={ __( 'Title Tag', 'timeline-full-widget' ) }
-						value={ titleTag }
-						options={ [
-							{ label: 'H1', value: 'h1' },
-							{ label: 'H2', value: 'h2' },
-							{ label: 'H3', value: 'h3' },
-							{ label: 'H4', value: 'h4' },
-							{ label: 'H5', value: 'h5' },
-							{ label: 'H6', value: 'h6' },
-							{ label: 'Paragraph', value: 'p' },
-							{ label: 'Div', value: 'div' },
-							{ label: 'Span', value: 'span' },
-							{ label: 'Link (a)', value: 'a' },
-						] }
-						onChange={ ( val ) =>
-							setAttributes( { titleTag: val } )
-						}
-						__next40pxDefaultSize={ true }
-						__nextHasNoMarginBottom={ true }
-					/>
 
 					<PanelColorSettings
-						title={ __( 'Color settings', 'timeline-full-widget' ) }
+						title={ __( 'Color Settings', 'timeline-full-widget' ) }
 						colorSettings={ [
-							{
-								value: titleColor,
-								onChange: ( color ) =>
-									setAttributes( { titleColor: color } ),
-								label: __(
-									'Title color',
-									'timeline-full-widget'
-								),
-							},
 							{
 								value: descriptionColor,
 								onChange: ( color ) =>
@@ -659,62 +580,20 @@ export function Edit( { clientId, attributes, setAttributes } ) {
 					markerId={ markerId }
 				/>
 
-				<TitleTypographyPanel
-					attrs={ {
-						titleFontSize,
-						titleFontUnit,
-						titleFontWeight,
-						titleMarginTop,
-						titleMarginBottom,
-						titleLineHeight,
-						titleLetterSpacing,
-						titleFontFamily,
-					} }
-					setAttributes={ setAttributes }
-				/>
 			</InspectorControls>
 
 			{ blockToolbarForMedia }
 			{ mediaLinkPopover }
 			{ blockToolbarForStyleInheritance }
 
-			{ activeField === 'sideText' &&
-				selectedBlockClientId === clientId && (
-					<BlockControls group="block">
-						<AlignmentToolbar
-							value={ sideTextAlign }
-							onChange={ ( newAlign ) =>
-								setAttributes( {
-									sideTextAlign: newAlign || 'left',
-								} )
-							}
-						/>
-					</BlockControls>
-				) }
 
 			<li { ...blockProps }>
-				<div className="timeline-side">
-					{ showOtherSide && (
-						<RichText
-							tagName="p"
-							className={ `t-text-align-${ sideTextAlign }` }
-							value={ otherSiteTitle }
-							onChange={ ( val ) =>
-								setAttributes( { otherSiteTitle: val } )
-							}
-							onFocus={ () => setActiveField( 'sideText' ) }
-							placeholder={ __(
-								'Add side content',
-								'timeline-full-widget'
-							) }
-						/>
-					) }
-				</div>
+				<div className="tl-trigger"></div>
 
 				{ showMarker && (
 					<div
 						className="tl-mark"
-						id={ mediaId ? `marker_${ markerId }` : undefined }
+						id={ markerId ? `marker_${ markerId }` : undefined }
 					>
 						{ markerUnique && markerUrl && (
 							<img
@@ -725,64 +604,12 @@ export function Edit( { clientId, attributes, setAttributes } ) {
 					</div>
 				) }
 
-				<div
-					className="timeline-panel"
-					{ ...( itemBackgroundColor
-						? { style: { backgroundColor: itemBackgroundColor } }
-						: {} ) }
-				>
-					<div className={ contentClasses }>
-						{ showMedia && mediaUrl
-							? mediaPreviewNode
-							: showMedia && (
-									<MediaPlaceholder
-										onSelect={ onSelect }
-										accept="image/*,video/*"
-										allowedTypes={ [ 'image', 'video' ] }
-									/>
-							  ) }
-
-						<div className="tl-desc">
-							<Title
-								clientId={ clientId }
-								title={ title }
-								titleTag={ titleTag }
-								titleAlign={ titleAlign }
-								titleInlineStyle={ titleInlineStyle }
-								titleFontSize={ titleFontSize }
-								titleFontWeight={ titleFontWeight }
-								titleMarginTop={ titleMarginTop }
-								titleMarginBottom={ titleMarginBottom }
-								titleLineHeight={ titleLineHeight }
-								titleLetterSpacing={ titleLetterSpacing }
-								titleColor={ titleColor }
-								titleFontFamily={ titleFontFamily }
-								linkUrl={ linkUrl }
-								linkTarget={ linkTarget }
-								rel={ rel }
-								setAttributes={ setAttributes }
-								activeField={ activeField }
-								setActiveField={ setActiveField }
-							/>
-
-							<div
-								className="tl-desc-short"
-								{ ...( descriptionColor
-									? { style: { color: descriptionColor } }
-									: {} ) }
-							>
-								<InnerBlocks
-									allowedBlocks={ [
-										'core/paragraph',
-										'core/heading',
-										'core/list',
-									] }
-								/>
-								{ /*<InnerBlocks template={[[\'core/freeform\']]} />*/ }
-							</div>
-						</div>
-					</div>
-				</div>
+				<InnerBlocks
+					allowedBlocks={ TIMELINE_ITEM_AREA_BLOCKS }
+					template={ TIMELINE_ITEM_AREA_TEMPLATE }
+					templateLock={ false }
+					renderAppender={ false }
+				/>
 			</li>
 		</>
 	);

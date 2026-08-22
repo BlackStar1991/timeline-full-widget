@@ -257,7 +257,10 @@ ul.timeline {
 
 .tl-title {
     display: block;
-    margin: 0;
+    margin: 10px 0 0;
+    font-size: 22px;
+    line-height: 1.5;
+    font-weight: 700;
 }
 
 .tl-content p {

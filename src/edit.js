@@ -122,6 +122,7 @@ export default function Edit( { attributes, setAttributes, clientId } ) {
 		animationLineColor,
 		showMarker,
 		markerUnique,
+		showStepNumbers,
 		animationMarker,
 		animationMarkerColor,
 		animationOtherSideSticky,

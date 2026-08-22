@@ -4,7 +4,7 @@ Donate link: https://www.paypal.com/donate/?hosted_button_id=TK9QQ5DE2K378
 Tags: timeline, Elementor, gutenberg blocks, editor, blocks
 Requires at least: 5.5
 Tested up to: 7.1
-Stable tag: 2.3.0
+Stable tag: 3.0.0
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -24,6 +24,7 @@ Key advantages:
 - Support for images and video
 - Responsive layout
 - Reusable styles between timeline items
+- Block-based side and main content areas for Gutenberg timeline items
 
 You can use it for:
 
@@ -51,6 +52,9 @@ Yes, the plugin includes a native Gutenberg block. Type “/timeline”
 = Can I change the marker on the timeline items? =
 Yes, you can. Use the "Edit marker" button. In "Marker Settings" you need choose "Unique Marker" option, after that you would be able to set a personal marker like a image.
 
+= Can I add blocks inside a timeline item? =
+Yes. In Gutenberg, each timeline item now has separate block-based areas for side content and main content. You can add headings, paragraphs, lists, galleries, and other compatible blocks to each area.
+
 = Can I customize timeline item styles? =
 Yes, you can control colors, typography, spacing, and alignment for each item.
 
@@ -77,6 +81,18 @@ You can contribute translations here:
 https://translate.wordpress.org/projects/wp-plugins/timeline-full-widget/
 
 == Changelog ==
+
+= 3.0.0 =
+* Reworked the Gutenberg Timeline Item structure to support block-based side content and main content areas.
+* Added support for adding any compatible WordPress blocks inside both the side content area and the main description area of each timeline item.
+* Kept nested side and main content areas editable by default, including regular WordPress block insertion.
+* Replaced the custom timeline item title field with a standard editable Heading block in the main content area.
+* Preserved style copying between timeline items, including compatible nested block styles.
+* Added migration support for existing timeline item content, including moving legacy titles into Heading blocks and preserving customized legacy title styles only when they differ from defaults.
+* Added a 3.x legacy title compatibility layer with a code note to remove it in version 4.0.0 or later after users have migrated saved content.
+* Added a default empty Paragraph block after the default Heading block for newly created timeline items.
+* Removed obsolete Gutenberg title typography attributes from the current block schema.
+* Improved editor block appender spacing for nested timeline content areas.
 
 = 2.3.0 =
 * Refactored the PHP plugin structure into PSR-4-style classes under `includes/` while keeping Gutenberg source files in `src/`.

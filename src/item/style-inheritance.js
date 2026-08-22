@@ -30,6 +30,21 @@ export const DESCENDANT_ATTRIBUTE_EXCLUSIONS = new Set( [
 	'caption',
 	'alt',
 	'title',
+	'titleTag',
+	'titleInlineStyle',
+	'linkUrl',
+	'linkTarget',
+	'rel',
+	'mediaLinkUrl',
+	'mediaLinkTarget',
+	'mediaLinkRel',
+	'isMediaWrapToLink',
+	'mediaType',
+	'mediaMime',
+	'imageAlt',
+	'videoPoster',
+	'showOtherSide',
+	'otherSiteTitle',
 	'text',
 	'value',
 	'url',
@@ -50,6 +65,7 @@ export const DESCENDANT_ATTRIBUTE_EXCLUSIONS = new Set( [
 	'fileName',
 	'poster',
 	'placeholder',
+	'level',
 ] );
 
 function cloneAttributeValue( value ) {
@@ -67,37 +83,6 @@ function cloneAttributeValue( value ) {
 	return value;
 }
 
-function shouldResetLegacyTitleInlineStyle( attributes = {} ) {
-	return [
-		'titleFontSize',
-		'titleFontWeight',
-		'titleFontFamily',
-		'titleLineHeight',
-		'titleLetterSpacing',
-		'titleMarginTop',
-		'titleMarginBottom',
-		'titleColor',
-	].some( ( key ) => {
-		const value = attributes[ key ];
-		if ( value === undefined || value === null ) {
-			return false;
-		}
-
-		if ( typeof value === 'string' ) {
-			return value.trim() !== '';
-		}
-
-		if ( typeof value === 'object' ) {
-			return Object.values( value ).some(
-				( entry ) =>
-					entry !== undefined && entry !== null && entry !== ''
-			);
-		}
-
-		return true;
-	} );
-}
-
 export function getInheritableAttributes(
 	attributes = {},
 	exclusions = ITEM_ATTRIBUTE_EXCLUSIONS
@@ -110,10 +95,6 @@ export function getInheritableAttributes(
 		acc[ key ] = cloneAttributeValue( attributes[ key ] );
 		return acc;
 	}, {} );
-
-	if ( shouldResetLegacyTitleInlineStyle( inheritable ) ) {
-		inheritable.titleInlineStyle = '';
-	}
 
 	return inheritable;
 }

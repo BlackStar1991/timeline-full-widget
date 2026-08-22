@@ -1,5 +1,14 @@
 # Timeline Full Widget
 
+## 3.0.0 (August 24, 2026)
+* Reworked the Gutenberg Timeline Item structure to support separate block-based side content and main content areas.
+* Added support for adding compatible WordPress blocks to both the side content area and the main description area of each timeline item.
+* Improved style copying between timeline items so compatible nested block styles continue to be applied.
+* Added migration support for existing timeline item content, including moving legacy titles into Heading blocks and preserving customized legacy title styles only when they differ from defaults.
+* Added a 3.x legacy title compatibility layer with a code note to remove it in version 4.0.0 or later after users have migrated saved content.
+* Removed obsolete Gutenberg title typography attributes from the current block schema.
+* Improved editor appender spacing to prevent nested block inserters from overlapping.
+
 ## 2.3.0 (July 7, 2026)
 * Refactored PHP loading into a PSR-4-style `includes/` structure.
 * Kept Gutenberg source files in `src/` and moved PHP responsibilities into dedicated classes for assets, block registration, Elementor, Classic Editor, and plugin metadata.
