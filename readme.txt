@@ -3,7 +3,7 @@ Contributors: Blackstar1991
 Donate link: https://www.paypal.com/donate/?hosted_button_id=TK9QQ5DE2K378
 Tags: timeline, Elementor, gutenberg blocks, editor, blocks
 Requires at least: 5.5
-Tested up to: 7.0
+Tested up to: 7.1
 Stable tag: 2.3.0
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html

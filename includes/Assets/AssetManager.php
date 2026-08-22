@@ -176,13 +176,8 @@ final class AssetManager {
     public function enqueueElementorEditorAssets(): void {
         $preview = TIMELINE_FULL_WIDGET_PATH . 'assets/elementor/elementor-media-preview.js';
         if ( file_exists( $preview ) ) {
-            wp_register_script(
-                'za-elementor-media-preview',
-                TIMELINE_FULL_WIDGET_URL . 'assets/elementor/elementor-media-preview.js',
-                [ 'jquery' ],
-                $this->getAssetVersion( $preview ),
-                true
-            );
+            wp_register_script('za-elementor-media-preview', TIMELINE_FULL_WIDGET_URL . 'assets/elementor/elementor-media-preview.js', [ 'jquery' ], $this->getAssetVersion( $preview ), true);
+
             wp_enqueue_script( 'za-elementor-media-preview' );
         }
 
