@@ -1,0 +1,52 @@
+{
+  "$schema": "https://playground.wordpress.net/blueprint-schema.json",
+  "login": true,
+  "landingPage": "/wp-admin/post.php?post=2&action=edit",
+  "preferredVersions": {
+    "php": "8.3",
+    "wp": "latest"
+  },
+  "steps": [
+    {
+      "step": "installPlugin",
+      "pluginData": {
+        "resource": "wordpress.org/plugins",
+        "slug": "elementor"
+      },
+      "options": {
+        "activate": true
+      }
+    },
+    {
+      "step": "installPlugin",
+      "pluginData": {
+        "resource": "bundled",
+        "path": "/timeline-full-widget-4.0.0.zip"
+      },
+      "options": {
+        "activate": true,
+        "targetFolderName": "timeline-full-widget"
+      }
+    },
+    {
+      "step": "writeFile",
+      "path": "/wordpress/wp-content/uploads/timeline-gutenberg-demo.tfw.json",
+      "data": {
+        "resource": "bundled",
+        "path": "/timeline-gutenberg-demo.tfw.json"
+      }
+    },
+    {
+      "step": "writeFile",
+      "path": "/wordpress/wp-content/uploads/timeline-elementor-demo.tfw.json",
+      "data": {
+        "resource": "bundled",
+        "path": "/timeline-elementor-demo.tfw.json"
+      }
+    },
+    {
+      "step": "runPHP",
+      "code": "<?php\nrequire '/wordpress/wp-load.php';\n\n$page_id = 2;\n$content = <<<'HTML'\n<!-- wp:heading {\"textAlign\":\"center\"} -->\n<h2 class=\"wp-block-heading has-text-align-center\">Timeline Demo</h2>\n<!-- /wp:heading -->\n\n<!-- wp:za/timeline-full-widget {\"showMedia\":false} -->\n<div class=\"wp-block-za-timeline-full-widget\"><div class=\"timeline-wrapper\" style=\"--timeline-line-color:#F6F6F8;--timeline-line-width:4px;--timeline-marker-color:#F6F6F8;--timeline-line-active-color:#F37321;--timeline-marker-active-color:#F37321\"><div class=\"timeline-line-animation\"></div><ul class=\"timeline timeline-animation-marker\"><!-- wp:za/timeline-item {\"showMedia\":false,\"position\":\"timeline-left\"} -->\n<li class=\"wp-block-za-timeline-item timeline-item timeline-left\"><div class=\"tl-trigger\"></div><div class=\"tl-mark\"></div><!-- wp:za/timeline-item-side -->\n<div class=\"wp-block-za-timeline-item-side timeline-side t-text-align-left\"><!-- wp:paragraph -->\n<p>Add other side text</p>\n<!-- /wp:paragraph --></div>\n<!-- /wp:za/timeline-item-side -->\n\n<!-- wp:za/timeline-item-content {\"showMedia\":false} -->\n<div class=\"wp-block-za-timeline-item-content timeline-panel\"><div class=\"tl-content\"><div class=\"tl-desc\"><div class=\"tl-desc-short\"><!-- wp:heading {\"level\":3,\"className\":\"tl-title\"} -->\n<h3 class=\"wp-block-heading tl-title\">Timeline Item #1</h3>\n<!-- /wp:heading -->\n\n<!-- wp:paragraph -->\n<p>Timeline item content example.</p>\n<!-- /wp:paragraph --></div></div></div></div>\n<!-- /wp:za/timeline-item-content --></li>\n<!-- /wp:za/timeline-item -->\n\n<!-- wp:za/timeline-item {\"showMedia\":false,\"position\":\"timeline-inverted\"} -->\n<li class=\"wp-block-za-timeline-item timeline-item timeline-inverted\"><div class=\"tl-trigger\"></div><div class=\"tl-mark\"></div><!-- wp:za/timeline-item-side -->\n<div class=\"wp-block-za-timeline-item-side timeline-side t-text-align-left\"><!-- wp:paragraph -->\n<p>Add other side text</p>\n<!-- /wp:paragraph --></div>\n<!-- /wp:za/timeline-item-side -->\n\n<!-- wp:za/timeline-item-content {\"showMedia\":false} -->\n<div class=\"wp-block-za-timeline-item-content timeline-panel\"><div class=\"tl-content\"><div class=\"tl-desc\"><div class=\"tl-desc-short\"><!-- wp:heading {\"level\":3,\"className\":\"tl-title\"} -->\n<h3 class=\"wp-block-heading tl-title\">Timeline Item #2</h3>\n<!-- /wp:heading -->\n\n<!-- wp:paragraph -->\n<p>Timeline item content example.</p>\n<!-- /wp:paragraph --></div></div></div></div>\n<!-- /wp:za/timeline-item-content --></li>\n<!-- /wp:za/timeline-item --></ul></div></div>\n<!-- /wp:za/timeline-full-widget -->\nHTML;\n\n$content .= \"\\n<!-- wp:paragraph -->\\n<p><a href=\\\"/wp-content/uploads/timeline-gutenberg-demo.tfw.json\\\">Download Gutenberg Timeline sample (.tfw.json)</a> – import this into the Timeline block sidebar.</p>\\n<!-- /wp:paragraph -->\";\n$content .= \"\\n<!-- wp:paragraph -->\\n<p><a href=\\\"/wp-content/uploads/timeline-elementor-demo.tfw.json\\\">Download Elementor Timeline sample (.tfw.json)</a> – import this into an Elementor Timeline widget.</p>\\n<!-- /wp:paragraph -->\";\n\nwp_update_post(\n\tarray(\n\t\t'ID'           => $page_id,\n\t\t'post_title'   => 'Timeline Demo',\n\t\t'post_name'    => 'timeline-demo',\n\t\t'post_status'  => 'publish',\n\t\t'post_content' => $content,\n\t)\n);\n\nupdate_option( 'show_on_front', 'page' );\nupdate_option( 'page_on_front', $page_id );\n"
+    }
+  ]
+}

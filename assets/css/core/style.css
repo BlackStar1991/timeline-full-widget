@@ -1,9 +1,29 @@
-:root {
-    --marker-size: 30px;
+.wp-block-za-timeline-full-widget,
+.wp-block-za-timeline-full-widget * {
+    box-sizing: border-box;
 }
+
+.wp-block-za-timeline-full-widget {
+    width: 100%;
+}
+
+.wp-block-za-timeline-full-widget .t-text-align-left {
+    text-align: left;
+}
+
+.wp-block-za-timeline-full-widget .t-text-align-center {
+    text-align: center;
+}
+
+.wp-block-za-timeline-full-widget .t-text-align-right {
+    text-align: right;
+}
+
 
 .timeline-wrapper {
     position: relative;
+    width: 100%;
+    max-width: 100%;
 }
 
 .timeline-line-animation {
@@ -14,7 +34,7 @@
     height: 100%;
     transform-origin: top;
     transform: translateX(-50%) scaleY(0);
-    background-color: #F37321;
+    background-color: var(--timeline-line-active-color, #F37321);
     will-change: transform;
     z-index: 2;
 }
@@ -55,7 +75,7 @@ ul.timeline {
     transform: translateX(-50%);
     z-index: 1;
 
-    background-color: #F6F6F8;
+    background-color: var(--timeline-line-color, #F6F6F8);
 }
 
 .timeline-panel {
@@ -148,8 +168,8 @@ ul.timeline {
     transform: translateX(-50%);
     align-self: self-start;
     transition: background 0.2s;
-    width: var(--marker-size);
-    height: var(--marker-size);
+    width: var(--marker-size, 30px);
+    height: var(--marker-size, 30px);
     border-radius: 50%;
     box-sizing: border-box;
     backface-visibility: hidden;
@@ -176,11 +196,7 @@ ul.timeline {
 .timeline.timeline-animation-marker .is-stuck .tl-mark,
 .timeline.timeline-animation-marker li.is-stuck .tl-mark {
     transition: background 0.2s;
-    background-color: var(--timeline-marker-color-active, #F37321);
-}
-
-.timeline-numbers{
-    counter-reset: item;
+    background-color: var(--timeline-marker-active-color, #F37321);
 }
 
 .timeline-numbers {
@@ -276,17 +292,17 @@ ul.timeline {
     }
 
     .timeline-animation-marker .timeline-item {
-        grid-template-columns: 1fr var(--marker-size) 1fr;
+        grid-template-columns: 1fr var(--marker-size, 30px) 1fr;
         grid-gap: 20px;
         padding-left: 0;
     }
 
     .timeline-inverted {
         direction: rtl;
+    }
 
-        & > * {
-            direction: ltr;
-        }
+    .timeline-inverted > * {
+        direction: ltr;
     }
 
     .tl-desc-short ul,
@@ -298,12 +314,11 @@ ul.timeline {
         position: sticky;
         top: 0;
         align-self: start;
-        conteiner-type: scroll-snape;
         z-index: 2;
     }
 
     .timeline.timeline-animation-marker .timeline-item {
-        grid-template-columns: minmax(0, 1fr) var(--marker-size) minmax(0, 1fr);
+        grid-template-columns: minmax(0, 1fr) var(--marker-size, 30px) minmax(0, 1fr);
         column-gap: 20px;
     }
 
@@ -333,12 +348,32 @@ ul.timeline {
     .tl-content-horizontal.tl-reverse{
         flex-direction: row-reverse;
     }
+
+    .timeline.timeline-animation-marker > .timeline-item > .timeline-side {
+        grid-column: 1;
+        grid-row: 1;
+        align-self: start;
+    }
+
+    .timeline.timeline-animation-marker > .timeline-item > .tl-mark {
+        grid-column: 2;
+        grid-row: 1;
+    }
+
+    .timeline.timeline-animation-marker > .timeline-item > .timeline-panel {
+        grid-column: 3;
+        grid-row: 1;
+        align-self: start;
+    }
+
+
+
 }
 
 @media (max-width: 700px) {
 
     .timeline-item {
-        padding-left: calc(var(--marker-size) + 4px);
+        padding-left: calc(var(--marker-size, 30px) + 4px);
         padding-right: 10px;
     }
 
@@ -348,21 +383,21 @@ ul.timeline {
     }
 
     .tl-mark {
-        left: calc(var(--marker-size) / 2);
+        left: calc(var(--marker-size, 30px) / 2);
     }
 
     .timeline-line-animation {
-        left:  calc(var(--marker-size) / 2);
+        left:  calc(var(--marker-size, 30px) / 2);
     }
 
     .timeline:before {
-        left:  calc(var(--marker-size) / 2);
+        left:  calc(var(--marker-size, 30px) / 2);
         margin-left: 0;
     }
 
     .timeline-panel {
         order: -1;
-        margin-bottom:  calc(var(--marker-size) / 2);
+        margin-bottom:  calc(var(--marker-size, 30px) / 2);
     }
 
 
@@ -395,3 +430,32 @@ ul.timeline {
 
 
 
+
+/* Portable transfers deliberately use one SVG instead of copying site media.
+   Keep a missing-size placeholder inside a normal Timeline card: SVG intrinsic
+   dimensions must never determine the height of the entire widget. */
+.timeline .timeline_pic img[src*="media-placeholder.svg"],
+.timeline .timeline_pic img.timeline-video-placeholder {
+    display: block;
+    max-width: 100%;
+    max-height: 320px;
+    width: auto;
+    height: auto;
+    object-fit: contain;
+}
+
+.timeline .tl-content-horizontal .timeline_pic img[src*="media-placeholder.svg"],
+.timeline .tl-content-horizontal .timeline_pic img.timeline-video-placeholder {
+    width: 100%;
+}
+
+/* Marker image placeholders must use the configured marker diameter.
+   The generic .tl-mark img rule uses max-width:initial!important, which made
+   800x600 SVG placeholders escape the marker and cover the Elementor canvas. */
+.timeline .tl-mark img[src*="media-placeholder.svg"] {
+    width: var(--marker-size, 30px) !important;
+    height: var(--marker-size, 30px) !important;
+    max-width: var(--marker-size, 30px) !important;
+    max-height: var(--marker-size, 30px) !important;
+    object-fit: contain;
+}

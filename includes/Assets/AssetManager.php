@@ -28,30 +28,19 @@ final class AssetManager {
         add_action( 'init', [ $this, 'registerAssets' ] );
         add_action( 'wp_enqueue_scripts', [ $this, 'maybeEnqueueFrontendAssets' ] );
         add_action( 'elementor/editor/after_enqueue_scripts', [ $this, 'enqueueElementorEditorAssets' ] );
-        add_action( 'elementor/frontend/after_enqueue_styles', [ $this, 'enqueueCoreStyleEverywhere' ] );
+        add_action( 'enqueue_block_editor_assets', [ $this, 'enqueueGutenbergTransferAssets' ] );
         add_action( 'elementor/editor/after_enqueue_styles', [ $this, 'enqueueCoreStyleEverywhere' ] );
         add_action( 'admin_enqueue_scripts', [ $this, 'enqueueClassicEditorStyles' ] );
-        add_filter( 'script_loader_tag', [ $this, 'addModuleTypeAttribute' ], 10, 3 );
+        add_filter( 'script_loader_tag', [ $this, 'addModuleTypeAttribute' ], 100, 3 );
     }
 
     /**
-     * Global core styles for all supported builders.
+     * Enqueue the already-registered shared stylesheet where an editor needs it.
+     * Elementor frontend loads this handle through get_style_depends() only if
+     * the Timeline widget is present; Gutenberg loads its compiled copy.
      */
     public function enqueueCoreStyleEverywhere(): void {
         if ( wp_style_is( 'timeline-core-style', 'registered' ) ) {
-            wp_enqueue_style( 'timeline-core-style' );
-            return;
-        }
-
-        $style_path = TIMELINE_FULL_WIDGET_PATH . 'assets/css/core/style.css';
-        if ( file_exists( $style_path ) ) {
-            $ver = $this->getAssetVersion( $style_path );
-            wp_register_style(
-                'timeline-core-style',
-                TIMELINE_FULL_WIDGET_URL . 'assets/css/core/style.css',
-                [],
-                $ver
-            );
             wp_enqueue_style( 'timeline-core-style' );
         }
     }
@@ -93,7 +82,6 @@ final class AssetManager {
      */
     public function addModuleTypeAttribute( string $tag, string $handle, string $src ): string {
         $module_handles = [
-            'za-timeline-elementor',
             'za-timeline-gutenberg',
             'za-timeline-core',
             'za-timeline-classic-adapter',
@@ -103,19 +91,63 @@ final class AssetManager {
             return $tag;
         }
 
-        if ( false !== strpos( $tag, 'type=' ) ) {
+        // WordPress may generate `type="text/javascript"` automatically. Merely
+        // checking for a type attribute leaves the ES module running as a classic
+        // script, so its top-level `import` fails before any button is bound.
+        // Replace the type *only* on our registered external script tag and keep
+        // every other attribute (nonce, id, src, defer, etc.) unchanged.
+        if ( ! preg_match( '/<script\b[^>]*>/i', $tag ) ) {
             return $tag;
         }
 
-        return str_replace( '<script ', '<script type="module" ', $tag );
+        $tag = preg_replace(
+            '/(<script\b[^>]*?)\s+type\s*=\s*(?:"[^"]*"|\'[^\']*\'|[^\s>]+)/i',
+            '$1',
+            $tag,
+            1
+        );
+
+        return (string) preg_replace( '/<script\b/i', '<script type="module"', (string) $tag, 1 );
     }
 
     /**
      * Register shared JavaScript assets.
      */
     public function registerAssets(): void {
+        $core_style_path = TIMELINE_FULL_WIDGET_PATH . 'assets/css/core/style.css';
+        if ( is_readable( $core_style_path ) ) {
+            wp_register_style(
+                'timeline-core-style',
+                TIMELINE_FULL_WIDGET_URL . 'assets/css/core/style.css',
+                [],
+                $this->getAssetVersion( $core_style_path )
+            );
+        }
+
         $base_path = TIMELINE_FULL_WIDGET_PATH . 'assets/js/';
         $base_url  = TIMELINE_FULL_WIDGET_URL . 'assets/js/';
+
+        // Elementor may print widget dependencies through its own script loader,
+        // which can ignore script_loader_tag and module metadata. Keep the WP
+        // handles as classic scripts; each tiny loader dynamically imports the
+        // actual ESM entrypoint using the browser's native module loader.
+        $transfer_editor = TIMELINE_FULL_WIDGET_PATH . 'assets/js/transfer/elementor-editor-loader.js';
+        if ( is_readable( $transfer_editor ) ) {
+            wp_register_script(
+                'za-timeline-transfer-elementor-editor',
+                TIMELINE_FULL_WIDGET_URL . 'assets/js/transfer/elementor-editor-loader.js',
+                [],
+                $this->getAssetVersion( $transfer_editor ),
+                true
+            );
+            wp_add_inline_script(
+                'za-timeline-transfer-elementor-editor',
+                'window.timelineTransferConfig = ' . wp_json_encode( [
+                    'placeholderUrl' => TIMELINE_FULL_WIDGET_URL . 'assets/images/media-placeholder.svg',
+                ] ) . ';',
+                'before'
+            );
+        }
 
         $preview = TIMELINE_FULL_WIDGET_PATH . 'assets/elementor/elementor-media-preview.js';
         if ( file_exists( $preview ) ) {
@@ -128,7 +160,8 @@ final class AssetManager {
             );
         }
 
-        $elementor_adapter = $base_path . 'adapters/elementor-adapter.js';
+        // Same guarantee for Elementor frontend and preview iframe scripts.
+        $elementor_adapter = $base_path . 'adapters/elementor-loader.js';
         if ( file_exists( $elementor_adapter ) ) {
             $deps = [];
             if ( wp_script_is( 'za-elementor-media-preview', 'registered' ) ) {
@@ -137,12 +170,11 @@ final class AssetManager {
 
             wp_register_script(
                 'za-timeline-elementor',
-                $base_url . 'adapters/elementor-adapter.js',
+                $base_url . 'adapters/elementor-loader.js',
                 $deps,
                 $this->getAssetVersion( $elementor_adapter ),
                 true
             );
-            wp_script_add_data( 'za-timeline-elementor', 'type', 'module' );
         }
 
         $gutenberg_adapter = $base_path . 'adapters/gutenberg-adapter.js';
@@ -171,13 +203,68 @@ final class AssetManager {
     }
 
     /**
+     * Register and enqueue Gutenberg's transfer panel only in the block editor.
+     * The classic-safe loader dynamically imports the module: some WordPress
+     * script printers output type=text/javascript despite module metadata.
+     * This add-on uses WordPress' official BlockEdit filter; it doesn't change
+     * the serialized block markup or require editing minified build output.
+     */
+    public function enqueueGutenbergTransferAssets(): void {
+        if ( ! current_user_can( 'edit_posts' ) ) {
+            return;
+        }
+
+        $file = TIMELINE_FULL_WIDGET_PATH . 'assets/js/transfer/gutenberg-editor-loader.js';
+        if ( ! is_readable( $file ) ) {
+            return;
+        }
+
+        wp_enqueue_script(
+            'za-timeline-transfer-gutenberg-editor',
+            TIMELINE_FULL_WIDGET_URL . 'assets/js/transfer/gutenberg-editor-loader.js',
+            [ 'wp-hooks', 'wp-block-editor', 'wp-blocks', 'wp-data', 'wp-element', 'wp-components', 'wp-i18n' ],
+            $this->getAssetVersion( $file ),
+            true
+        );
+        // Scroll containers outside Gutenberg's iframe own their events.
+        // Forward them from this editor-only classic script to the iframe.
+        $bridge = TIMELINE_FULL_WIDGET_PATH . 'assets/js/adapters/gutenberg-editor-scroll-bridge.js';
+        if ( is_readable( $bridge ) ) {
+            wp_enqueue_script(
+                'za-timeline-gutenberg-editor-scroll-bridge',
+                TIMELINE_FULL_WIDGET_URL . 'assets/js/adapters/gutenberg-editor-scroll-bridge.js',
+                [],
+                $this->getAssetVersion( $bridge ),
+                true
+            );
+        }
+
+        wp_add_inline_script(
+            'za-timeline-transfer-gutenberg-editor',
+            'window.timelineTransferGutenberg = ' . wp_json_encode( [
+                'placeholderUrl' => TIMELINE_FULL_WIDGET_URL . 'assets/images/media-placeholder.svg',
+            ] ) . ';',
+            'before'
+        );
+    }
+
+    /**
      * Enqueue Elementor editor assets.
      */
     public function enqueueElementorEditorAssets(): void {
-        $preview = TIMELINE_FULL_WIDGET_PATH . 'assets/elementor/elementor-media-preview.js';
-        if ( file_exists( $preview ) ) {
-            wp_register_script('za-elementor-media-preview', TIMELINE_FULL_WIDGET_URL . 'assets/elementor/elementor-media-preview.js', [ 'jquery' ], $this->getAssetVersion( $preview ), true);
+        // Elementor resets the global WP_Scripts/WP_Styles registries when it
+        // boots its editor. Registrations made on `init` therefore disappear.
+        // Restore our handles in the active editor registry before enqueueing.
+        // Skip re-registration when an integration has already restored them.
+        if ( ! wp_script_is( 'za-timeline-transfer-elementor-editor', 'registered' ) ) {
+            $this->registerAssets();
+        }
 
+        if ( wp_script_is( 'za-timeline-transfer-elementor-editor', 'registered' ) ) {
+            wp_enqueue_script( 'za-timeline-transfer-elementor-editor' );
+        }
+
+        if ( wp_script_is( 'za-elementor-media-preview', 'registered' ) ) {
             wp_enqueue_script( 'za-elementor-media-preview' );
         }
 

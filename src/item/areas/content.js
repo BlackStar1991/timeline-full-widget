@@ -16,12 +16,15 @@ import {
 	Popover,
 	Spinner,
 	ToolbarButton,
+	ToolbarGroup,
 	ToggleControl,
 } from '@wordpress/components';
 import { isBlobURL } from '@wordpress/blob';
 import { useCallback, useMemo, useState } from '@wordpress/element';
 import { __ } from '@wordpress/i18n';
 import { link as linkIcon, linkOff as unlinkIcon } from '@wordpress/icons';
+
+import { getLegacyTemplateProps } from '../../block-template-compat';
 
 import MediaSettingsPanel from '../components/MediaSettingsPanel';
 import {
@@ -378,58 +381,60 @@ function TimelineItemContentEdit( { clientId, attributes, setAttributes } ) {
 
 		return (
 			<BlockControls group="block">
-				<MediaReplaceFlow
-					name={ __( 'Replace Media File', 'timeline-full-widget' ) }
-					onSelect={ onSelect }
-					accept="image/*,video/*"
-					allowedTypes={ [ 'image', 'video' ] }
-					mediaId={ mediaId }
-					mediaURL={ mediaUrl }
-				/>
+				<ToolbarGroup>
+					<MediaReplaceFlow
+						name={ __( 'Replace Media File', 'timeline-full-widget' ) }
+						onSelect={ onSelect }
+						accept="image/*,video/*"
+						allowedTypes={ [ 'image', 'video' ] }
+						mediaId={ mediaId }
+						mediaURL={ mediaUrl }
+					/>
 
-				<ToolbarButton
-					onClick={ () =>
-						setTimelineItemAttributes( {
-							mediaId: undefined,
-							mediaUrl: undefined,
-							imageAlt: '',
-							mediaType: '',
-							mediaMime: '',
-							videoPoster: '',
-							mediaLinkUrl: '',
-							mediaLinkTarget: '',
-							mediaLinkRel: '',
-							isMediaWrapToLink: false,
-						} )
-					}
-					isDisabled={ ! mediaUrl }
-					icon="trash"
-					label={ __( 'Remove Media File', 'timeline-full-widget' ) }
-				/>
+					<ToolbarButton
+						onClick={ () =>
+							setTimelineItemAttributes( {
+								mediaId: undefined,
+								mediaUrl: undefined,
+								imageAlt: '',
+								mediaType: '',
+								mediaMime: '',
+								videoPoster: '',
+								mediaLinkUrl: '',
+								mediaLinkTarget: '',
+								mediaLinkRel: '',
+								isMediaWrapToLink: false,
+							} )
+						}
+						isDisabled={ ! mediaUrl }
+						icon="trash"
+						label={ __( 'Remove Media File', 'timeline-full-widget' ) }
+					/>
 
-				<ToolbarButton
-					icon={ linkIcon }
-					label={ __( 'Media link', 'timeline-full-widget' ) }
-					onClick={ () =>
-						setIsMediaLinkPickerOpen( ( prev ) => ! prev )
-					}
-					isPressed={ isMediaLinkPickerOpen }
-				/>
+					<ToolbarButton
+						icon={ linkIcon }
+						label={ __( 'Media link', 'timeline-full-widget' ) }
+						onClick={ () =>
+							setIsMediaLinkPickerOpen( ( prev ) => ! prev )
+						}
+						isPressed={ isMediaLinkPickerOpen }
+					/>
 
-				<ToolbarButton
-					icon={ unlinkIcon }
-					label={ __( 'Remove media link', 'timeline-full-widget' ) }
-					onClick={ () => {
-						setTimelineItemAttributes( {
-							mediaLinkUrl: '',
-							mediaLinkTarget: '',
-							mediaLinkRel: '',
-							isMediaWrapToLink: false,
-						} );
-						setIsMediaLinkPickerOpen( false );
-					} }
-					isDisabled={ ! mediaLinkUrl }
-				/>
+					<ToolbarButton
+						icon={ unlinkIcon }
+						label={ __( 'Remove media link', 'timeline-full-widget' ) }
+						onClick={ () => {
+							setTimelineItemAttributes( {
+								mediaLinkUrl: '',
+								mediaLinkTarget: '',
+								mediaLinkRel: '',
+								isMediaWrapToLink: false,
+							} );
+							setIsMediaLinkPickerOpen( false );
+						} }
+						isDisabled={ ! mediaLinkUrl }
+					/>
+				</ToolbarGroup>
 			</BlockControls>
 		);
 	}, [
@@ -604,7 +609,7 @@ function TimelineItemContentEdit( { clientId, attributes, setAttributes } ) {
 								: {} ) }
 						>
 							<InnerBlocks
-								template={ CONTENT_AREA_TEMPLATE }
+								{ ...getLegacyTemplateProps( CONTENT_AREA_TEMPLATE ) }
 								templateLock={ false }
 								renderAppender={ InnerBlocks.ButtonBlockAppender }
 							/>
@@ -816,6 +821,7 @@ registerBlockType( 'za/timeline-item-content', {
 	),
 	icon: 'welcome-widgets-menus',
 	parent: [ 'za/timeline-item' ],
+	template: CONTENT_AREA_TEMPLATE,
 	supports: {
 		html: false,
 		reusable: false,

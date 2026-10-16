@@ -13,3 +13,15 @@ src/
 composer.json
 package.json
 webpack.config.js
+# Development-only agent guidance and checks
+AGENTS.md
+scripts/
+AUDIT-*.md
+
+# Local audit output
+TEST-RESULTS.log
+
+# No generated logs or temporary artifacts
+*.log
+*.tmp
+*.bak

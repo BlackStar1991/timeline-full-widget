@@ -8,6 +8,7 @@ import {
 	CONTENT_AREA_BLOCK,
 	SIDE_AREA_BLOCK,
 	TIMELINE_ITEM_PARAGRAPH_TEMPLATE,
+	TIMELINE_ITEM_AREA_TEMPLATE,
 	pickAttributes,
 	getContentAreaAttributes,
 	getSideAreaAttributes,
@@ -169,6 +170,7 @@ registerBlockType( 'za/timeline-item', {
 		},
 	},
 	attributes: timelineItemAttributes,
+	template: TIMELINE_ITEM_AREA_TEMPLATE,
 	edit: Edit,
 	save: Save,
 	deprecated: [

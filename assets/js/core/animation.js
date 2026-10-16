@@ -11,6 +11,7 @@ function log( ...args ) {
 }
 
 export function initTimelineAnimation( scopeEl ) {
+
 	const el = scopeEl && scopeEl.jquery ? scopeEl[ 0 ] : scopeEl;
 	if ( ! el || el.nodeType !== 1 ) {
 		return null;
@@ -49,7 +50,10 @@ export function initTimelineAnimation( scopeEl ) {
 			try {
 				const style = window.getComputedStyle( p );
 				const y = style.overflowY;
-				if ( y === 'auto' || y === 'scroll' || y === 'overlay' ) {
+				if (
+					( y === 'auto' || y === 'scroll' || y === 'overlay' ) &&
+					p.scrollHeight > p.clientHeight + 1
+				) {
 					return p;
 				}
 			} catch ( e ) {
@@ -117,12 +121,74 @@ export function initTimelineAnimation( scopeEl ) {
 		parentWindow = null;
 	}
 
+	// Only the Gutenberg editing canvas needs a geometry watchdog. In an
+	// iframe, WordPress may scroll outside our document without dispatching
+	// scroll events to listeners registered in this realm. This lightweight
+	// watchdog notices actual movement; it is never installed on the frontend.
+	const isGutenbergCanvas = !! (
+		wrapper.closest?.( '.wp-block-za-timeline-full-widget' ) &&
+		( document.body?.classList?.contains( 'editor-styles-wrapper' ) ||
+			document.querySelector?.( '.editor-styles-wrapper' ) )
+	);
+
+	// An iframe can scroll itself, or its parent editor can scroll the iframe.
+	// Always prefer an actual scrolling element inside the iframe; only use
+	// parent coordinates when the iframe viewport itself is the scroll root.
 	const canUseParentCoords = !! (
 		isInIframe &&
 		parentWindow &&
+		scrollParent === window &&
 		window.frameElement &&
 		typeof window.frameElement.getBoundingClientRect === 'function'
 	);
+	let parentScrollElement = null;
+	if ( canUseParentCoords ) {
+		let ancestor = window.frameElement.parentElement;
+		while ( ancestor ) {
+			const css = parentWindow.getComputedStyle( ancestor );
+			if ( /^(auto|scroll|overlay)$/.test( css.overflowY ) &&
+				ancestor.scrollHeight > ancestor.clientHeight + 1 ) {
+				parentScrollElement = ancestor;
+				break;
+			}
+			ancestor = ancestor.parentElement;
+		}
+	}
+	/**
+	 * Gutenberg renders the block in an iframe, but its clipping viewport may
+	 * be owned by the iframe, the outer editor, or both simultaneously. Measure
+	 * the intersection in one coordinate space (parent viewport). In particular,
+	 * parentWindow.innerHeight / 2 is NOT the canvas midpoint when the editor
+	 * has a top toolbar, bottom metaboxes, or an internally scrolling iframe.
+	 */
+	const rootViewport = () => {
+		if ( canUseParentCoords ) {
+			const iframeRect = window.frameElement.getBoundingClientRect();
+			let top = Math.max( 0, iframeRect.top );
+			let bottom = Math.min( parentWindow.innerHeight, iframeRect.bottom );
+			let ancestor = window.frameElement.parentElement;
+			while ( ancestor ) {
+				try {
+					const css = parentWindow.getComputedStyle( ancestor );
+					if ( /^(auto|scroll|overlay|hidden|clip)$/.test( css.overflowY ) ) {
+						const bounds = ancestor.getBoundingClientRect();
+						top = Math.max( top, bounds.top );
+						bottom = Math.min( bottom, bounds.bottom );
+					}
+				} catch ( error ) {
+					// Ignore inaccessible ancestor styles, retain iframe bounds.
+				}
+				ancestor = ancestor.parentElement;
+			}
+			bottom = Math.max( top, bottom );
+			return { top, bottom, middle: ( top + bottom ) / 2 };
+		}
+		if ( scrollParent === window ) {
+			return { top: 0, bottom: window.innerHeight, middle: window.innerHeight / 2 };
+		}
+		const bounds = scrollParent.getBoundingClientRect();
+		return { top: bounds.top, bottom: bounds.bottom, middle: ( bounds.top + bounds.bottom ) / 2 };
+	};
 
 	line.style.transform = 'translateX(-50%) scaleY(0)';
 
@@ -133,7 +199,6 @@ export function initTimelineAnimation( scopeEl ) {
 	let lastTarget = -1;
 	let resizeTimer = null;
 
-	let triggers = Array.from( wrapper.querySelectorAll( '.tl-trigger' ) );
 	let items = Array.from(
 		wrapper.querySelectorAll( 'li.timeline-item, .timeline-item' )
 	).map( ( it ) => ( {
@@ -144,62 +209,6 @@ export function initTimelineAnimation( scopeEl ) {
 			it,
 	} ) );
 
-	let observer = null;
-	try {
-		const ioOptions = {
-			root: scrollParent === window ? null : scrollParent,
-			rootMargin: '-40% 0px -40% 0px',
-			threshold: 0,
-		};
-		observer = new IntersectionObserver( ( entries ) => {
-			if ( ! DEBUG ) {
-				return;
-			}
-			entries.forEach( ( entry ) => {
-				const trg = entry.target;
-				const parentBlock =
-					trg.closest( 'li' ) ||
-					trg.closest( '.timeline-item' ) ||
-					trg.closest( '.wp-block' ) ||
-					trg.closest( '.elementor-widget' );
-				if ( ! parentBlock ) {
-					return;
-				}
-				try {
-					console.log( '[za-timeline][IO]', {
-						isIntersecting: entry.isIntersecting,
-						ratio: entry.intersectionRatio,
-						triggerRect: trg.getBoundingClientRect(),
-						parentBlock,
-					} );
-				} catch ( e ) {}
-			} );
-		}, ioOptions );
-	} catch ( e ) {
-		observer = null;
-		log( 'IO creation failed', e );
-	}
-
-	const observeTriggers = () => {
-		if ( ! observer ) {
-			return;
-		}
-		for ( let i = 0; i < triggers.length; i++ ) {
-			try {
-				observer.observe( triggers[ i ] );
-			} catch ( e ) {}
-		}
-	};
-	const unobserveTriggers = () => {
-		if ( ! observer ) {
-			return;
-		}
-		for ( let i = 0; i < triggers.length; i++ ) {
-			try {
-				observer.unobserve( triggers[ i ] );
-			} catch ( e ) {}
-		}
-	};
 
 	// helper: get iframe element rect (in parent coords helper)
 	const getIframeElementRect = () => {
@@ -233,28 +242,6 @@ export function initTimelineAnimation( scopeEl ) {
 		};
 	};
 
-	// root middle: parent window middle when available, otherwise based on scrollParent
-	const getRootMiddle = () => {
-		if ( canUseParentCoords ) {
-			try {
-				return parentWindow.innerHeight / 2;
-			} catch ( e ) {
-				console.error( 'Failed to get parent window middle', e );
-			}
-		}
-		if ( scrollParent === window ) {
-			return window.innerHeight / 2;
-		}
-		try {
-			const r = scrollParent.getBoundingClientRect();
-			return r.top + r.height / 2;
-		} catch ( e ) {
-			return window.innerHeight / 2;
-		}
-	};
-
-	const currentStuckEl = null;
-
 	const EPS_ADD_PX = 6;
 	const EPS_REMOVE_PX = 10;
 
@@ -276,23 +263,9 @@ export function initTimelineAnimation( scopeEl ) {
 			}
 		}
 
-		const rootMiddle = getRootMiddle();
 
-		// find best (closest to center) — single pass
-		let best = null;
-		let bestDist = Infinity;
-		for ( let i = 0; i < items.length; i++ ) {
-			const itemRect = items[ i ].el.getBoundingClientRect(); // necessary read
-			const center =
-				( itemRect.top + itemRect.bottom ) / 2 +
-				( canUseParentCoords ? iframeOffsetTop : 0 );
-			const d = Math.abs( center - rootMiddle );
-			if ( d < bestDist ) {
-				bestDist = d;
-				best = items[ i ].el;
-			}
-		}
-
+		// Marker activation is based on the animated line crossing each marker,
+		// NEVER on which block is selected or nearest the editor viewport.
 		// loop items, update classes minimaly
 		for ( let i = 0; i < items.length; i++ ) {
 			const { el: it, mark } = items[ i ];
@@ -302,64 +275,32 @@ export function initTimelineAnimation( scopeEl ) {
 				markCenter += iframeOffsetTop;
 			}
 
-			const isCurrent = it === best;
 			const passed = markCenter <= lineBottom + EPS_ADD_PX;
 			const currently = it.classList.contains( 'is-stuck' );
 
-			if ( ( passed || isCurrent ) && ! currently ) {
+			if ( passed && ! currently ) {
 				it.classList.add( 'is-stuck' );
 			} else if ( ! passed && currently ) {
-				if ( markCenter > lineBottom + EPS_REMOVE_PX && ! isCurrent ) {
+				if ( markCenter > lineBottom + EPS_REMOVE_PX ) {
 					it.classList.remove( 'is-stuck' );
 				}
 			}
 		}
 	}
 
-	// progress calc (uses parent coords when possible)
+	// The same geometry and viewport must be used for every scroll context.
+	// Once the viewport midpoint has passed an item, progress must remain 1,
+	// not reset to zero when the bottom of the Timeline leaves the viewport.
 	function getTargetProgress() {
-		const rect = wrapper.getBoundingClientRect();
-		if ( canUseParentCoords ) {
-			const r = rectInParent( rect );
-			const middle = parentWindow.innerHeight / 2;
-			if ( r.top < middle && r.bottom > 0 ) {
-				return Math.max(
-					0,
-					Math.min( 1, ( middle - r.top ) / r.height )
-				);
-			}
-			return 0;
-		}
 
-		if ( scrollParent === window ) {
-			const middle = window.innerHeight / 2;
-			if ( rect.top < middle && rect.bottom > 0 ) {
-				return Math.max(
-					0,
-					Math.min( 1, ( middle - rect.top ) / rect.height )
-				);
-			}
+
+		const rawRect = wrapper.getBoundingClientRect();
+		const rect = canUseParentCoords ? rectInParent( rawRect ) : rawRect;
+		const root = rootViewport();
+		if ( rect.height <= 0 || root.bottom <= root.top || rect.top >= root.bottom ) {
 			return 0;
 		}
-		try {
-			const rootRect = scrollParent.getBoundingClientRect();
-			const rootMiddle = rootRect.top + rootRect.height / 2;
-			if ( rect.top < rootMiddle && rect.bottom > rootRect.top ) {
-				return Math.max(
-					0,
-					Math.min( 1, ( rootMiddle - rect.top ) / rect.height )
-				);
-			}
-		} catch ( e ) {
-			const middle = window.innerHeight / 2;
-			if ( rect.top < middle && rect.bottom > 0 ) {
-				return Math.max(
-					0,
-					Math.min( 1, ( middle - rect.top ) / rect.height )
-				);
-			}
-		}
-		return 0;
+		return Math.max( 0, Math.min( 1, ( root.middle - rect.top ) / rect.height ) );
 	}
 
 	// animation frame (smooth lerp)
@@ -383,7 +324,6 @@ export function initTimelineAnimation( scopeEl ) {
 			current = target;
 		}
 		line.style.transform = `translateX(-50%) scaleY(${ current })`;
-
 		updateStuckByLine();
 
 		if ( running ) {
@@ -418,12 +358,8 @@ export function initTimelineAnimation( scopeEl ) {
 		resizeTimer = setTimeout( () => stopLoop(), 700 );
 	}
 
-	// observe triggers + visibility
-	if ( triggers.length ) {
-		observeTriggers();
-	}
-
 	let visObserver = null;
+	if ( ! canUseParentCoords && typeof IntersectionObserver !== 'undefined' ) {
 	try {
 		visObserver = new IntersectionObserver(
 			( entries ) => {
@@ -448,6 +384,39 @@ export function initTimelineAnimation( scopeEl ) {
 		log( 'visObserver failed', e );
 		visObserver = null;
 	}
+	}
+
+	// In block editor iframes, scroll events are not guaranteed to cross
+	// window realms. Poll only the geometry, NOT the animation frames: when
+	// position/viewport is unchanged no work is scheduled. This also catches
+	// editor reflows caused by adding or selecting a nested Timeline item.
+	let geometryWatcher = null;
+	if ( isGutenbergCanvas ) {
+		let lastGeometry = '';
+		const checkGeometry = () => {
+			if ( ! wrapper.isConnected ) {
+				return;
+			}
+			const bounds = wrapper.getBoundingClientRect();
+			const viewport = rootViewport();
+			const iframeBounds = canUseParentCoords ? getIframeElementRect() : null;
+			const geometry = [
+				bounds.top, bounds.height, viewport.top, viewport.bottom,
+				viewport.middle, iframeBounds?.top ?? 0,
+			].map( ( value ) => Math.round( value * 2 ) / 2 ).join( ':' );
+			if ( geometry !== lastGeometry ) {
+				lastGeometry = geometry;
+				onScrollOrResize();
+			}
+		};
+		checkGeometry();
+		geometryWatcher = window.setInterval( checkGeometry, 100 );
+	}
+
+	// Gutenberg's parent editor owns the scroll event. Its classic-script
+	// bridge forwards a DOM event into this iframe so listeners run in the
+	// correct document, even when cross-realm event callbacks are suspended.
+	window.addEventListener( 'za-timeline-editor-scroll', onScrollOrResize );
 
 	// attach listeners (we keep references to handlers for proper removal)
 	const parentHandlersAdded = { scroll: false, resize: false };
@@ -463,11 +432,14 @@ export function initTimelineAnimation( scopeEl ) {
 				// Add listeners to parentWindow — only if accessible
 				log( 'Adding scroll/resize listeners to parent window' );
 				parentWindow.addEventListener( 'scroll', onScrollOrResize, {
-					passive: true,
+					passive: true, capture: true,
 				} );
 				parentWindow.addEventListener( 'resize', onScrollOrResize );
 				parentHandlersAdded.scroll = true;
 				parentHandlersAdded.resize = true;
+				if ( parentScrollElement ) {
+					parentScrollElement.addEventListener( 'scroll', onScrollOrResize, { passive: true } );
+				}
 			}
 		} else {
 			scrollParent.addEventListener( 'scroll', onScrollOrResize, {
@@ -480,7 +452,7 @@ export function initTimelineAnimation( scopeEl ) {
 					'Adding scroll/resize listeners to parent window (custom scrollParent case)'
 				);
 				parentWindow.addEventListener( 'scroll', onScrollOrResize, {
-					passive: true,
+					passive: true, capture: true,
 				} );
 				parentWindow.addEventListener( 'resize', onScrollOrResize );
 				parentHandlersAdded.scroll = true;
@@ -513,8 +485,6 @@ export function initTimelineAnimation( scopeEl ) {
 		if ( ! changed ) {
 			return;
 		}
-		unobserveTriggers();
-		triggers = Array.from( wrapper.querySelectorAll( '.tl-trigger' ) );
 		items = Array.from(
 			wrapper.querySelectorAll( 'li.timeline-item, .timeline-item' )
 		).map( ( it ) => ( {
@@ -524,53 +494,32 @@ export function initTimelineAnimation( scopeEl ) {
 				it.querySelector( '.tl-trigger' ) ||
 				it,
 		} ) );
-		if ( triggers.length ) {
-			observeTriggers();
-		}
 		updateStuckByLine();
 		startLoop();
 	} );
 	mo.observe( wrapper, { childList: true, subtree: true } );
 
-	console.debug( '[ZA] animation.js initTimelineAnimation executed', {
-		inIframe: isInIframe,
-		canUseParentCoords,
-	} );
 
-	// initial start if visible (use parent coords when available)
+	// First paint must be calculated even when the editor has already scrolled
+	// to the selected block before the Timeline was mounted.
 	( function startIfVisible() {
-		const rect = wrapper.getBoundingClientRect();
-		if ( canUseParentCoords ) {
-			const r = rectInParent( rect );
-			const inViewport =
-				r.bottom > 0 &&
-				r.top <
-					( parentWindow.innerHeight ||
-						parentWindow.document.documentElement.clientHeight );
-			if ( inViewport ) {
-				updateStuckByLine();
-				startLoop();
-			}
-			return;
-		}
-		const inViewport =
-			rect.bottom > 0 &&
-			rect.top <
-				( window.innerHeight || document.documentElement.clientHeight );
-		if ( inViewport ) {
-			updateStuckByLine();
+		const rawRect = wrapper.getBoundingClientRect();
+		const rect = canUseParentCoords ? rectInParent( rawRect ) : rawRect;
+		const root = rootViewport();
+		if ( rect.bottom > root.top && rect.top < root.bottom ) {
 			startLoop();
 		}
 	} )();
 
 	// destroy
 	function destroy() {
-		stopLoop();
-		if ( observer ) {
-			try {
-				observer.disconnect();
-			} catch ( e ) {}
+		if ( geometryWatcher !== null ) {
+			window.clearInterval( geometryWatcher );
+			geometryWatcher = null;
 		}
+		window.removeEventListener( 'za-timeline-editor-scroll', onScrollOrResize );
+		clearTimeout( resizeTimer );
+		stopLoop();
 		if ( visObserver ) {
 			try {
 				visObserver.disconnect();
@@ -587,6 +536,9 @@ export function initTimelineAnimation( scopeEl ) {
 				} );
 				window.removeEventListener( 'resize', onScrollOrResize );
 
+				if ( parentScrollElement ) {
+					parentScrollElement.removeEventListener( 'scroll', onScrollOrResize );
+				}
 				if (
 					isInIframe &&
 					parentWindow &&
@@ -599,7 +551,7 @@ export function initTimelineAnimation( scopeEl ) {
 						parentWindow.removeEventListener(
 							'scroll',
 							onScrollOrResize,
-							{ passive: true }
+							{ capture: true }
 						);
 					} catch ( e ) {
 						parentWindow.removeEventListener(
@@ -632,7 +584,7 @@ export function initTimelineAnimation( scopeEl ) {
 						parentWindow.removeEventListener(
 							'scroll',
 							onScrollOrResize,
-							{ passive: true }
+							{ capture: true }
 						);
 					} catch ( e ) {
 						parentWindow.removeEventListener(
@@ -652,12 +604,8 @@ export function initTimelineAnimation( scopeEl ) {
 			/* ignore */
 		}
 
-		// remove stuck class if present
-		try {
-			if ( currentStuckEl ) {
-				currentStuckEl.classList.remove( 'is-stuck' );
-			}
-		} catch ( e ) {}
+		items.forEach( ( item ) => item.el.classList.remove( 'is-stuck' ) );
+
 		try {
 			delete el.__zaTimelineDestroy;
 		} catch ( e ) {
@@ -670,8 +618,11 @@ export function initTimelineAnimation( scopeEl ) {
 }
 
 /**
- * Initialize all timeline widgets in a document
- * @param doc
+ * Initialize all not-yet-initialized Timeline wrappers in a document.
+ * Used by Classic/Elementor and on frontend Gutenberg. The wrapper guard in
+ * initTimelineAnimation prevents duplicate listeners on repeated calls.
+ * Gutenberg block editing instead initializes its own React wrapper.
+ * @param {Document|Element} doc Root to search within.
  */
 export function initAllWidgets( doc = document ) {
 	try {

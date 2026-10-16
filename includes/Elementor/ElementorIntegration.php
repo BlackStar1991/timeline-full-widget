@@ -20,7 +20,6 @@ final class ElementorIntegration {
      */
     public function register(): void {
         add_action( 'elementor/widgets/register', [ $this, 'registerWidget' ] );
-        add_action( 'elementor/widgets/widgets_registered', [ $this, 'registerWidget' ] );
     }
 
     /**

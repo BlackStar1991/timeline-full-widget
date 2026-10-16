@@ -1,17 +1,12 @@
 import { useBlockProps, InnerBlocks } from '@wordpress/block-editor';
 import { convertMarginAttrToStyle } from './item/utils';
+import { getTimelineWrapperStyle } from './timeline-style';
 
 export default function Save( { attributes } ) {
 	const {
-		lineColor,
-		lineWidth = 4,
-		markerColor,
-		markerSize,
 		animationTimeline,
-		animationLineColor,
 		showMarker,
 		animationMarker,
-		animationMarkerColor,
 		animationOtherSideSticky,
 		showStepNumbers,
 	} = attributes;
@@ -26,22 +21,7 @@ export default function Save( { attributes } ) {
 		<div { ...blockProps }>
 			<div
 				className="timeline-wrapper"
-				style={ {
-					'--timeline-line-color': lineColor || '#F6F6F8',
-					'--timeline-line-width': `${ Math.max(
-						1,
-						Number( lineWidth ) || 4
-					) }px`,
-					'--timeline-marker-color': markerColor || '#F6F6F8',
-					'--marker-size': `${ Math.max(
-						1,
-						Number( markerSize ) || 30
-					) }px`,
-					'--timeline-line-active-color':
-						animationLineColor || '#F37321',
-					'--timeline-marker-active-color':
-						animationMarkerColor || '#F37321',
-				} }
+				style={ getTimelineWrapperStyle( attributes ) }
 			>
 				{ animationTimeline && (
 					<div className="timeline-line-animation"></div>

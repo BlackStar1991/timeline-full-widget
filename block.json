@@ -5,8 +5,12 @@
 	"category": "widgets",
 	"icon": "schedule",
 	"description": "A versatile timeline block for adding responsive timelines in Gutenberg.",
-	"keywords": [ "timeline", "events", "history" ],
-	"textdomain": "za",
+	"keywords": [
+		"timeline",
+		"events",
+		"history"
+	],
+	"textdomain": "timeline-full-widget",
 	"editorScript": "file:./build/index.js",
 	"style": "file:./build/style-index.css",
 	"editorStyle": "file:./build/index.css",
@@ -78,11 +82,30 @@
 		"animationOtherSideSticky": {
 			"type": "boolean",
 			"default": false
+		},
+		"timelineBackgroundColor": {
+			"type": "string",
+			"default": ""
+		},
+		"timelineBackgroundImage": {
+			"type": "string",
+			"default": ""
+		},
+		"timelineBackgroundSize": {
+			"type": "string",
+			"default": ""
+		},
+		"timelineBackgroundPosition": {
+			"type": "string",
+			"default": ""
 		}
 	},
 	"supports": {
 		"html": false,
-		"align": [ "wide", "full" ],
+		"align": [
+			"wide",
+			"full"
+		],
 		"anchor": true,
 		"spacing": {
 			"margin": true

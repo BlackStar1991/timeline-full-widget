@@ -9,6 +9,9 @@ import { useSelect, useDispatch } from '@wordpress/data';
 import { useCallback } from '@wordpress/element';
 import { __ } from '@wordpress/i18n';
 
+import { getLegacyTemplateProps } from '../../block-template-compat';
+import { SIDE_AREA_TEMPLATE } from './config';
+
 registerBlockType( 'za/timeline-item-side', {
 	apiVersion: 3,
 	title: __( 'Timeline side content', 'timeline-full-widget' ),
@@ -18,6 +21,7 @@ registerBlockType( 'za/timeline-item-side', {
 	),
 	icon: 'editor-kitchensink',
 	parent: [ 'za/timeline-item' ],
+	template: SIDE_AREA_TEMPLATE,
 	supports: {
 		html: false,
 		reusable: false,
@@ -86,17 +90,7 @@ registerBlockType( 'za/timeline-item-side', {
 				<div { ...blockProps }>
 					{ showOtherSide && (
 						<InnerBlocks
-							template={ [
-								[
-									'core/paragraph',
-									{
-										placeholder: __(
-											'Add side content',
-											'timeline-full-widget'
-										),
-									},
-								],
-							] }
+							{ ...getLegacyTemplateProps( SIDE_AREA_TEMPLATE ) }
 							templateLock={ false }
 							renderAppender={ InnerBlocks.ButtonBlockAppender }
 						/>

@@ -1,0 +1,49 @@
+{
+  "format": "timeline-full-widget",
+  "schemaVersion": 1,
+  "origin": "elementor",
+  "elementType": "za-timeline",
+  "pluginVersion": "4.0.0",
+  "mediaPolicy": "placeholder-only",
+  "exportedAt": "2026-10-15T11:14:52.205Z",
+  "data": {
+    "timeline_line_color": "#444444",
+    "timeline_line_width": {
+      "size": 4,
+      "unit": "px"
+    },
+    "timeline_marker_size": {
+      "size": 40,
+      "unit": "px"
+    },
+    "_css_classes": "portable-demo-timeline",
+    "list": [
+      {
+        "_id": "eitem001",
+        "list_title": "Imported Elementor Example",
+        "list_content": "<p>Edit the widget and replace its placeholder image.</p>",
+        "media_type": "image",
+        "media_image": {
+          "id": 0,
+          "url": "tfw://media-placeholder",
+          "width": 260,
+          "height": 200
+        }
+      },
+      {
+        "_id": "eitem002",
+        "list_title": "Video item",
+        "list_content": "<p>Replace the video from this site.</p>",
+        "media_type": "video",
+        "media_video": {
+          "id": 0,
+          "url": ""
+        },
+        "posterURL": {
+          "id": 0,
+          "url": "tfw://media-placeholder"
+        }
+      }
+    ]
+  }
+}

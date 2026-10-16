@@ -1,0 +1,134 @@
+{
+  "format": "timeline-full-widget",
+  "schemaVersion": 1,
+  "origin": "gutenberg",
+  "elementType": "za/timeline-full-widget",
+  "pluginVersion": "4.0.0",
+  "mediaPolicy": "placeholder-only",
+  "exportedAt": "2026-10-15T11:14:52.202Z",
+  "data": {
+    "name": "za/timeline-full-widget",
+    "attributes": {
+      "lineColor": "#444444",
+      "lineWidth": 4,
+      "markerColor": "#eee",
+      "markerSize": 40,
+      "animationLineColor": "#e77915",
+      "animationMarkerColor": "#ef6810",
+      "animationTimeline": true,
+      "className": "portable-demo-timeline"
+    },
+    "innerBlocks": [
+      {
+        "name": "za/timeline-item",
+        "attributes": {
+          "position": "timeline-left",
+          "markerUnique": true,
+          "markerUrl": "tfw://media-placeholder",
+          "markerId": 0,
+          "showMedia": true,
+          "markerAlt": "Marker"
+        },
+        "innerBlocks": [
+          {
+            "name": "za/timeline-item-side",
+            "attributes": {},
+            "innerBlocks": [
+              {
+                "name": "core/paragraph",
+                "attributes": {
+                  "content": "2026"
+                },
+                "innerBlocks": []
+              }
+            ]
+          },
+          {
+            "name": "za/timeline-item-content",
+            "attributes": {
+              "showMedia": true,
+              "mediaUrl": "tfw://media-placeholder",
+              "mediaType": "image",
+              "mediaMime": "image/jpeg",
+              "mediaWidth": "260px",
+              "videoPoster": "tfw://media-placeholder"
+            },
+            "innerBlocks": [
+              {
+                "name": "core/heading",
+                "attributes": {
+                  "level": 3,
+                  "className": "tl-title",
+                  "content": "The First Milestone"
+                },
+                "innerBlocks": []
+              },
+              {
+                "name": "core/paragraph",
+                "attributes": {
+                  "content": "Edit this imported timeline and replace the media placeholders."
+                },
+                "innerBlocks": []
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "za/timeline-item",
+        "attributes": {
+          "position": "timeline-inverted",
+          "markerUnique": true,
+          "markerUrl": "tfw://media-placeholder",
+          "markerId": 0,
+          "showMedia": true,
+          "markerAlt": "Marker"
+        },
+        "innerBlocks": [
+          {
+            "name": "za/timeline-item-side",
+            "attributes": {},
+            "innerBlocks": [
+              {
+                "name": "core/paragraph",
+                "attributes": {
+                  "content": "2026"
+                },
+                "innerBlocks": []
+              }
+            ]
+          },
+          {
+            "name": "za/timeline-item-content",
+            "attributes": {
+              "showMedia": true,
+              "mediaUrl": "tfw://media-placeholder",
+              "videoPoster": "tfw://media-placeholder",
+              "mediaType": "video",
+              "mediaMime": "video/mp4",
+              "mediaWidth": "260px"
+            },
+            "innerBlocks": [
+              {
+                "name": "core/heading",
+                "attributes": {
+                  "level": 3,
+                  "className": "tl-title",
+                  "content": "Video Milestone"
+                },
+                "innerBlocks": []
+              },
+              {
+                "name": "core/paragraph",
+                "attributes": {
+                  "content": "Edit this imported timeline and replace the media placeholders."
+                },
+                "innerBlocks": []
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

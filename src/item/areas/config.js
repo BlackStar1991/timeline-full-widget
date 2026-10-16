@@ -28,13 +28,22 @@ export const TIMELINE_ITEM_AREA_BLOCKS = [
 	CONTENT_AREA_BLOCK,
 ];
 
+export const SIDE_AREA_TEMPLATE = [
+	[
+		'core/paragraph',
+		{
+			placeholder: __( 'Add side content', 'timeline-full-widget' ),
+		},
+	],
+];
+
 export const CONTENT_AREA_TEMPLATE = [
 	TIMELINE_ITEM_TITLE_TEMPLATE,
 	TIMELINE_ITEM_PARAGRAPH_TEMPLATE,
 ];
 
 export const TIMELINE_ITEM_AREA_TEMPLATE = [
-	[ SIDE_AREA_BLOCK ],
+	[ SIDE_AREA_BLOCK, {}, SIDE_AREA_TEMPLATE ],
 	[ CONTENT_AREA_BLOCK, {}, CONTENT_AREA_TEMPLATE ],
 ];
 

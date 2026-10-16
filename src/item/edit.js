@@ -15,6 +15,7 @@ import { useSelect, useDispatch } from '@wordpress/data';
 import {
 	PanelBody,
 	ToolbarButton,
+	ToolbarGroup,
 	ToggleControl,
 	Popover,
 } from '@wordpress/components';
@@ -41,6 +42,7 @@ import {
 import { createLegacyTitleHeadingBlock } from './legacy-title-migration';
 
 import MediaSettingsPanel from './components/MediaSettingsPanel';
+import { getLegacyTemplateProps } from '../block-template-compat';
 
 
 function createEmptyParagraphBlock() {
@@ -370,58 +372,60 @@ export function Edit( { clientId, attributes, setAttributes } ) {
 
 		return (
 			<BlockControls group="block">
-				<MediaReplaceFlow
-					name={ __( 'Replace Media File', 'timeline-full-widget' ) }
-					onSelect={ onSelect }
-					accept="image/*,video/*"
-					allowedTypes={ [ 'image', 'video' ] }
-					mediaId={ mediaId }
-					mediaURL={ mediaUrl }
-				/>
+				<ToolbarGroup>
+					<MediaReplaceFlow
+						name={ __( 'Replace Media File', 'timeline-full-widget' ) }
+						onSelect={ onSelect }
+						accept="image/*,video/*"
+						allowedTypes={ [ 'image', 'video' ] }
+						mediaId={ mediaId }
+						mediaURL={ mediaUrl }
+					/>
 
-				<ToolbarButton
-					onClick={ () =>
-						setAttributes( {
-							mediaId: undefined,
-							mediaUrl: undefined,
-							imageAlt: '',
-							mediaType: '',
-							mediaMime: '',
-							videoPoster: '',
-							mediaLinkUrl: '',
-							mediaLinkTarget: '',
-							mediaLinkRel: '',
-							isMediaWrapToLink: false,
-						} )
-					}
-					isDisabled={ ! mediaUrl }
-					icon="trash"
-					label={ __( 'Remove Media File', 'timeline-full-widget' ) }
-				/>
+					<ToolbarButton
+						onClick={ () =>
+							setAttributes( {
+								mediaId: undefined,
+								mediaUrl: undefined,
+								imageAlt: '',
+								mediaType: '',
+								mediaMime: '',
+								videoPoster: '',
+								mediaLinkUrl: '',
+								mediaLinkTarget: '',
+								mediaLinkRel: '',
+								isMediaWrapToLink: false,
+							} )
+						}
+						isDisabled={ ! mediaUrl }
+						icon="trash"
+						label={ __( 'Remove Media File', 'timeline-full-widget' ) }
+					/>
 
-				<ToolbarButton
-					icon={ linkIcon }
-					label={ __( 'Media link', 'timeline-full-widget' ) }
-					onClick={ () =>
-						setIsMediaLinkPickerOpen( ( prev ) => ! prev )
-					}
-					isPressed={ isMediaLinkPickerOpen }
-				/>
+					<ToolbarButton
+						icon={ linkIcon }
+						label={ __( 'Media link', 'timeline-full-widget' ) }
+						onClick={ () =>
+							setIsMediaLinkPickerOpen( ( prev ) => ! prev )
+						}
+						isPressed={ isMediaLinkPickerOpen }
+					/>
 
-				<ToolbarButton
-					icon={ unlinkIcon }
-					label={ __( 'Remove media link', 'timeline-full-widget' ) }
-					onClick={ () => {
-						setAttributes( {
-							mediaLinkUrl: '',
-							mediaLinkTarget: '',
-							mediaLinkRel: '',
-							isMediaWrapToLink: false,
-						} );
-						setIsMediaLinkPickerOpen( false );
-					} }
-					isDisabled={ ! mediaLinkUrl }
-				/>
+					<ToolbarButton
+						icon={ unlinkIcon }
+						label={ __( 'Remove media link', 'timeline-full-widget' ) }
+						onClick={ () => {
+							setAttributes( {
+								mediaLinkUrl: '',
+								mediaLinkTarget: '',
+								mediaLinkRel: '',
+								isMediaWrapToLink: false,
+							} );
+							setIsMediaLinkPickerOpen( false );
+						} }
+						isDisabled={ ! mediaLinkUrl }
+					/>
+				</ToolbarGroup>
 			</BlockControls>
 		);
 	}, [
@@ -492,14 +496,16 @@ export function Edit( { clientId, attributes, setAttributes } ) {
 		}
 		return (
 			<BlockControls group="block">
-				<ToolbarButton
-					label={ __(
-						'Apply item styles to other items',
-						'timeline-full-widget'
-					) }
-					icon="admin-customizer"
-					onClick={ applyStylesToSiblingItems }
-				/>
+				<ToolbarGroup>
+					<ToolbarButton
+						label={ __(
+							'Apply item styles to other items',
+							'timeline-full-widget'
+						) }
+						icon="admin-customizer"
+						onClick={ applyStylesToSiblingItems }
+					/>
+				</ToolbarGroup>
 			</BlockControls>
 		);
 	}, [ applyStylesToSiblingItems, timelineItemSiblings.length ] );
@@ -606,7 +612,7 @@ export function Edit( { clientId, attributes, setAttributes } ) {
 
 				<InnerBlocks
 					allowedBlocks={ TIMELINE_ITEM_AREA_BLOCKS }
-					template={ TIMELINE_ITEM_AREA_TEMPLATE }
+					{ ...getLegacyTemplateProps( TIMELINE_ITEM_AREA_TEMPLATE ) }
 					templateLock={ false }
 					renderAppender={ false }
 				/>

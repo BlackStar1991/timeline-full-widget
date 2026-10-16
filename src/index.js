@@ -6,6 +6,7 @@ import Save from './save';
 import '../assets/css/core/style.css';
 import './style.scss';
 import './editor.scss';
+import { TIMELINE_TEMPLATE } from './timeline-template';
 
 registerBlockType( 'za/timeline-full-widget', {
 	title: 'Timeline',
@@ -15,6 +16,7 @@ registerBlockType( 'za/timeline-full-widget', {
 		</svg>
 	),
 	category: 'widgets',
+	template: TIMELINE_TEMPLATE,
 	supports: {
 		html: false,
 		align: [ 'wide', 'full' ],

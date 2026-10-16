@@ -46,21 +46,11 @@ final class ClassicEditorIntegration {
         }
 
         $classic_loader_url = TIMELINE_FULL_WIDGET_URL . 'assets/js/adapters/classic-adapter-loader.js';
-        $base_js_url        = TIMELINE_FULL_WIDGET_URL . 'assets/js/';
-        $animation_url      = TIMELINE_FULL_WIDGET_URL . 'assets/js/core/animation.js';
-
-        $classic_url_with_q = add_query_arg(
-            [
-                'za_base_js' => rawurlencode( $base_js_url ),
-                'za_anim'    => rawurlencode( $animation_url ),
-            ],
-            $classic_loader_url
-        );
 
         add_filter(
             'mce_external_plugins',
-            static function ( array $plugins ) use ( $classic_url_with_q ): array {
-                $plugins['za_timeline_button'] = $classic_url_with_q;
+            static function ( array $plugins ) use ( $classic_loader_url ): array {
+                $plugins['za_timeline_button'] = $classic_loader_url;
                 return $plugins;
             }
         );
@@ -110,7 +100,6 @@ final class ClassicEditorIntegration {
         $config = [
             'baseJsUrl'    => esc_url_raw( $base_js_url ),
             'animationUrl' => esc_url_raw( $base_js_url . 'core/animation.js' ),
-            'i18nDomain'   => 'timeline-full-widget',
         ];
         $json = wp_json_encode( $config );
 
@@ -148,7 +137,7 @@ final class ClassicEditorIntegration {
 
         $screen = function_exists( 'get_current_screen' ) ? get_current_screen() : null;
         if ( $screen ) {
-            $allowed_bases = [ 'post', 'post-new', 'page', 'edit', 'dashboard', 'edit-tags', 'term' ];
+            $allowed_bases = [ 'post', 'post-new' ];
             if ( ! in_array( $screen->base, $allowed_bases, true ) ) {
                 return false;
             }
@@ -175,11 +164,19 @@ final class ClassicEditorIntegration {
         }
 
         if ( $post_id && function_exists( 'use_block_editor_for_post' ) ) {
-            try {
-                return (bool) use_block_editor_for_post( get_post( $post_id ) );
-            } catch ( \Throwable $e ) {
-                return false;
+            $post = get_post( $post_id );
+            if ( $post ) {
+                return (bool) use_block_editor_for_post( $post );
             }
+        }
+
+        // For new posts no post ID exists; check the screen's post type.
+        if ( $screen && method_exists( $screen, 'is_block_editor' ) && $screen->is_block_editor() ) {
+            return true;
+        }
+
+        if ( $screen && ! empty( $screen->post_type ) && function_exists( 'use_block_editor_for_post_type' ) ) {
+            return (bool) use_block_editor_for_post_type( $screen->post_type );
         }
 
         return false;

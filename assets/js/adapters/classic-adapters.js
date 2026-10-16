@@ -3,20 +3,17 @@
 
 	/* CONFIG */
 
+	// TinyMCE runs in an iframe. Prefer the same config as the Classic Editor
+	// parent; module scripts do not reliably expose document.currentScript.
 	const cfg = ( function () {
-		const out = {};
-
-		if ( document.currentScript?.src ) {
-			const url = new URL( document.currentScript.src, location.href );
-			out.baseJsUrl = url.searchParams.get( 'za_base_js' ) || '';
-			out.animationUrl = url.searchParams.get( 'za_anim' ) || '';
-		}
-
 		if ( window.zaTimelineConfig ) {
-			Object.assign( out, window.zaTimelineConfig );
+			return window.zaTimelineConfig;
 		}
-
-		return out;
+		try {
+			return window.parent?.zaTimelineConfig || {};
+		} catch ( error ) {
+			return {};
+		}
 	} )();
 
 	const __ = ( text ) =>
@@ -38,10 +35,7 @@
 			);
 		}
 
-		return (
-			location.origin +
-			'/wp-content/plugins/timeline-full-widget/assets/js/core/animation.js'
-		);
+		return new URL( '../core/animation.js', import.meta.url ).href;
 	}
 
 	/* TIMELINE LOADER */

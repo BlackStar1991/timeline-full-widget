@@ -61,9 +61,9 @@
 }
 
 @media (min-width: 701px) {
-  .timeline-item {
-    grid-template-columns: calc(50% - var(--marker-size)) calc(50% - var(--marker-size));
-    gap:calc(var(--marker-size) + 12px);
+  .wp-block-za-timeline-full-widget .timeline:not(.timeline-animation-marker) > .timeline-item {
+    grid-template-columns: calc(50% - var(--marker-size, 30px)) calc(50% - var(--marker-size, 30px));
+    gap: calc(var(--marker-size, 30px) + 12px);
   }
 
   .wp-theme-kadence .timeline-line-animation,

@@ -15,10 +15,35 @@ import {
 } from '@wordpress/element';
 
 import { convertMarginAttrToStyle } from './item/utils';
+import { getTimelineWrapperStyle } from './timeline-style';
+import { getLegacyTemplateProps } from './block-template-compat';
 import {
-	initTimelineAnimation,
-	initAllWidgets,
-} from '../assets/js/core/animation.js';
+	ITEM_ATTRIBUTE_EXCLUSIONS,
+	collectDescendantStyleUpdates,
+	getInheritableAttributes,
+} from './item/style-inheritance';
+import { TIMELINE_TEMPLATE } from './timeline-template';
+import { initTimelineAnimation } from '../assets/js/core/animation.js';
+
+
+function haveDifferentAttributes( blockAttributes = {}, nextAttributes = {} ) {
+	return Object.keys( nextAttributes ).some(
+		( key ) =>
+			JSON.stringify( blockAttributes?.[ key ] ) !==
+			JSON.stringify( nextAttributes[ key ] )
+	);
+}
+
+function hasTimelineItemAreas( block = {} ) {
+	const childNames = new Set(
+		( block.innerBlocks || [] ).map( ( childBlock ) => childBlock.name )
+	);
+
+	return (
+		childNames.has( 'za/timeline-item-side' ) &&
+		childNames.has( 'za/timeline-item-content' )
+	);
+}
 
 export default function Edit( { attributes, setAttributes, clientId } ) {
 	const {
@@ -50,6 +75,12 @@ export default function Edit( { attributes, setAttributes, clientId } ) {
 		( select ) => select( 'core/block-editor' ).getBlocks( clientId ) || [],
 		[ clientId ]
 	);
+
+	const timelineItemBlocks = innerBlocks.filter(
+		( block ) => block.name === 'za/timeline-item'
+	);
+	const knownTimelineItemClientIdsRef = useRef( null );
+	const pendingInitialStyleInheritanceRef = useRef( new Map() );
 
 	const syncToChildren = useCallback(
 		( attrs = {} ) => {
@@ -129,40 +160,113 @@ export default function Edit( { attributes, setAttributes, clientId } ) {
 		syncToChildren,
 	] );
 
+
+
+	useLayoutEffect( () => {
+		const itemClientIds = timelineItemBlocks.map(
+			( block ) => block.clientId
+		);
+
+		if ( knownTimelineItemClientIdsRef.current === null ) {
+			knownTimelineItemClientIdsRef.current = itemClientIds;
+			return;
+		}
+
+		const knownClientIds = new Set(
+			knownTimelineItemClientIdsRef.current
+		);
+
+		timelineItemBlocks.forEach( ( block, index ) => {
+			if ( knownClientIds.has( block.clientId ) || index < 1 ) {
+				return;
+			}
+
+			const previousItem = timelineItemBlocks[ index - 1 ];
+
+			if ( previousItem ) {
+				pendingInitialStyleInheritanceRef.current.set(
+					block.clientId,
+					previousItem.clientId
+				);
+			}
+		} );
+
+		knownTimelineItemClientIdsRef.current = itemClientIds;
+	}, [ timelineItemBlocks ] );
+
+	useLayoutEffect( () => {
+		const pendingInheritance = pendingInitialStyleInheritanceRef.current;
+
+		if ( ! pendingInheritance.size ) {
+			return;
+		}
+
+		const itemBlocksByClientId = new Map(
+			timelineItemBlocks.map( ( block ) => [ block.clientId, block ] )
+		);
+
+		pendingInheritance.forEach( ( sourceClientId, targetClientId ) => {
+			const sourceBlock = itemBlocksByClientId.get( sourceClientId );
+			const targetBlock = itemBlocksByClientId.get( targetClientId );
+
+			if ( ! sourceBlock || ! targetBlock ) {
+				pendingInheritance.delete( targetClientId );
+				return;
+			}
+
+			const itemStyleAttributes = getInheritableAttributes(
+				sourceBlock.attributes || {},
+				ITEM_ATTRIBUTE_EXCLUSIONS
+			);
+
+			if (
+				Object.keys( itemStyleAttributes ).length &&
+				haveDifferentAttributes(
+					targetBlock.attributes || {},
+					itemStyleAttributes
+				)
+			) {
+				updateBlockAttributes( targetClientId, itemStyleAttributes );
+			}
+
+			collectDescendantStyleUpdates( sourceBlock, targetBlock ).forEach(
+				( { clientId: descendantClientId, attributes: descendantAttributes } ) => {
+					updateBlockAttributes(
+						descendantClientId,
+						descendantAttributes
+					);
+				}
+			);
+
+			if ( hasTimelineItemAreas( targetBlock ) ) {
+				pendingInheritance.delete( targetClientId );
+			}
+		} );
+	}, [ timelineItemBlocks, updateBlockAttributes ] );
+
+	// The visibility and color of markers belong to block attributes, not to
+	// the animation lifecycle. In particular, adding an item must not reset
+	// scroll progress by destroying/recreating the whole animation.
 	useEffect( () => {
 		if ( ! showMarker && animationMarker ) {
 			setAttributes( { animationMarker: false } );
 		}
+	}, [ showMarker, animationMarker, setAttributes ] );
 
+	useEffect( () => {
 		if ( ! animationTimeline || ! wrapperRef.current ) {
 			return undefined;
 		}
 
-		let destroyFn;
-
 		try {
-			const el = wrapperRef.current;
-			if ( typeof initTimelineAnimation === 'function' ) {
-				destroyFn = initTimelineAnimation( el );
-			} else if ( typeof initAllWidgets === 'function' ) {
-				destroyFn = initAllWidgets( el );
-			}
-		} catch ( err ) {
-			console.error( 'Timeline animation init failed', err );
+			// React owns this particular wrapper; don't initialize every Timeline
+			// in the document. InnerBlocks changes are handled by MutationObserver.
+			return initTimelineAnimation( wrapperRef.current ) || undefined;
+		} catch ( error ) {
+			console.error( 'Timeline animation init failed', error );
+			return undefined;
 		}
-
-		return () => {
-			if ( typeof destroyFn === 'function' ) {
-				destroyFn();
-			}
-		};
-	}, [
-		animationTimeline,
-		innerBlocks.length,
-		showMarker,
-		animationMarker,
-		setAttributes,
-	] );
+	}, [ animationTimeline ] );
 
 	const marginStyle = convertMarginAttrToStyle( attributes.style );
 	const outerProps = useBlockProps( { style: marginStyle } );
@@ -172,23 +276,7 @@ export default function Edit( { attributes, setAttributes, clientId } ) {
 			<div
 				className="timeline-wrapper"
 				ref={ wrapperRef }
-				style={ {
-					'--timeline-line-color': lineColor || '#F6F6F8',
-					'--timeline-line-width': `${ Math.max(
-						1,
-						Number( lineWidth ) || 4
-					) }px`,
-					'--timeline-marker-color': markerColor || '#F6F6F8',
-					'--marker-size': `${ Math.max(
-						1,
-						Number( markerSize ) || 30
-					) }px`,
-
-					'--timeline-line-active-color':
-						animationLineColor || '#F37321',
-					'--timeline-marker-active-color':
-						animationMarkerColor || '#F37321',
-				} }
+				style={ getTimelineWrapperStyle( attributes ) }
 			>
 				<InspectorControls>
 					<PanelBody
@@ -488,36 +576,7 @@ export default function Edit( { attributes, setAttributes, clientId } ) {
 				>
 					<InnerBlocks
 						allowedBlocks={ [ 'za/timeline-item' ] }
-						template={ [
-							[
-								'za/timeline-item',
-								{
-									title: __(
-										'Timeline Item #1',
-										'timeline-full-widget'
-									),
-									showMedia,
-									direction,
-									showOtherSide,
-									showMarker,
-									markerUnique,
-								},
-							],
-							[
-								'za/timeline-item',
-								{
-									title: __(
-										'Timeline Item #2',
-										'timeline-full-widget'
-									),
-									showMedia,
-									direction,
-									showOtherSide,
-									showMarker,
-									markerUnique,
-								},
-							],
-						] }
+						{ ...getLegacyTemplateProps( TIMELINE_TEMPLATE ) }
 						templateLock={ false }
 						renderAppender={ InnerBlocks.ButtonBlockAppender }
 					/>
