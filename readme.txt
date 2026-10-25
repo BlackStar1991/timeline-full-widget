@@ -4,7 +4,7 @@ Donate link: https://www.paypal.com/donate/?hosted_button_id=TK9QQ5DE2K378
 Tags: timeline, Elementor, gutenberg blocks, editor, blocks
 Requires at least: 5.5
 Tested up to: 7.1
-Stable tag: 4.0.0
+Stable tag: 4.1.0
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -12,128 +12,99 @@ Free timeline plugin for WordPress, Elementor, and Gutenberg. Create responsive 
 
 == Description ==
 
-Timeline Full Widget is a lightweight and flexible **WordPress timeline plugin** that allows you to create timelines using both **Elementor** and **Gutenberg**.
+Timeline Full Widget lets you build responsive timelines, roadmaps and milestone lists in Gutenberg or Elementor.
 
-The plugin provides a consistent editing experience across builders and gives you full control over layout, styling, and content without unnecessary complexity.
+Features:
 
-Key advantages:
+- Custom line, marker, typography, spacing and animation settings.
+- Flexible per-item layouts, shared styles and independent item/card backgrounds.
+- Images and videos with optional media width in px or %.
+- Gutenberg side and main content areas that support compatible WordPress blocks.
+- Import/export Timeline designs as `.tfw.json` files, including supported Gutenberg ↔ Elementor transfers.
+- Select which content and styles to import. Media from other sites is replaced with local placeholders.
 
-- Works with **Elementor** and **Gutenberg**
-- Clean and simple editing experience
-- Customizable styles (colors, typography, spacing)
-- Support for images and video
-- Responsive layout
-- Reusable styles between timeline items
-- Independent horizontal layout and media order switches for every Elementor and Gutenberg Timeline Item
-- Block-based side and main content areas for Gutenberg timeline items
-- **Portable Timeline import/export** for both Gutenberg and Elementor: move and replace timelines across sites, preserving native editor properties, advanced layout, custom CSS classes, responsive design, typography, and per-item styles
-- **Privacy-minded media placeholders** for imported images, custom markers, and video posters, with image size and video-type settings retained
-- **Two-way Elementor ↔ Gutenberg conversion**: import compatible Timeline settings, item text, links, layout, media placeholders and marker styles between editors (editor-specific controls remain editor-specific)
-- **Selective imports**: choose whether to transfer headings/text/inner content, margins, padding, gaps, IDs, CSS classes, custom styles, links, animation, responsive settings, typography and backgrounds
-
-You can use it for:
-
-- Project timelines
-- Roadmaps
-- Company history
-- Event timelines
-- Milestones
+Use it for project roadmaps, company histories, event timelines and milestones.
 
 == Installation ==
 
-1. Upload the plugin files to the `/wp-content/plugins/timeline-full-widget` directory, or install it through the WordPress plugins screen directly.
-2. Activate the plugin through the 'Plugins' screen in WordPress.
-3. Use the Elementor editor or Gutenberg editor.
+1. Install Timeline Full Widget from the WordPress Plugins screen or upload it to `/wp-content/plugins/timeline-full-widget`.
+2. Activate the plugin.
+3. Add a Timeline block in Gutenberg or a Timeline widget in Elementor.
 
 == Frequently Asked Questions ==
 
+= Does Timeline Full Widget support Elementor and Gutenberg? =
+Yes. Add the Timeline block in Gutenberg or the Timeline widget in Elementor.
 
-= Does it work with the latest Elementor? =
-Yes, tested with Elementor 4.0.0 and WordPress 7.1.
+= Can I customize individual Timeline items? =
+Yes. Set item and card backgrounds, typography, markers, media, and horizontal or reversed content layouts. Elementor supports shared styles with per-item overrides; Gutenberg can copy styles between items.
 
-= Does it support Gutenberg (block editor)? =
-Yes, the plugin includes a native Gutenberg block. Type “/timeline”
+= Can I add other blocks inside a Timeline item? =
+Yes. Gutenberg Timeline items have separate side and main content areas for compatible WordPress blocks.
 
-= Can I change the marker on the timeline items? =
-Yes, you can. Use the "Edit marker" button. In "Marker Settings" you need choose "Unique Marker" option, after that you would be able to set a personal marker like a image.
+= How do I import or export a Timeline? =
+Open **Import / Export Timeline** in the selected Gutenberg block or Elementor widget. Export a `.tfw.json` file or import one and choose which properties to apply. Importing replaces the selected Timeline; review the options before confirming.
 
-= Can I add blocks inside a timeline item? =
-Yes. In Gutenberg, each timeline item now has separate block-based areas for side content and main content. You can add headings, paragraphs, lists, galleries, and other compatible blocks to each area.
+= Can I transfer a Timeline between Gutenberg and Elementor? =
+Yes, for supported content and styling. Advanced editor-specific settings, fonts and theme styles may not transfer exactly. Images, video posters and custom markers use local placeholders instead of the original site's files.
 
-= Can I customize timeline item styles? =
-Yes, you can control colors, typography, spacing, and alignment for each item.
+= Can I change the background of the whole Timeline? =
+Yes. In Gutenberg, select the Timeline block and use the standard Background settings in the Styles tab. You can set a color or a background image when your WordPress version and theme support those controls. Compatible backgrounds can also be imported from Elementor.
 
-= How do shared item styles work? =
-In Elementor, timeline items use shared item styles by default. Turn off "Use shared item styles" inside a repeater item only when that item needs unique colors or typography. Each Elementor Timeline Item has separate "Use horizontal content layout" and "Reverse media and content order" switches under Item layout, both off by default, regardless of shared styles. In Gutenberg, newly inserted Timeline Items copy style/layout settings from the item directly above them, and the existing toolbar button can still apply the current item styles to other items.
-
-= Can I transfer a Timeline to another website? =
-Yes. In Elementor open the widget's **Import / Export Timeline** section under Content. In Gutenberg select the Timeline block and open **Import / Export Timeline** in the block sidebar. Export a `.tfw.json` file, then add a new Timeline widget or block on the destination site and import it. For both editors, importing a validated file opens a popup to choose which properties to transfer (IDs, margins, padding, classes, custom CSS, responsive styles, text and more) before replacing the selected Timeline. The Gutenberg sidebar contains only import/export actions and notifications, not the confirmation checkboxes. Media is replaced by local placeholders rather than copied from the donor site.
-
-= How are Gutenberg palette colors transferred to Elementor? =
-Standard WordPress palette slugs are resolved to their actual CSS colors, including per-item backgrounds and supported heading/paragraph colors. New Gutenberg exports also capture used theme palette values so custom colors can travel between websites. Other site-specific theme styles and unsupported nested block styling may still need adjustment.
-
-= Can I import a Gutenberg Timeline into Elementor or vice versa? =
-Both directions, **Gutenberg → Elementor** and **Elementor → Gutenberg**, can import supported core Timeline layout, item headings/text, hyperlinks, common colors, marker settings and media placeholders. Conversions are best-effort: Elementor Advanced CSS, custom font families, complex Gutenberg nested blocks, and theme-dependent tokens have no guaranteed direct equivalent. For highest fidelity, import into the originating editor. Elementor repeater layout and media-order switches work independently for every item, even while shared item styles remain enabled.
-
-= Why are some texts missing from an older Gutenberg export? =
-Some files created in version 4.0.1 serialized RichText values as empty JSON objects. The content is absent from those files and cannot be reconstructed. Version 4.0.6 preserves rich text in new exports and warns when an older file has missing text; turn off content import to preserve the destination's existing text.
-
-= Will the imported Timeline look exactly the same? =
-Native same-editor settings (including Advanced and repeater-item styles) are preserved. Replace placeholder images/videos with local media. Exact appearance also depends on destination theme CSS, locally installed fonts, responsive breakpoints and Elementor global design tokens. Missing donor-only global styles, theme styles, or plugins may require adjustment.
-
-= Is it responsive? =
-Yes, the timeline layout adapts to different screen sizes.
-
-= Will it work with my theme? =
-Yes, it works with most WordPress themes, including block and classic themes.
+= How do Wide width and Full width work? =
+In Gutenberg, these options follow the active theme's layout settings. Page templates and parent blocks can also affect the available width.
 
 == Screenshots ==
 
 1. Timeline widget in Elementor.
 2. Timeline block in Gutenberg.
 3. Timeline block in Gutenberg.
-4. Horizontal and vertical content layouts
+4. Horizontal and vertical content layouts.
 
 == Contribute ==
 
-Would you like to help translate Timeline Full Widget into your language?
-You can contribute translations here:
+Help translate Timeline Full Widget:
 https://translate.wordpress.org/projects/wp-plugins/timeline-full-widget/
 
 == Changelog ==
 
+= 4.1.0 =
+* Show the Gutenberg Timeline Item Media Settings panel only after adding an image or video; hide it again when media is removed.
+* Keep custom marker image settings accessible in a separate panel, even when no main media is attached.
+
 = 4.0.0 =
-* Added native, selective cross-site import/export for both Elementor widgets and Gutenberg Timeline blocks.
-* Added image, marker, background and video-poster placeholders without transferring original media attachments.
-* Added a shared portable file contract, editor-only adapters and security checks for untrusted files.
+* Added selective cross-site import/export and compatible two-way Gutenberg/Elementor transfer.
+* Added per-item layout, background and media controls, including width in px or %.
+* Improved color/style transfer and media placeholders without copying source attachments.
+* Improved Gutenberg editor behavior, animation handling and responsive layout compatibility.
+* Strengthened import validation and compatibility with existing Timeline content.
 
 = 3.3.6 =
-* Corrected the Gutenberg block translation domain to timeline-full-widget.
-* Registered shared Elementor styles on init and loaded them only where needed on the frontend.
-* Removed redundant Elementor editor script registration and limited Classic Editor assets to applicable editor screens.
-* Fixed Elementor title output when the selected HTML tag is a link but no URL was provided.
-* Added developer-only PHP/JavaScript regression and PSR-4-style checks.
-
+* Improved editor asset loading, translations and compatibility.
 
 = 3.3.5 =
-* Fixed Elementor Timeline item styling controls by replacing the obsolete Side content alignment override with Title alignment for unique items.
-* Moved shared Title alignment next to shared Title color and limited shared title styles to non-unique items.
-* Removed unused Elementor side-content alignment override code.
+* Added Elementor per-item title alignment.
 
 = 3.3.4 =
-* Fix Elementor Timeline Item side content alignment so shared and per-item alignment changes update reliably in the editor and frontend.
+* Fixed Elementor side-content alignment.
 
 = 3.3.3 =
-* Fixed Elementor live preview for timeline line width, marker size, line colors, and marker colors. Changes now apply immediately in the editor without switching to another component.
-* Removed duplicate inline CSS custom properties from the Elementor timeline wrapper so Elementor selector-generated CSS controls the live preview and frontend consistently.
+* Fixed live updates for Elementor line and marker controls.
 
 = 3.3.2 =
-* Fixed Elementor Timeline side content alignment for both shared item styles and unique per-item overrides.
-* Added shared text alignment utility styles to the Elementor/Core stylesheet so preview and frontend output match.
+* Improved Elementor side-content alignment.
+
+= 3.3.1 =
+* Restored Gutenberg item style copying and improved new-item inheritance.
+
+= 3.3.0 =
+* Added shared and individual item styles in Gutenberg and Elementor.
 
 = 3.2.0 =
-* Updated Gutenberg static InnerBlocks templates to the WordPress 7.2 / Gutenberg 23.8 block-type template API.
-* Made Timeline Item side and content scaffolding atomic for improved real-time collaboration behavior.
+* Unified Elementor/Gutenberg markup and styling controls.
+
+= 3.1.1 =
+* Improved Gutenberg InnerBlocks templates and compatibility.
 
 = 3.1.0 =
 * Fixed problem with blueprint.json.

@@ -2,6 +2,17 @@
 
 Instructions for coding agents maintaining **Timeline Full Widget** (plugin version **4.0.0** at this audit). Read the current code and changelog before changing behavior. Keep this guide aligned with the repository rather than assuming that a planned cross-editor abstraction already exists.
 
+
+## Clean-code and compatibility boundary (October 2026)
+
+- Current PHP entry points are the `TimelineFullWidget` PSR-4 classes. Do not reintroduce the removed `TimelinePlugin` global alias, old `TIMELINE_ELEMENTOR_*` constants, or direct `elementor-timeline-widget.php` loader. External code using those undocumented aliases must migrate to the namespace-based API.
+- Elementor registration uses the manager given by `elementor/widgets/register`. JS modules load from deterministic URLs derived from their own script paths; never guess a URL from the last script on the page or poll arbitrary iframes.
+- Classic Editor, Elementor, and Gutenberg have separate entry points, but use the shared timeline animation contract. Preserve the same serialized block names and `.tfw.json` schema.
+- **Keep Gutenberg's `deprecated` block definitions and pre-3.0 saved-title migrations** until a separately planned data migration is provided. They protect already published Timeline HTML from invalid-block warnings. Similarly, retain the read-only boundary converters for old `.tfw.json` and `media_width` values. These are legitimate data compatibility, not active control duplication.
+- The `src/block-template-compat.js` feature detection remains required while `readme.txt` advertises WordPress 5.5 as the minimum. Removing it would require a deliberate minimum-version increase and testing.
+- Keep security checks, safe defaults, responsive CSS defaults, and editor scroll-container detection. Do not treat these as removable legacy workarounds.
+- After JS source changes run `npm run build` when toolchain is available; otherwise **never claim a production build was completed**. Built Gutenberg files are a separate deliverable from directly loaded adapter modules.
+
 ## 1. Repository and commands
 
 | Area | Source of truth / entry point |
@@ -21,8 +32,8 @@ Instructions for coding agents maintaining **Timeline Full Widget** (plugin vers
 | Portable transfer core (shared semantic keys, security and content toggles) | `assets/js/transfer/transfer-core.js`, `assets/js/transfer/package.json` |
 | Import/export editor adapters | `assets/js/transfer/{elementor-editor,gutenberg-editor}.js` plus `elementor-editor-loader.js` |
 | Media placeholder asset | `assets/images/media-placeholder.svg` |
-| Local-version Playground bundle recipe and examples | `assets/blueprints/blueprint-bundle.json`, `assets/blueprints/samples/` |
-| Standalone automated regressions | `scripts/tests/php-runtime.php`, `scripts/tests/{js-runtime,transfer,transfer-ui}.mjs` |
+| Live Preview for WordPress.org | `assets/blueprints/blueprint.json` (self-contained, no bundled assets) |
+| Standalone automated regressions | `scripts/tests/php-runtime.php`, `scripts/tests/{js-runtime,animation-scroll,transfer,transfer-ui,editor-media-color,elementor-media-controls}.mjs` |
 | Release consistency check | `scripts/check-release.php` |
 | Latest audit record | External `Timeline-Full-Widget-4.0.0-FIX-REPORT.md` (not distributed with plugin) |
 | PSR-4 structure check | `scripts/check-psr4.php` (mandatory final gate) |
@@ -44,6 +55,7 @@ npm run test:blueprint # Public WordPress.org and bundled-local Playground recip
 npm run test:php       # Standalone WordPress/Elementor-stubbed PHP smoke/render tests.
 npm run test:release   # Release/build asset and version coherence.
 npm run test:psr4      # Strict namespace/class/file mapping plus autoload smoke test.
+npm run test:cleanup   # Checks obsolete aliases and loader guesses stay removed.
 ```
 
 `npm run fix:js`, `npm run fix:css`, `npm run fix`, and `npm run format` **modify files**; run intentionally and review the diff. There is **no** Composer manifest, installed PHPCS/WPCS ruleset, real PHPUnit + WordPress integration suite, or automated Elementor browser test in this archive. `npm test` **does exist** and runs without `node_modules`, but its PHP tests use controlled WordPress/Elementor doubles; these do not replace real integration tests. `npm run check` and `npm run build` require `npm ci` to succeed. Never mark them PASS if dependencies cannot be installed; report NOT RUN/FAIL with the actual reason. `phpcs`/WPCS may be run only if actually installed/configured.
@@ -57,6 +69,15 @@ npm run test:psr4      # Strict namespace/class/file mapping plus autoload smoke
 - PHP `includes/` classes are autoloaded. `timeline-full-widget.php` is the bootstrap; `elementor-timeline-widget.php` is an intentional compatibility entry point. Global `TimelinePlugin` and old `TIMELINE_*` aliases remain public compatibility APIs, **not dead application code**. Delete only after a major-version deprecation and documented consumer migration, never as a cosmetic cleanup.
 - Elementor integration must remain optional: activating the plugin without Elementor must not fatal. The Elementor widget extends `Elementor\Widget_Base` and must be loaded only when Elementor is available.
 - Do not create overlapping asset registrations, duplicate frontend animations, or global CSS leaking into unrelated WordPress pages.
+
+## Item/card backgrounds, one-sided layout, and multiple animations
+
+- A Timeline **item** (`li.timeline-item`) and its **card** (`.timeline-panel`) have distinct backgrounds. Elementor: `item_outer_background_color` belongs to the whole item; `li_bg_color` is the historical per-card color control (UI label: **Card background color**); `card_background_image` belongs to the card. Gutenberg: `itemOuterBackgroundColor` styles the outer item; `itemBackgroundColor` continues to style the card; `cardBackgroundImage` applies a card image. Preserve old `li_bg_color` / `itemBackgroundColor` content when editing existing timelines.
+- `shared_item_background_color` has **no global editor control**. It remains only as a read-only fallback in Elementor rendering and older JSON imports, so previously published cards do not lose their backgrounds. New items use their own controls even when `inherit_item_styles=yes`.
+- Single Side Layout direction is asymmetric in existing block/Elementor internals: confirm actual emitted `.timeline-left` / `.timeline-inverted` rather than comparing raw boolean values. Tests must check **left and right**, including round-trip Gutenberg → Elementor → Gutenberg.
+- Each Gutenberg wrapper owns its own `initTimelineAnimation()` lifecycle. Do not attach a page-level watcher to a single selected item. A repeated init should return the current controller only when its animated line remains connected; a replacement line requires cleaning up the stale watcher.
+- Cross-site transfer must scrub item/card background media to **receiver-local placeholders**, retain dimensions and reject unsafe URL schemes. Respect the `background:false` import option for both colors and images.
+- `src/item/areas/color-helpers.js` keeps palette snapshots testable without relying on minified variable names. Keep source and shipped `build/index.js` aligned; run the official `npm run build` when dependencies are available.
 
 ## 3. Shared styles across Gutenberg, Elementor, and Classic Editor
 
@@ -111,6 +132,13 @@ Gutenberg can scroll either **inside its iframe** or in a **scrolling element of
 - **Critical Gutenberg transfer bootstrap (4.0.6):** do **not** enqueue the ES module `assets/js/transfer/gutenberg-editor.js` directly. Real WordPress installations may print that handle as `type="text/javascript"`, resulting in `Cannot use import statement outside a module` and a missing Import / Export panel. `enqueueGutenbergTransferAssets()` registers `gutenberg-editor-loader.js` as a classic script with explicit `wp-*` dependencies and before-inline local placeholder config; the loader dynamically imports `gutenberg-editor.js` after WordPress deps are available. Do **not** force `type="module"` for this handle in `addModuleTypeAttribute()`. Exercise this exact classic loading path in JS smoke tests and PHP registration tests.
 - **Cross-editor color contract (4.0.5+):** Gutenberg background/text styles can use palette slugs (`backgroundColor`, `textColor`, `var:preset|color|slug`), which Elementor COLOR controls cannot consume as slugs. `resolveGutenbergColor()` translates standard WordPress preset slugs; new exports attach a size-limited, validated `palette` snapshot of **used** source theme colors. `gutenbergToElementor()` must map per-item background to `li_bg_color`, supported title and content colors to `item_title_color`/`item_content_color`, and individual title alignment to `item_title_alignment`, setting `inherit_item_styles=no` for overrides. Never mutate the donor JSON or copy remote media. Test the four-item 4.0.2 export format with standard preset colors, custom palette colors and selective `background:false`, plus dangerous palette rejection. Schema version remains 1; old snapshots without `palette` must import.
 - **Blueprints:** `assets/blueprints/blueprint.json` intentionally installs the **published WordPress.org** plugin and becomes a 4.0 demonstration *after* release. For pre-publication testing, create a **Blueprint bundle ZIP** containing `blueprint.json` copied from `assets/blueprints/blueprint-bundle.json`, **this release's** `timeline-full-widget-4.0.0.zip`, and both sample `.tfw.json` files. This bundle uses the official `bundled` resource reference and installs this exact ZIP. Always check both JSON recipes and fixture privacy. A successful static validation is not an actual Playground browser smoke test.
+
+### Gutenberg scroll-root regression: 3.1.1 vs 4.0.0 (October 18, 2026)
+
+- `assets/js/core/animation.js::getScrollParent()` must detect an ancestor with `overflow-y: auto|scroll|overlay` **even if** `scrollHeight <= clientHeight` at mount time. Gutenberg can mount an empty or partially rendered InnerBlocks tree, then increase its height. Requiring overflow when attaching the listener silently binds to `window` instead of the editor scroll container. This regressed from 3.1.1. The editor geometry watchdog cannot fix an incorrectly selected viewport root.
+- Preserve a single scroll root for each initialized controller and remove its listeners on destroy. `src/edit.js` must not reinitialize on ordinary item changes; `initAllWidgets()` must remain idempotent. Avoid `overflow-y: hidden` on editor containers just to silence scroll errors; fix the real cause.
+- Source **and** `build/index.js` must agree (a direct bundle hotfix requires a new `build/index.asset.php` hash); full `npm ci && npm run build` should regenerate the bundle when dependencies become available.
+- Run `npm run test:animation` for deferred-overflow regression. The source and shipped bundle must not require `scrollHeight > clientHeight + 1` to identify the initial editor scroller. Keep the existing tests for actual iframe and parent-scroller geometry. For browser smoke testing, compare increasing animation progress after an editor's scroll container gains overflow with the known-good v3.1.1 behavior.
 
 ## 5. Gutenberg and saved-content safety
 
@@ -201,3 +229,42 @@ Gutenberg can scroll either **inside its iframe** or in a **scrolling element of
 - Regression tests: `scripts/tests/animation-scroll.mjs` covers iframe-local scroll, parent scroll, zero scroll-event geometry changes, repeated init and cleanup; `scripts/tests/js-runtime.mjs` checks the shipped webpack bundle. To claim production parity, additionally test on an actual WordPress editor with the animated line, selected and unselected items, and an Elementor-generated page as a separate case.
 - `elementorFrontendConfig is not defined` originates from Elementor's own `frontend.js`, not from the Timeline module (which never reads the variable). Diagnose Elementor's registration, inline settings, cache and script-order environment before altering Timeline's dependency list. Do not create dummy Elementor globals to silence the error.
 - Build warning: when `npm ci` / `wp-scripts build` cannot complete, any emergency changes to `build/index.js` must be narrow, reviewed against the canonical source, covered by tests, and accompanied by an updated `build/index.asset.php` content hash. Perform a clean `npm ci && npm run build` with supported Node LTS as soon as possible and confirm generated files retain the watcher and editor CSS.
+
+## Gutenberg media and text-color consistency (October 2026)
+
+- When a Timeline Item has no media, render a compact `MediaUpload` action in `src/item/areas/content.js`; do not show a large `MediaPlaceholder` in the main canvas. Video poster and unique-marker selectors are separate workflows. Preserve the media types and WordPress media-library upload tab.
+- Show the `Remove media link` toolbar button only if `mediaLinkUrl` is nonempty, in both `src/item/edit.js` and `src/item/areas/content.js`.
+- Nested Heading/Paragraph/List blocks may use editor-only WordPress palette slugs (e.g. `accent-2`) which are not defined on the frontend. In Gutenberg, when an explicit HEX palette value is available and the nested block has no inline text color, persist `style.color.text` and clear the palette slug. Preserve manual inline colors and other style attributes. Ensure the editor change is saved; previously published content is not automatically rewritten.
+- Source `src/` and shipped `build/index.js`, `build/index.css` and the asset version must agree. Regression tests: `npm run test:editor-ui`; full re-bundling with `npm run build` is required when build dependencies become available.
+
+## Current transfer and media invariants
+- Gutenberg `backgroundColor` is a core block preset slug. Resolve it using the transfer file's `palette` when converting to Elementor `item_outer_background_color`; never confuse the outer item background with `itemBackgroundColor` (card).
+- `Single Side Layout` preserves the physical item position. Saved `timeline-left`/`timeline-inverted` items may be more authoritative than a stale parent direction; validate the first item class in both editors and both directions.
+- Media deletion must clear the main-content and parent item mirror attributes. Do not render an SVG placeholder in an HTML video `<source>`; show a poster image until a real playable video is chosen. An Elementor `show_media=no` item must render no media wrapper in PHP or the live preview.
+
+## Cross-editor typography and outer-background acceptance (October 19, 2026)
+
+- Gutenberg `core/heading`, `core/paragraph` inside a Timeline Item/side can contain `style.typography.fontSize` and palette `textColor`/`style.color.text`. For transfer to Elementor, derive these from **each item**; do not substitute widget-wide Elementor typography. Set `inherit_item_styles=no` when an item has overrides. Current mapped Elementor repeater controls are `item_title_font_size`, `item_content_font_size`, `item_side_font_size`, `item_side_color`, plus existing title/content colors. Font sizes are bounded numeric Elementor slider objects with valid `px`, `em`, or `rem` units.
+- Item background is **not** the card background: Gutenberg `backgroundColor` or `itemOuterBackgroundColor` maps to Elementor `item_outer_background_color` and styles `<li class="timeline-item">`; Gutenberg `itemBackgroundColor` maps to `li_bg_color` and styles `.timeline-panel`. The Elementor per-repeater color control has a `{{WRAPPER}} {{CURRENT_ITEM}}` selector and PHP/Underscore also render inline colors.
+- Elementor's `render_item_html()` and `content_template()` must apply identical side/body/title typography. Use per-item-scoped classes to defeat theme child-paragraph declarations without altering unrelated widget defaults. Test the supplied two-item typography scenario: `28px/#fff`, `42px/#9b51e0` side text, `24px` headings, `20px/#ee1212` body, and distinct `#045cb4/#cf2e2e` item backgrounds.
+
+### Elementor media controls
+- Each Elementor Timeline repeater item uses `media_width` for an optional `px` or `%` width; blank preserves the original CSS layout. Keep native Elementor thumbnail crop options separate.
+- Media selection uses Elementor native MEDIA controls. Never patch `elementor.media.frame` globally or reset its library filter to work around placeholder imports.
+- Repeater `media_type` switches the visible image and video inputs, without altering the other type’s saved value. Both the Elementor preview and PHP render must validate the same width units.
+- Round trips Gutenberg → Elementor → Gutenberg preserve `mediaWidth` in px or %. Run media selection and editor checks before releases.
+
+### Media dimensions and background transfer (2026-10-19)
+- Elementor stores numeric/unit input in `media_width_value` and `media_width_unit`; `media_width` is legacy-only. The transfer adapter must support both without losing px/% units. Empty width is not a CSS rule.
+- An explicit width sets the media wrapper AND renders the image at 100% of that wrapper, independently of the Image Resolution UI's thumbnail selection.
+- Gutenberg Timeline root backgrounds use native WordPress Block Supports (`backgroundColor`, `style.color.background`, `style.background`). The `timelineBackground*` attributes are legacy read-only fallbacks for already-saved content; new imports must normalize to native controls, and cross-editor transfer must use native values first. Do not add a duplicate custom root background panel.
+- Custom marker images never exceed `--marker-size` (editor and frontend); do not apply full image dimensions to marker layout.
+- Update both `src/` and compiled `build/` when changing Gutenberg. Run a clean official `wp-scripts` build before production when dependencies permit.
+
+- Asset URLs use content-based version hashes, since plugin version 4.0.0 remains unchanged in this work branch. Do not remove hash-based caching without a version bump.
+
+### Gutenberg Wide/Full alignment
+- `alignwide` / `alignfull` are native WordPress block alignments; `block.json` and `src/index.js` enable them, and `useBlockProps` preserves the saved class.
+- Keep generic rules on the outer `.wp-block-za-timeline-full-widget` free of width limits: Gutenberg and the active theme own alignments. Astra’s `ast-page-builder-template` is a deliberate exception: it resets direct children to `max-width: none`, overriding its own `alignwide` limit. The narrowly scoped `.ast-page-builder-template .entry-content[data-ast-blocks-layout] > .wp-block-za-timeline-full-widget.alignwide` rule restores the theme-provided `--wp--custom--ast-wide-width-size` without hardcoded pixels or `!important`; it must never target `alignfull` or apply to other themes.
+- It is safe to keep `width: 100%; max-width: 100%` on `.timeline-wrapper` and inner Timeline components; those are relative to the already aligned root. Do not apply broad selectors that constrain `alignwide` or `alignfull` as a side effect of preventing horizontal overflow.
+- When changing shared or compiled CSS, keep `src/style.scss`, `assets/css/core/style.css`, both `build/style-index*.css`, and `src/editor.scss`, both `build/index*.css` in sync. Run `npm run test:align` in addition to project tests, and visually compare Default/Wide/Full in the theme and in the editor.

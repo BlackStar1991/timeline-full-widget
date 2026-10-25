@@ -89,34 +89,18 @@ final class ClassicEditorIntegration {
             return;
         }
 
-        $base_js_url  = TIMELINE_FULL_WIDGET_URL . 'assets/js/';
         $classic_path = TIMELINE_FULL_WIDGET_PATH . 'assets/js/adapters/classic-adapter-loader.js';
-        $classic_url  = $base_js_url . 'adapters/classic-adapter-loader.js';
-
-        if ( ! file_exists( $classic_path ) ) {
+        $classic_url  = TIMELINE_FULL_WIDGET_URL . 'assets/js/adapters/classic-adapter-loader.js';
+        if ( ! is_readable( $classic_path ) ) {
             return;
         }
-
-        $config = [
-            'baseJsUrl'    => esc_url_raw( $base_js_url ),
-            'animationUrl' => esc_url_raw( $base_js_url . 'core/animation.js' ),
-        ];
-        $json = wp_json_encode( $config );
-
-        $ver = ( defined( 'WP_DEBUG' ) && WP_DEBUG ) ? (string) filemtime( $classic_path ) : TIMELINE_FULL_WIDGET_VERSION;
 
         wp_register_script(
             'za-timeline-classic-adapter',
             $classic_url,
             [],
-            $ver,
+            TIMELINE_FULL_WIDGET_VERSION,
             false
-        );
-
-        wp_add_inline_script(
-            'za-timeline-classic-adapter',
-            "window.zaTimelineConfig = {$json};",
-            'before'
         );
 
         wp_enqueue_script( 'za-timeline-classic-adapter' );

@@ -32,8 +32,7 @@ foreach (['build/index.js','build/index.asset.php','build/index.css','build/styl
     'scripts/tests/transfer.mjs','scripts/tests/transfer-ui.mjs','scripts/check-blueprint.php','AGENTS.md',
     'assets/images/media-placeholder.svg','assets/js/transfer/transfer-core.js','assets/js/transfer/package.json',
     'assets/js/transfer/elementor-editor.js','assets/js/transfer/elementor-editor-loader.js','assets/js/transfer/gutenberg-editor.js',
-    'assets/blueprints/blueprint-bundle.json','assets/blueprints/samples/timeline-gutenberg-demo.tfw.json',
-    'assets/blueprints/samples/timeline-elementor-demo.tfw.json'] as $file) {
+    'assets/blueprints/blueprint.json'] as $file) {
     $expect(is_file($root . '/' . $file) && filesize($root . '/' . $file) > 0, 'Required file missing/empty: ' . $file);
 }
 $expect(str_contains(file_get_contents($root . '/build/style-index.css'), '--timeline-line-width'), 'Gutenberg built CSS lacks shared style variables');

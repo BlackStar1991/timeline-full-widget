@@ -39,6 +39,8 @@ const timelineItemAttributes = {
 		type: 'string',
 		default: '',
 	},
+	itemOuterBackgroundColor: { type: 'string', default: '' },
+	cardBackgroundImage: { type: 'string', default: '' },
 	linkUrl: {
 		type: 'string',
 		default: '',

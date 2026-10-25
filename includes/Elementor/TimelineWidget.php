@@ -108,7 +108,6 @@ final class TimelineWidget extends Widget_Base {
                 'raw' => '<div class="tfw-timeline-transfer">'
                     . '<button type="button" class="elementor-button elementor-button-default" data-tfw-action="export">' . esc_html__( 'Export Timeline', 'timeline-full-widget' ) . '</button> '
                     . '<button type="button" class="elementor-button elementor-button-default" data-tfw-action="import">' . esc_html__( 'Import Timeline', 'timeline-full-widget' ) . '</button>'
-
                     . '<div class="elementor-control-field-description">' . esc_html__( 'Export the entire widget including advanced attributes and custom CSS. Media becomes placeholders.', 'timeline-full-widget' ) . '</div>'
                     . '</div>',
             ]
@@ -154,10 +153,32 @@ final class TimelineWidget extends Widget_Base {
         $repeater->add_control(
             'li_bg_color',
             [
-                'label'       => __( 'Item background color', 'timeline-full-widget' ),
+                'label'       => __( 'Card background color', 'timeline-full-widget' ),
                 'type'        => Controls_Manager::COLOR,
                 'render_type' => 'template',
-                'condition'   => [ 'inherit_item_styles!' => 'yes' ],
+            ]
+        );
+
+        $repeater->add_control(
+            'item_outer_background_color',
+            [
+                'label'       => __( 'Timeline item background color', 'timeline-full-widget' ),
+                'type'        => Controls_Manager::COLOR,
+                'render_type' => 'template',
+                'description' => __( 'Background for the entire timeline item, including the opposite side.', 'timeline-full-widget' ),
+                'selectors'   => [
+                    '{{WRAPPER}} {{CURRENT_ITEM}}' => 'background-color: {{VALUE}};',
+                ],
+            ]
+        );
+
+        $repeater->add_control(
+            'card_background_image',
+            [
+                'label'       => __( 'Card background image', 'timeline-full-widget' ),
+                'type'        => Controls_Manager::MEDIA,
+                'render_type' => 'template',
+                'description' => __( 'Background image for this card; transfer uses a local placeholder.', 'timeline-full-widget' ),
             ]
         );
 
@@ -166,6 +187,18 @@ final class TimelineWidget extends Widget_Base {
             [
                 'label'       => __( 'Title color', 'timeline-full-widget' ),
                 'type'        => Controls_Manager::COLOR,
+                'render_type' => 'template',
+                'condition'   => [ 'inherit_item_styles!' => 'yes' ],
+            ]
+        );
+
+        $repeater->add_control(
+            'item_title_font_size',
+            [
+                'label'       => __( 'Title font size', 'timeline-full-widget' ),
+                'type'        => Controls_Manager::SLIDER,
+                'size_units'  => [ 'px', 'em', 'rem' ],
+                'range'       => [ 'px' => [ 'min' => 1, 'max' => 200 ] ],
                 'render_type' => 'template',
                 'condition'   => [ 'inherit_item_styles!' => 'yes' ],
             ]
@@ -210,6 +243,40 @@ final class TimelineWidget extends Widget_Base {
             ]
         );
 
+
+        $repeater->add_control(
+            'item_content_font_size',
+            [
+                'label'       => __( 'Content font size', 'timeline-full-widget' ),
+                'type'        => Controls_Manager::SLIDER,
+                'size_units'  => [ 'px', 'em', 'rem' ],
+                'range'       => [ 'px' => [ 'min' => 1, 'max' => 200 ] ],
+                'render_type' => 'template',
+                'condition'   => [ 'inherit_item_styles!' => 'yes' ],
+            ]
+        );
+
+        $repeater->add_control(
+            'item_side_color',
+            [
+                'label'       => __( 'Side content color', 'timeline-full-widget' ),
+                'type'        => Controls_Manager::COLOR,
+                'render_type' => 'template',
+                'condition'   => [ 'inherit_item_styles!' => 'yes' ],
+            ]
+        );
+
+        $repeater->add_control(
+            'item_side_font_size',
+            [
+                'label'       => __( 'Side content font size', 'timeline-full-widget' ),
+                'type'        => Controls_Manager::SLIDER,
+                'size_units'  => [ 'px', 'em', 'rem' ],
+                'range'       => [ 'px' => [ 'min' => 1, 'max' => 200 ] ],
+                'render_type' => 'template',
+                'condition'   => [ 'inherit_item_styles!' => 'yes' ],
+            ]
+        );
 
         // Layout is an item-level behavior, independent of shared visual styles.
         $repeater->add_control(
@@ -259,15 +326,29 @@ final class TimelineWidget extends Widget_Base {
         );
 
         $repeater->add_control(
+            'show_media',
+            [
+                'label'        => __( 'Show media', 'timeline-full-widget' ),
+                'type'         => Controls_Manager::SWITCHER,
+                'label_on'     => __( 'Yes', 'timeline-full-widget' ),
+                'label_off'    => __( 'No', 'timeline-full-widget' ),
+                'return_value' => 'yes',
+                'default'      => 'yes',
+                'render_type'  => 'template',
+            ]
+        );
+
+        $repeater->add_control(
             'media_type',
             [
-                'label'   => __( 'Media Type', 'timeline-full-widget' ),
+                'label'   => __( 'Media type', 'timeline-full-widget' ),
                 'type'    => Controls_Manager::SELECT,
                 'options' => [
                     'image' => __( 'Image', 'timeline-full-widget' ),
                     'video' => __( 'Video', 'timeline-full-widget' ),
                 ],
                 'default' => 'image',
+                'render_type' => 'template',
             ]
         );
 
@@ -277,6 +358,7 @@ final class TimelineWidget extends Widget_Base {
                 'label'       => __( 'Image', 'timeline-full-widget' ),
                 'type'        => Controls_Manager::MEDIA,
                 'media_types' => [ 'image' ],
+                'render_type' => 'template',
                 'default'     => [ 'url' => Utils::get_placeholder_image_src() ],
                 'condition'   => [ 'media_type' => 'image' ],
             ]
@@ -297,6 +379,7 @@ final class TimelineWidget extends Widget_Base {
                 'label'       => __( 'Video', 'timeline-full-widget' ),
                 'type'        => Controls_Manager::MEDIA,
                 'media_types' => [ 'video' ],
+                'render_type' => 'template',
                 'condition'   => [ 'media_type' => 'video' ],
             ]
         );
@@ -304,11 +387,45 @@ final class TimelineWidget extends Widget_Base {
         $repeater->add_control(
             'posterURL',
             [
-                'label'       => __( 'Poster image', 'timeline-full-widget' ),
+                'label'       => __( 'Video poster', 'timeline-full-widget' ),
                 'type'        => Controls_Manager::MEDIA,
                 'media_types' => [ 'image' ],
+                'render_type' => 'template',
                 'default'     => [ 'url' => Utils::get_placeholder_image_src() ],
                 'condition'   => [ 'media_type' => 'video' ],
+            ]
+        );
+
+        // Legacy value is retained for existing widgets but has no user-facing field.
+        $repeater->add_control(
+            'media_width',
+            [
+                'type'    => Controls_Manager::HIDDEN,
+                'default' => '',
+            ]
+        );
+
+        $repeater->add_control(
+            'media_width_value',
+            [
+                'label'       => __( 'Width of media', 'timeline-full-widget' ),
+                'type'        => Controls_Manager::NUMBER,
+                'default'     => '',
+                'min'         => 1,
+                'max'         => 5000,
+                'step'        => 1,
+                'render_type' => 'template',
+            ]
+        );
+
+        $repeater->add_control(
+            'media_width_unit',
+            [
+                'label'       => __( 'Unit', 'timeline-full-widget' ),
+                'type'        => Controls_Manager::SELECT,
+                'options'     => [ 'px' => 'px', '%' => '%' ],
+                'default'     => 'px',
+                'render_type' => 'template',
             ]
         );
 
@@ -343,7 +460,6 @@ final class TimelineWidget extends Widget_Base {
                 'condition'    => [
                     'media_link_url[url]!' => '',
                 ],
-                'description'  => __( 'If enabled, the image or video will be clickable and wrapped in a link.', 'timeline-full-widget' ),
             ]
         );
 
@@ -374,7 +490,6 @@ final class TimelineWidget extends Widget_Base {
                 'type'          => Controls_Manager::URL,
                 'placeholder'   => 'https://example.com',
                 'show_external' => true,
-                'description'   => __( 'Used only when the Title HTML Tag is set to "a".', 'timeline-full-widget' ),
             ]
         );
 
@@ -390,7 +505,7 @@ final class TimelineWidget extends Widget_Base {
         $repeater->add_control(
             'side_content',
             [
-                'label'   => __( 'Side Content', 'timeline-full-widget' ),
+                'label'   => __( 'Side content', 'timeline-full-widget' ),
                 'type'    => Controls_Manager::WYSIWYG,
                 'default' => '',
             ]
@@ -464,38 +579,6 @@ final class TimelineWidget extends Widget_Base {
      * Register style and behavior controls.
      */
     protected function register_style_controls() {
-        $this->start_controls_section(
-            'section_shared_item_styles',
-            [
-                'label' => __( 'Shared Item Styles', 'timeline-full-widget' ),
-                'tab'   => Controls_Manager::TAB_STYLE,
-            ]
-        );
-
-        $this->add_control(
-            'shared_item_styles_description',
-            [
-                'type'            => Controls_Manager::RAW_HTML,
-                'raw'             => esc_html__( 'These styles apply to timeline items while “Use shared item styles” is enabled. Disable that switch inside an item only when it needs unique styling.', 'timeline-full-widget' ),
-                'content_classes' => 'elementor-control-field-description',
-            ]
-        );
-
-        $this->add_control(
-            'shared_item_background_color',
-            [
-                'label'     => __( 'Item background color', 'timeline-full-widget' ),
-                'type'      => Controls_Manager::COLOR,
-                'selectors' => [
-                    '{{WRAPPER}} .timeline-item:not(.timeline-item-unique-style) .timeline-panel' => 'background-color: {{VALUE}};',
-                ],
-            ]
-        );
-
-
-
-        $this->end_controls_section();
-
         $this->start_controls_section(
             'section_style_title',
             [
@@ -1006,14 +1089,36 @@ final class TimelineWidget extends Widget_Base {
         $side_content        = isset( $item['side_content'] ) ? wp_kses_post( $item['side_content'] ) : '';
         $uses_shared_styles  = $this->item_uses_shared_styles( $item );
         $media_html          = $this->render_media_html( $item );
-        $panel_style_attr    = $uses_shared_styles ? '' : $this->build_style_attr( [ 'background-color' => $item['li_bg_color'] ?? '' ] );
-        $title_style_attr    = $uses_shared_styles ? '' : $this->build_style_attr(
+        $card_color = $item['li_bg_color'] ?? ( $settings['shared_item_background_color'] ?? '' );
+        $card_image = $item['card_background_image']['url'] ?? '';
+        $panel_style_attr = $this->build_style_attr(
+            [
+                'background-color' => $card_color,
+                'background-image' => $this->safe_background_image_css( $card_image ),
+                'background-size' => $card_image ? 'cover' : '',
+                'background-position' => $card_image ? 'center' : '',
+            ]
+        );
+        $item_style_attr = $this->build_style_attr( [ 'background-color' => $item['item_outer_background_color'] ?? '' ] );
+        $title_style_attr = $uses_shared_styles ? '' : $this->build_style_attr(
             [
                 'color'      => $item['item_title_color'] ?? '',
+                'font-size'  => $this->item_font_size_css( $item['item_title_font_size'] ?? null ),
                 'text-align' => $this->get_alignment_value( $item['item_title_alignment'] ?? 'left' ),
             ]
         );
-        $content_style_attr  = $uses_shared_styles ? '' : $this->build_style_attr( [ 'color' => $item['item_content_color'] ?? '' ] );
+        $content_style_attr = $uses_shared_styles ? '' : $this->build_style_attr(
+            [
+                'color'     => $item['item_content_color'] ?? '',
+                'font-size' => $this->item_font_size_css( $item['item_content_font_size'] ?? null ),
+            ]
+        );
+        $side_style_attr = $uses_shared_styles ? '' : $this->build_style_attr(
+            [
+                'color'     => $item['item_side_color'] ?? '',
+                'font-size' => $this->item_font_size_css( $item['item_side_font_size'] ?? null ),
+            ]
+        );
         $content_classes     = [ 'tl-content' ];
         $repeater_item_class = ! empty( $item['_id'] ) ? 'elementor-repeater-item-' . sanitize_html_class( $item['_id'] ) : '';
         $timeline_item_classes = array_filter(
@@ -1023,6 +1128,10 @@ final class TimelineWidget extends Widget_Base {
                 $li_class,
                 $repeater_item_class,
                 $uses_shared_styles ? '' : 'timeline-item-unique-style',
+                ! $uses_shared_styles && ! empty( $item['item_side_color'] ) ? 'tfw-side-custom-color' : '',
+                ! $uses_shared_styles && $this->item_font_size_css( $item['item_side_font_size'] ?? null ) ? 'tfw-side-custom-size' : '',
+                ! $uses_shared_styles && ! empty( $item['item_content_color'] ) ? 'tfw-content-custom-color' : '',
+                ! $uses_shared_styles && $this->item_font_size_css( $item['item_content_font_size'] ?? null ) ? 'tfw-content-custom-size' : '',
             ]
         );
 
@@ -1036,13 +1145,13 @@ final class TimelineWidget extends Widget_Base {
 
         ob_start();
         ?>
-        <li class="<?php echo esc_attr( implode( ' ', $timeline_item_classes ) ); ?>">
+        <li class="<?php echo esc_attr( implode( ' ', $timeline_item_classes ) ); ?>"<?php echo $item_style_attr; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Escaped by build_style_attr(). ?>>
             <div class="tl-trigger"></div>
             <?php if ( $show_marker ) : ?>
                 <?php echo $this->render_marker_html( $item, $settings ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Markup is escaped in render_marker_html(). ?>
             <?php endif; ?>
 
-            <div class="wp-block-za-timeline-item-side timeline-side">
+            <div class="wp-block-za-timeline-item-side timeline-side"<?php echo $side_style_attr; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Escaped by build_style_attr(). ?>>
                 <?php
                 if ( $show_other_side ) {
                     echo $side_content; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Sanitized with wp_kses_post().
@@ -1064,6 +1173,20 @@ final class TimelineWidget extends Widget_Base {
         </li>
         <?php
         return ob_get_clean();
+    }
+
+    /**
+     * Return a safe CSS image declaration or no value. No raw CSS is imported.
+     *
+     * @param mixed $url Media URL from Elementor.
+     * @return string
+     */
+    private function safe_background_image_css( $url ) {
+        if ( ! is_string( $url ) || '' === $url ) {
+            return '';
+        }
+        $safe_url = esc_url_raw( $url, [ 'https', 'http' ] );
+        return $safe_url ? 'url("' . str_replace( [ chr(34), '(', ')', chr(92) ], '', $safe_url ) . '")' : '';
     }
 
     /**
@@ -1125,7 +1248,39 @@ final class TimelineWidget extends Widget_Base {
      *
      * @param array $item Repeater item data.
      */
+    /**
+     * Validate a portable media width in px or %. An empty string uses CSS defaults.
+     * Never concatenate an untrusted import value directly into a style attribute.
+     */
+    private function media_width_css( $value ): string {
+        if ( ! is_string( $value ) && ! is_numeric( $value ) ) {
+            return '';
+        }
+        $value = trim( (string) $value );
+        if ( ! preg_match( '/^(\d+(?:\.\d+)?)(px|%)$/i', $value, $matches ) ) {
+            return '';
+        }
+        $number = (float) $matches[1];
+        if ( $number <= 0 || $number > ( '%' === $matches[2] ? 100 : 5000 ) ) {
+            return '';
+        }
+        return $matches[1] . strtolower( $matches[2] );
+    }
+
+    /** Return the new numeric/unit setting, with legacy string fallback. */
+    private function item_media_width_css( array $item ): string {
+        if ( isset( $item['media_width_value'] ) && '' !== (string) $item['media_width_value'] ) {
+            $unit = ( $item['media_width_unit'] ?? 'px' ) === '%' ? '%' : 'px';
+            return $this->media_width_css( (string) $item['media_width_value'] . $unit );
+        }
+        // Existing pre-migration widgets may only contain the old combined value.
+        return $this->media_width_css( $item['media_width'] ?? '' );
+    }
+
     private function render_media_html( $item ) {
+        if ( isset( $item['show_media'] ) && 'no' === $item['show_media'] ) {
+            return '';
+        }
         $type             = $item['media_type'] ?? 'image';
         $title            = isset( $item['list_title'] ) ? wp_strip_all_tags( $item['list_title'] ) : '';
         $media_link       = isset( $item['media_link_url'] ) && is_array( $item['media_link_url'] ) ? $item['media_link_url'] : [];
@@ -1165,7 +1320,17 @@ final class TimelineWidget extends Widget_Base {
             }
 
             if ( ! empty( $media['id'] ) ) {
-                $media_inner_html = '<div class="timeline_pic pull-left">' . Group_Control_Image_Size::get_attachment_image_html( $item, 'thumbnail', 'media_image' ) . '</div>';
+                // A specific display width is independent from Image Resolution.
+                // Use responsive original attachment markup to avoid rendering a
+                // 300px thumbnail stretched across a 100%-width container.
+                $has_width_override = '' !== $this->item_media_width_css( $item );
+                if ( $has_width_override ) {
+                    $alt = $item['media_image_alt'] ?? ( $media['alt'] ?? '' );
+                    $image_html = wp_get_attachment_image( (int) $media['id'], 'full', false, [ 'alt' => $alt, 'loading' => 'lazy', 'decoding' => 'async' ] );
+                } else {
+                    $image_html = Group_Control_Image_Size::get_attachment_image_html( $item, 'thumbnail', 'media_image' );
+                }
+                $media_inner_html = '<div class="timeline_pic pull-left">' . $image_html . '</div>';
             } elseif ( $media_url ) {
                 $alt = $item['media_image_alt'] ?? ( $media['alt'] ?? ( $media['title'] ?? '' ) );
 
@@ -1181,6 +1346,17 @@ final class TimelineWidget extends Widget_Base {
             return '';
         }
 
+        $media_width = $this->item_media_width_css( $item );
+        if ( $media_width && ! $wrap_with_link ) {
+            // Media linked to a URL receives its width on the outer anchor instead.
+            $media_inner_html = preg_replace(
+                '/class="timeline_pic pull-left"/',
+                'class="timeline_pic pull-left tfw-media-sized" style="width:' . esc_attr( $media_width ) . ';max-width:100%"',
+                $media_inner_html,
+                1
+            );
+        }
+
         if ( $wrap_with_link ) {
             $link_attrs = $this->get_link_attributes_string(
                 $media_link,
@@ -1192,9 +1368,11 @@ final class TimelineWidget extends Widget_Base {
             );
 
             return sprintf(
-                '<a class="timeline-media-link" %1$s>%2$s</a>',
+                '<a class="timeline-media-link%4$s" %1$s%2$s>%3$s</a>',
                 $link_attrs,
-                $media_inner_html
+                $media_width ? ' style="width:' . esc_attr( $media_width ) . ';max-width:100%"' : '',
+                $media_inner_html,
+                $media_width ? ' tfw-media-sized' : ''
             );
         }
 
@@ -1241,6 +1419,24 @@ final class TimelineWidget extends Widget_Base {
     }
 
     /**
+     * Accept a bounded Elementor slider value as a safe CSS font size.
+     *
+     * @param mixed $value Elementor slider settings.
+     * @return string
+     */
+    private function item_font_size_css( $value ) {
+        if ( ! is_array( $value ) || ! isset( $value['size'] ) || ! is_numeric( $value['size'] ) ) {
+            return '';
+        }
+        $size = (float) $value['size'];
+        $unit = $value['unit'] ?? 'px';
+        if ( $size < 1 || $size > 300 || ! in_array( $unit, [ 'px', 'em', 'rem' ], true ) ) {
+            return '';
+        }
+        return (string) $size . $unit;
+    }
+
+    /**
      * Build a sanitized style attribute from CSS declarations.
      *
      * @param array $styles Property/value pairs.
@@ -1248,12 +1444,29 @@ final class TimelineWidget extends Widget_Base {
     private function build_style_attr( $styles ) {
         $parts = [];
 
+        $allowed_properties = [ 'color', 'background-color', 'background-image', 'background-size', 'background-position', 'text-align', 'font-size' ];
         foreach ( $styles as $property => $value ) {
+            if ( ! in_array( $property, $allowed_properties, true ) ) {
+                continue;
+            }
             if ( '' === $value || null === $value ) {
                 continue;
             }
 
-            $parts[] = sanitize_key( $property ) . ':' . esc_attr( $value );
+            // Elementor's color picker normally supplies these; imported settings
+            // must never be able to append extra CSS declarations.
+            if ( in_array( $property, [ 'color', 'background-color' ], true ) &&
+                ! preg_match( '/^(?:#[0-9a-f]{3,8}|rgba?\([0-9.,%\s]+\)|hsla?\([0-9.,%\s]+\)|var\(--[a-z0-9-]+\)|transparent|currentcolor)$/i', $value ) ) {
+                continue;
+            }
+            if ( 'font-size' === $property && ! preg_match( '/^\d+(?:\.\d+)?(?:px|em|rem)$/', $value ) ) {
+                continue;
+            }
+            if ( 'background-image' === $property &&
+                ! preg_match( '/^url\("https?:\/\/[^"<>]+"\)$/i', $value ) ) {
+                continue;
+            }
+            $parts[] = sanitize_key( $property ) . ':' . $value;
         }
 
         if ( empty( $parts ) ) {
@@ -1369,7 +1582,7 @@ final class TimelineWidget extends Widget_Base {
                 var resolvedImageUrl = elementor.imagesManager.getImageUrl({
                     id: item.media_image.id,
                     url: item.media_image.url,
-                    size: item.thumbnail_size || 'full',
+                    size: mediaWidthCss(item.media_width_value ? String(item.media_width_value) + (item.media_width_unit === '%' ? '%' : 'px') : item.media_width) ? 'full' : (item.thumbnail_size || 'full'),
                     dimension: item.thumbnail_custom_dimension || {},
                     model: view.getEditModel()
                 });
@@ -1382,7 +1595,16 @@ final class TimelineWidget extends Widget_Base {
             return imageUrl;
         }
 
+        function mediaWidthCss(value) {
+            var match = /^(\d+(?:\.\d+)?)(px|%)$/i.exec(String(value || '').trim());
+            if (!match) return '';
+            var number = Number(match[1]);
+            return number > 0 && number <= (match[2] === '%' ? 100 : 5000)
+                ? match[1] + match[2].toLowerCase() : '';
+        }
+
         function buildMediaHtml(item) {
+            if (item.show_media === 'no') return '';
             var imageUrl = '';
             var posterUrl = '';
             var isVideo = false;
@@ -1421,9 +1643,17 @@ final class TimelineWidget extends Widget_Base {
                 html += '</div>';
             }
 
+            var width = mediaWidthCss(item.media_width_value !== undefined && item.media_width_value !== '' && item.media_width_value !== null
+                ? String(item.media_width_value) + (item.media_width_unit === '%' ? '%' : 'px')
+                : item.media_width);
+            if (width && !wrapWithLink) {
+                html = html.replace('class="timeline_pic pull-left"', 'class="timeline_pic pull-left tfw-media-sized" style="width:' + _.escape(width) + ';max-width:100%"');
+            }
+
             if (wrapWithLink) {
                 var ariaLabel = item.list_title ? 'Open media for "' + item.list_title + '"' : 'Open media link';
-                html = '<a class="timeline-media-link"' + buildLinkAttributes(mediaLink, ariaLabel) + '>' + html + '</a>';
+                var linkWidth = width ? ' style="width:' + _.escape(width) + ';max-width:100%"' : '';
+                html = '<a class="timeline-media-link' + (width ? ' tfw-media-sized' : '') + '"' + buildLinkAttributes(mediaLink, ariaLabel) + linkWidth + '>' + html + '</a>';
             }
 
             return html;
@@ -1477,6 +1707,13 @@ final class TimelineWidget extends Widget_Base {
             return parts.length ? 'style="' + parts.join(';') + '"' : '';
         }
 
+        function itemFontSizeCss(value) {
+            var n = Number(value && value.size);
+            var unit = value && value.unit || 'px';
+            return Number.isFinite(n) && n >= 1 && n <= 300 && ['px', 'em', 'rem'].indexOf(unit) !== -1
+                ? n + unit : '';
+        }
+
         function getAlignmentValue(value) {
             if ([ 'left', 'center', 'right' ].indexOf(value) === -1) {
                 value = 'left';
@@ -1522,15 +1759,35 @@ final class TimelineWidget extends Widget_Base {
                         var contentClasses = [ 'tl-content' ];
                         var mediaHtml = buildMediaHtml(item);
                         var usesSharedStyles = itemUsesSharedStyles(item);
-                        var panelStyle = usesSharedStyles ? '' : buildStyleAttr({ 'background-color': item.li_bg_color || '' });
+                        var cardImageUrl = item.card_background_image && item.card_background_image.url ? item.card_background_image.url : '';
+                        var cardImageSafe = /^https?:\/\//i.test(cardImageUrl) ? cardImageUrl.replace(/["'()\\]/g, '') : '';
+                        var panelStyle = buildStyleAttr({
+                            'background-color': item.li_bg_color || settings.shared_item_background_color || '',
+                            'background-image': cardImageSafe ? 'url(' + cardImageSafe + ')' : '',
+                            'background-size': cardImageSafe ? 'cover' : '',
+                            'background-position': cardImageSafe ? 'center' : ''
+                        });
+                        var itemStyle = buildStyleAttr({ 'background-color': item.item_outer_background_color || '' });
                         var titleStyle = usesSharedStyles ? '' : buildStyleAttr({
                             'color': item.item_title_color || '',
+                            'font-size': itemFontSizeCss(item.item_title_font_size),
                             'text-align': getAlignmentValue(item.item_title_alignment || 'left')
                         });
-                        var contentStyle = usesSharedStyles ? '' : buildStyleAttr({ 'color': item.item_content_color || '' });
+                        var contentStyle = usesSharedStyles ? '' : buildStyleAttr({
+                            'color': item.item_content_color || '',
+                            'font-size': itemFontSizeCss(item.item_content_font_size)
+                        });
+                        var sideStyle = usesSharedStyles ? '' : buildStyleAttr({
+                            'color': item.item_side_color || '',
+                            'font-size': itemFontSizeCss(item.item_side_font_size)
+                        });
 
                         if (!usesSharedStyles) {
                             itemClasses.push('timeline-item-unique-style');
+                            if (item.item_side_color) itemClasses.push('tfw-side-custom-color');
+                            if (itemFontSizeCss(item.item_side_font_size)) itemClasses.push('tfw-side-custom-size');
+                            if (item.item_content_color) itemClasses.push('tfw-content-custom-color');
+                            if (itemFontSizeCss(item.item_content_font_size)) itemClasses.push('tfw-content-custom-size');
                         }
 
                         if (isHorizontalLayout(item)) {
@@ -1541,7 +1798,7 @@ final class TimelineWidget extends Widget_Base {
                             contentClasses.push('tl-reverse');
                         }
                     #>
-                    <li class="{{ _.escape( itemClasses.join(' ') ) }}">
+                    <li class="{{ _.escape( itemClasses.join(' ') ) }}" {{{ itemStyle }}}>
                         <div class="tl-trigger"></div>
                         <# if ( showMarker ) { #>
                             <# if ( settings.tl_is_marker_unique === 'yes' && item.marker_image && item.marker_image.url ) { #>
@@ -1551,7 +1808,7 @@ final class TimelineWidget extends Widget_Base {
                             <# } #>
                         <# } #>
 
-                        <div class="wp-block-za-timeline-item-side timeline-side">
+                        <div class="wp-block-za-timeline-item-side timeline-side" {{{ sideStyle }}}>
                             <# if ( showOtherSide ) { #>
                                 {{{ item.side_content }}}
                             <# } #>

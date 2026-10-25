@@ -37,11 +37,13 @@ export function getTimelineWrapperStyle( attributes = {} ) {
 
 	// Elementor widget-level background settings are portable only when
 	// represented as a sanitized color or a local placeholder URL.
-	const bgColor = attributes.timelineBackgroundColor || '';
+	const nativeColor = attributes.backgroundColor || attributes.style?.color?.background;
+	const bgColor = nativeColor ? '' : ( attributes.timelineBackgroundColor || '' );
 	if ( /^(?:#[0-9a-f]{3,8}|rgba?\([0-9.,%\s]+\))$/i.test( bgColor ) ) {
 		style.backgroundColor = bgColor;
 	}
-	const bgImage = attributes.timelineBackgroundImage || '';
+	const nativeImage = attributes.style?.background?.backgroundImage?.url;
+	const bgImage = nativeImage ? '' : ( attributes.timelineBackgroundImage || '' );
 	if ( /^(?:https?:\/\/[^\s"'()<>]+|\/[a-z0-9_/%+.\-]+)$/i.test( bgImage ) ) {
 		style.backgroundImage = `url("${ bgImage }")`;
 		style.backgroundSize = [ 'cover', 'contain', 'auto' ].includes( attributes.timelineBackgroundSize )

@@ -1,0 +1,28 @@
+import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
+import { resolve } from 'node:path';
+const base = resolve(import.meta.dirname, '../..');
+const read = (path) => readFileSync(resolve(base,path),'utf8');
+const bootstrap = read('timeline-full-widget.php');
+assert(!bootstrap.includes('class_alias('));
+assert(!bootstrap.includes('TIMELINE_ELEMENTOR_PATH'));
+// The root compatibility loader is intentional: it has no second widget implementation.
+const compatibility = read('elementor-timeline-widget.php');
+assert(compatibility.includes('timeline_full_widget_load_legacy_elementor_widget'));
+assert(compatibility.includes('includes/Elementor/TimelineWidget.php'));
+assert(!compatibility.includes('class_alias('));
+assert(!read('includes/Plugin.php').includes('static function instance('));
+assert(!read('includes/Elementor/ElementorIntegration.php').includes('widgets_manager = null'));
+const classicLoader = read('assets/js/adapters/classic-adapter-loader.js');
+assert(classicLoader.includes('document.currentScript'));
+assert(classicLoader.includes("new URL( 'classic-adapters.js', script.src )"));
+assert(!classicLoader.includes('document.baseURI'));
+const classic = read('assets/js/adapters/classic-adapters.js');
+assert(classic.includes("new URL( '../core/animation.js', import.meta.url )"));
+assert(!classic.includes('zaTimelineConfig'));
+assert(!classic.includes('m.default?.('));
+const elementor = read('assets/js/adapters/elementor-adapter.js');
+assert(!elementor.includes("'iframe',"));
+assert(!elementor.includes('setInterval( async'));
+assert(elementor.includes('MutationObserver'));
+console.log('PASS: removed unused aliases, URL guessing, and iframe polling; stable module entrypoints preserved.');

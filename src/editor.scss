@@ -123,13 +123,11 @@
   pointer-events: auto;
 }
 
-// Gutenberg canvas may be narrower than the content editor's desktop width.
-// Prevent Timeline inner grids/media from widening the entire editor canvas.
-// `clip` does not create the extra scroll container that `hidden` would,
-// preserving the timeline's vertical scroll/sticky behavior.
+// Keep Timeline content from causing horizontal overflow without imposing a
+// max-width on the block root: alignwide and alignfull belong to the theme.
+// `clip` avoids an extra scroll container and preserves vertical sticky/scroll.
 .editor-styles-wrapper .wp-block-za-timeline-full-widget {
   min-width: 0;
-  max-width: 100%;
   overflow-x: clip;
 }
 
@@ -140,4 +138,19 @@
 .editor-styles-wrapper .wp-block-za-timeline-full-widget .timeline-panel {
   min-width: 0;
   max-width: 100%;
+}
+
+// Keep an empty item compact so it does not push text out of view.
+.editor-styles-wrapper .wp-block-za-timeline-item-content .tl-media-empty-action {
+  align-self: flex-start;
+  flex: 0 0 auto;
+  max-width: 100%;
+  min-width: 0;
+  padding: 0;
+  margin: 0 0 8px;
+}
+
+.editor-styles-wrapper .wp-block-za-timeline-item-content .tl-media-empty-action .components-button {
+  min-height: 32px;
+  white-space: normal;
 }

@@ -81,6 +81,7 @@ namespace {
     function wp_strip_all_tags($s) { return strip_tags($s); }
     function wp_kses_post($s) { return strip_tags((string)$s, '<p><b><strong><em><a><br><ul><li><span>'); }
     function wp_kses($s,$allowed) { return strip_tags($s, '<br>'); }
+    function wp_get_attachment_image($id,$size,$icon=false,$attrs=[]) { return '<img class="mock-full-image" data-id="' . (int) $id . '" data-size="' . esc_attr($size) . '">'; }
     function wp_check_filetype($url) { return ['type'=>str_ends_with($url,'.webm')?'video/webm':'video/mp4']; }
     function plugin_basename($s) { return basename($s); }
     function register_block_type_from_metadata($path) { $GLOBALS['mock_block_path'] = $path; }
@@ -94,7 +95,7 @@ namespace {
     }
     require $root . '/timeline-full-widget.php';
     check(class_exists('TimelineFullWidget\\Plugin'), 'PSR-4 bootstrap loads Plugin');
-    check(class_exists('TimelinePlugin', false), 'Public TimelinePlugin alias remains available');
+    check(!class_exists('TimelinePlugin', false), 'Unused pre-PSR-4 global alias is absent');
     check(isset($GLOBALS['mock_actions']['init']), 'Bootstrap registers init hook');
     check(!isset($GLOBALS['mock_actions']['elementor/frontend/after_enqueue_styles']), 'Core CSS is not enqueued on every Elementor frontend page');
     $asset = new \TimelineFullWidget\Assets\AssetManager();
@@ -181,13 +182,30 @@ namespace {
     $GLOBALS['mock_is_block_editor'] = false;
     $classic->enqueueClassicAdapterAdmin();
     check(isset($GLOBALS['mock_scripts']['za-timeline-classic-adapter']), 'Classic post editor loads adapter');
-    check(isset($GLOBALS['mock_inline_scripts']['za-timeline-classic-adapter']), 'Classic adapter gets base URL config');
+    check(!isset($GLOBALS['mock_inline_scripts']['za-timeline-classic-adapter']), 'Classic adapter resolves module paths without a global config');
     $GLOBALS['mock_screen']->base = 'dashboard';
     $classic->enqueueClassicAdapterAdmin();
     check(count(array_filter($GLOBALS['mock_enqueued_scripts'], fn($h) => $h === 'za-timeline-classic-adapter')) === 1, 'Dashboard never enqueues Classic adapter');
     $GLOBALS['mock_screen']->base = 'post';
 
     check(class_exists('TimelineFullWidget\\Elementor\\TimelineWidget'), 'Elementor widget loads against optional Widget_Base');
+    // The official Elementor hook supplies its widget manager; no global lookup is needed.
+    if ( ! defined( 'ELEMENTOR_PATH' ) ) {
+        define( 'ELEMENTOR_PATH', $root . '/elementor/' );
+    }
+    $mock_manager = new class {
+        public int $count = 0;
+        public function register( $widget ): void {
+            if ( $widget instanceof \TimelineFullWidget\Elementor\TimelineWidget ) {
+                $this->count++;
+            }
+        }
+    };
+    $integration = new \TimelineFullWidget\Elementor\ElementorIntegration();
+    $integration->registerWidget( $mock_manager );
+    $integration->registerWidget( $mock_manager );
+    check( 1 === $mock_manager->count, 'Official Elementor manager registers the widget once' );
+
     $widget = new \TimelineFullWidget\Elementor\TimelineWidget();
     $widget->set_mock_settings([
         'header_tag'=>'a', 'tl_show_marker'=>'yes', 'tl_animation_marker'=>'yes',
@@ -232,6 +250,19 @@ namespace {
     check(substr_count($html, 'tl-reverse') === 2, 'Media order is independent of shared item style switch');
     check(str_contains($html, 'elementor-repeater-item-two'), 'Default per-item switches stay disabled');
     $widget->set_mock_settings([
+        'header_tag' => 'h3', 'tl_show_marker' => 'yes', 'shared_item_background_color' => '#eeeeee',
+        'list' => [
+            ['_id' => 'alpha', 'list_title' => 'Colorful', 'inherit_item_styles' => 'yes',
+             'li_bg_color' => '#aabbcc', 'item_outer_background_color' => '#112233',
+             'card_background_image' => ['url'=>'https://example.test/card.jpg']],
+            ['_id' => 'beta', 'list_title' => 'Legacy shared background', 'inherit_item_styles'=>'yes'],
+        ],
+    ]);
+    $html = $widget->render_for_test();
+    check(str_contains($html, 'background-color:#112233') && str_contains($html, 'background-color:#aabbcc'), 'Elementor separates full-item color from card color');
+    check(str_contains($html, 'background-image:url(&quot;https://example.test/card.jpg&quot;)'), 'Elementor renders sanitized per-card image URL');
+    check(str_contains($html, 'background-color:#eeeeee'), 'Legacy shared Elementor card background still displays');
+    $widget->set_mock_settings([
         'header_tag'=>'h3', 'list'=>[[
             '_id'=>'video123', 'list_title'=>'Video', 'media_type'=>'video',
             'media_video'=>['id'=>0,'url'=>''],
@@ -241,6 +272,88 @@ namespace {
     $html = $widget->render_for_test();
     check(str_contains($html,'timeline-video-placeholder') && str_contains($html,'receiver.test/media-placeholder.svg'), 'Elementor imported video uses local image placeholder without a source video URL');
     check(!str_contains($html,'<video'), 'Elementor video placeholder does not inject an invalid video player');
+    $widget->set_mock_settings([
+        'header_tag'=>'h3', 'tl_change_onside'=>'yes', 'tl_change_direction'=>'right',
+        'list'=>[
+            ['_id'=>'hidden','list_title'=>'No media', 'show_media'=>'no', 'media_type'=>'video',
+             'media_video'=>['url'=>''], 'posterURL'=>['url'=>'https://receiver.test/media-placeholder.svg']],
+            ['_id'=>'cleared','list_title'=>'Cleared image', 'media_type'=>'image',
+             'media_image'=>['id'=>0, 'url'=>'']],
+        ],
+    ]);
+    $html = $widget->render_for_test();
+    check(!str_contains($html, 'timeline_pic') && !str_contains($html,'timeline-video-placeholder'),
+        'Elementor hides cleared media and imported video posters when media is disabled');
+    check(str_contains($html,'No media') && str_contains($html,'Cleared image'),
+        'Elementor retains text cards when media is absent');
+    check(substr_count($html, 'timeline-inverted')===2,
+        'Elementor one-side right layout assigns the correct class to all items');
+    $widget->set_mock_settings([
+        'header_tag' => 'h3', 'list' => [
+            ['_id'=>'px-width','list_title'=>'Width px','media_type'=>'image',
+                'media_image'=>['url'=>'https://receiver.test/image.png'], 'media_width'=>'260px'],
+            ['_id'=>'pct-width','list_title'=>'Width percent','media_type'=>'video',
+                'media_video'=>['url'=>''], 'posterURL'=>['url'=>'https://receiver.test/poster.svg'], 'media_width'=>'45%'],
+            ['_id'=>'unsafe-width','list_title'=>'Invalid width','media_type'=>'image',
+                'media_image'=>['url'=>'https://receiver.test/image.png'], 'media_width'=>'calc(100% + 1px)'],
+        ],
+    ]);
+    $html = $widget->render_for_test();
+    check(str_contains($html, 'width:260px;max-width:100%') && str_contains($html, 'width:45%;max-width:100%'),
+        'Elementor PHP renders valid media widths in px and percent for image and video poster');
+    check(!str_contains($html,'calc('), 'Elementor PHP rejects unsafe media width values');
+    $widget->set_mock_settings([
+        'header_tag'=>'h3', 'list'=>[[
+            '_id'=>'number-width','list_title'=>'Full width image','media_type'=>'image',
+            'media_image'=>['id'=>42,'url'=>'https://receiver.test/image.png'],
+            'thumbnail_size'=>'medium', 'media_width'=>'',
+            'media_width_value'=>100, 'media_width_unit'=>'%',
+        ],[
+            '_id'=>'no-width','list_title'=>'No width','media_type'=>'image',
+            'media_image'=>['id'=>0,'url'=>'https://receiver.test/image.png'],
+            'media_width'=>'', 'media_width_value'=>'', 'media_width_unit'=>'px',
+        ]],
+    ]);
+    $html=$widget->render_for_test();
+    check(str_contains($html,'data-size="full"') && str_contains($html,'tfw-media-sized') && str_contains($html,'width:100%'),
+        'Explicit width uses full-resolution source even when Image Resolution is medium');
+    check(substr_count($html,'tfw-media-sized')===1,
+        'An empty numeric width does not emit any custom width class');
+    check(str_contains(file_get_contents($root . '/assets/css/core/style.css'),'width: 100% !important;'),
+        'Explicitly sized image content fills the chosen width');
+
+    $widget->set_mock_settings([
+        'header_tag'=>'h3', 'tl_show_marker'=>'yes', 'tl_show_other_side'=>'yes',
+        'list'=>[ [
+            '_id'=>'typography01', 'list_title'=>'Imported heading',
+            'side_content'=>'<p>Imported side</p>', 'list_content'=>'<p>Imported body</p>',
+            'inherit_item_styles'=>'no',
+            'item_outer_background_color'=>'#045cb4', 'li_bg_color'=>'#c57afc',
+            'item_title_font_size'=>['size'=>24,'unit'=>'px'],
+            'item_content_font_size'=>['size'=>20,'unit'=>'px'],
+            'item_content_color'=>'#EE1212',
+            'item_side_font_size'=>['size'=>28,'unit'=>'px'],
+            'item_side_color'=>'#ffffff',
+        ] ],
+    ]);
+    $html = $widget->render_for_test();
+    check(str_contains($html, 'background-color:#045cb4') && str_contains($html,'background-color:#c57afc'),
+        'Per-item outer background and card background are different DOM styles');
+    check(str_contains($html,'tfw-side-custom-size') && str_contains($html,'tfw-side-custom-color') &&
+        str_contains($html,'font-size:28px') && str_contains($html,'color:#ffffff'),
+        'Imported side typography is applied to the side wrapper');
+    check(str_contains($html,'font-size:24px') && str_contains($html,'font-size:20px') &&
+        str_contains($html,'color:#EE1212'), 'Title and content sizes and colors render separately');
+    $widget->set_mock_settings([
+        'header_tag'=>'h3', 'list'=>[ [
+            '_id'=>'bad01', 'list_title'=>'Safe', 'inherit_item_styles'=>'no',
+            'item_side_font_size'=>['size'=>0,'unit'=>'px'],
+            'item_content_font_size'=>['size'=>99,'unit'=>'invalid;position:absolute'],
+        ] ],
+    ]);
+    $html = $widget->render_for_test();
+    check(!str_contains($html,'position:absolute') && !str_contains($html,'font-size:0px'),
+        'Reject invalid imported font sizes and units when rendering inline CSS');
     $meta = json_decode(file_get_contents($root . '/block.json'), true);
     check($meta['textdomain'] === 'timeline-full-widget', 'Block metadata uses the canonical text domain');
     printf("PASS: %d PHP runtime assertions.\n", $passes);

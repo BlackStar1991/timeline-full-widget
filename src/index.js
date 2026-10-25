@@ -21,6 +21,8 @@ registerBlockType( 'za/timeline-full-widget', {
 		html: false,
 		align: [ 'wide', 'full' ],
 		anchor: true,
+		color: { background: true, text: false },
+		background: { backgroundImage: true, backgroundSize: true },
 		spacing: {
 			margin: true,
 		},

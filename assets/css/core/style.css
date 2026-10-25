@@ -3,10 +3,6 @@
     box-sizing: border-box;
 }
 
-.wp-block-za-timeline-full-widget {
-    width: 100%;
-}
-
 .wp-block-za-timeline-full-widget .t-text-align-left {
     text-align: left;
 }
@@ -103,8 +99,9 @@ ul.timeline {
 }
 
 .tl-desc-short strong {
-    font-weight: bold;
+    font-weight: 700;
 }
+
 .tl-desc-short a {
     text-decoration: underline;
 }
@@ -284,6 +281,11 @@ ul.timeline {
     margin-bottom: 5px
 }
 
+.tfw-timeline-transfer{
+    gap: 20px;
+    display: flex;
+    flex-wrap: wrap;
+}
 
 @media (min-width: 701px) {
 
@@ -453,6 +455,47 @@ ul.timeline {
    The generic .tl-mark img rule uses max-width:initial!important, which made
    800x600 SVG placeholders escape the marker and cover the Elementor canvas. */
 .timeline .tl-mark img[src*="media-placeholder.svg"] {
+    width: var(--marker-size, 30px) !important;
+    height: var(--marker-size, 30px) !important;
+    max-width: var(--marker-size, 30px) !important;
+    max-height: var(--marker-size, 30px) !important;
+    object-fit: contain;
+}
+
+
+/* Elementor per-item typography: ensure paragraph theme rules do not override
+   the explicit settings imported from nested Gutenberg text blocks. */
+.timeline-item.tfw-side-custom-color .timeline-side :is(p, li, h1, h2, h3, h4, h5, h6) {
+    color: inherit;
+}
+.timeline-item.tfw-side-custom-size .timeline-side :is(p, li, h1, h2, h3, h4, h5, h6) {
+    font-size: inherit;
+}
+.timeline-item.tfw-content-custom-color .tl-desc-short :is(p, li) {
+    color: inherit;
+}
+.timeline-item.tfw-content-custom-size .tl-desc-short :is(p, li) {
+    font-size: inherit;
+}
+
+/* Explicit media width controls the display size, independently of the
+   attachment thumbnail resolution; linked media uses the anchor as wrapper. */
+.timeline .timeline_pic.tfw-media-sized > :is(img, video),
+.timeline .timeline-media-link.tfw-media-sized .timeline_pic > :is(img, video) {
+    display: block;
+    width: 100% !important;
+    max-width: 100% !important;
+    height: auto;
+    object-fit: contain;
+}
+.timeline .tl-content-horizontal .timeline_pic.tfw-media-sized,
+.timeline .tl-content-horizontal .timeline-media-link.tfw-media-sized {
+    flex: 0 1 auto;
+    max-width: 100%;
+}
+/* The marker's diameter, not an uploaded image's intrinsic dimensions,
+   determines its size. Applies to real images and transfer placeholders. */
+.timeline .tl-mark > img {
     width: var(--marker-size, 30px) !important;
     height: var(--marker-size, 30px) !important;
     max-width: var(--marker-size, 30px) !important;

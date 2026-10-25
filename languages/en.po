@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: 4.0.0\n"
-"POT-Creation-Date: 2026-10-16 14:21+0300\n"
-"PO-Revision-Date: 2026-10-16 14:21+0300\n"
+"POT-Creation-Date: 2026-10-20 10:22+0300\n"
+"PO-Revision-Date: 2026-10-20 10:23+0300\n"
 "Last-Translator: \n"
 "Language-Team: za\n"
 "Language: en\n"
@@ -64,38 +64,38 @@ msgid "Use shared item styles"
 msgstr ""
 
 #: includes/Elementor/TimelineWidget.php:146
-#: includes/Elementor/TimelineWidget.php:317
-#: includes/Elementor/TimelineWidget.php:333
-#: includes/Elementor/TimelineWidget.php:486
-#: includes/Elementor/TimelineWidget.php:812
-#: includes/Elementor/TimelineWidget.php:823
-#: includes/Elementor/TimelineWidget.php:835
-#: includes/Elementor/TimelineWidget.php:847
-#: includes/Elementor/TimelineWidget.php:868
-#: includes/Elementor/TimelineWidget.php:880
-#: includes/Elementor/TimelineWidget.php:892
-#: includes/Elementor/TimelineWidget.php:907
-#: includes/Elementor/TimelineWidget.php:919 src/edit.js:337 src/edit.js:349
-#: src/edit.js:361 src/edit.js:373 src/edit.js:385 src/edit.js:531
-#: src/edit.js:545 src/edit.js:559
+#: includes/Elementor/TimelineWidget.php:297
+#: includes/Elementor/TimelineWidget.php:311
+#: includes/Elementor/TimelineWidget.php:334
+#: includes/Elementor/TimelineWidget.php:457
+#: includes/Elementor/TimelineWidget.php:900
+#: includes/Elementor/TimelineWidget.php:911
+#: includes/Elementor/TimelineWidget.php:924
+#: includes/Elementor/TimelineWidget.php:945
+#: includes/Elementor/TimelineWidget.php:957
+#: includes/Elementor/TimelineWidget.php:969
+#: includes/Elementor/TimelineWidget.php:984
+#: includes/Elementor/TimelineWidget.php:996 src/edit.js:353 src/edit.js:365
+#: src/edit.js:377 src/edit.js:389 src/edit.js:401 src/edit.js:547
+#: src/edit.js:561 src/edit.js:575
 msgid "Yes"
 msgstr ""
 
 #: includes/Elementor/TimelineWidget.php:147
-#: includes/Elementor/TimelineWidget.php:318
-#: includes/Elementor/TimelineWidget.php:334
-#: includes/Elementor/TimelineWidget.php:487
-#: includes/Elementor/TimelineWidget.php:813
-#: includes/Elementor/TimelineWidget.php:824
-#: includes/Elementor/TimelineWidget.php:836
-#: includes/Elementor/TimelineWidget.php:848
-#: includes/Elementor/TimelineWidget.php:869
-#: includes/Elementor/TimelineWidget.php:881
-#: includes/Elementor/TimelineWidget.php:893
-#: includes/Elementor/TimelineWidget.php:908
-#: includes/Elementor/TimelineWidget.php:920 src/edit.js:338 src/edit.js:350
-#: src/edit.js:362 src/edit.js:374 src/edit.js:386 src/edit.js:532
-#: src/edit.js:546 src/edit.js:560
+#: includes/Elementor/TimelineWidget.php:298
+#: includes/Elementor/TimelineWidget.php:312
+#: includes/Elementor/TimelineWidget.php:335
+#: includes/Elementor/TimelineWidget.php:458
+#: includes/Elementor/TimelineWidget.php:901
+#: includes/Elementor/TimelineWidget.php:912
+#: includes/Elementor/TimelineWidget.php:925
+#: includes/Elementor/TimelineWidget.php:946
+#: includes/Elementor/TimelineWidget.php:958
+#: includes/Elementor/TimelineWidget.php:970
+#: includes/Elementor/TimelineWidget.php:985
+#: includes/Elementor/TimelineWidget.php:997 src/edit.js:354 src/edit.js:366
+#: src/edit.js:378 src/edit.js:390 src/edit.js:402 src/edit.js:548
+#: src/edit.js:562 src/edit.js:576
 msgid "No"
 msgstr ""
 
@@ -105,383 +105,452 @@ msgid ""
 "needs unique styling."
 msgstr ""
 
-#: includes/Elementor/TimelineWidget.php:157
-#: includes/Elementor/TimelineWidget.php:472 src/item/areas/content.js:549
-#: src/item/edit.js:563
-msgid "Item background color"
+#: includes/Elementor/TimelineWidget.php:157 src/item/areas/content.js:582
+#: src/item/edit.js:574
+msgid "Card background color"
 msgstr ""
 
-#: includes/Elementor/TimelineWidget.php:167
-msgid "Title color"
+#: includes/Elementor/TimelineWidget.php:166 src/item/edit.js:578
+msgid "Timeline item background color"
 msgstr ""
 
-#: includes/Elementor/TimelineWidget.php:177
-#: includes/Elementor/TimelineWidget.php:551
-msgid "Title alignment"
+#: includes/Elementor/TimelineWidget.php:169
+msgid "Background for the entire timeline item, including the opposite side."
 msgstr ""
 
-#: includes/Elementor/TimelineWidget.php:181
-#: includes/Elementor/TimelineWidget.php:555
-#: includes/Elementor/TimelineWidget.php:801 src/edit.js:326
-msgid "Left"
+#: includes/Elementor/TimelineWidget.php:179 src/item/areas/content.js:591
+msgid "Card background image"
 msgstr ""
 
-#: includes/Elementor/TimelineWidget.php:185
-#: includes/Elementor/TimelineWidget.php:559
-msgid "Center"
+#: includes/Elementor/TimelineWidget.php:182
+msgid "Background image for this card; transfer uses a local placeholder."
 msgstr ""
 
 #: includes/Elementor/TimelineWidget.php:189
-#: includes/Elementor/TimelineWidget.php:563
-#: includes/Elementor/TimelineWidget.php:802 src/edit.js:325
-msgid "Right"
+msgid "Title color"
 msgstr ""
 
-#: includes/Elementor/TimelineWidget.php:206 src/item/areas/content.js:540
-#: src/item/edit.js:552
-msgid "Content color"
+#: includes/Elementor/TimelineWidget.php:199
+msgid "Title font size"
 msgstr ""
 
-#: includes/Elementor/TimelineWidget.php:217
-msgid "Content layout"
+#: includes/Elementor/TimelineWidget.php:211
+#: includes/Elementor/TimelineWidget.php:639
+msgid "Title alignment"
+msgstr ""
+
+#: includes/Elementor/TimelineWidget.php:215
+#: includes/Elementor/TimelineWidget.php:643
+#: includes/Elementor/TimelineWidget.php:889 src/edit.js:311 src/edit.js:342
+msgid "Left"
+msgstr ""
+
+#: includes/Elementor/TimelineWidget.php:219
+#: includes/Elementor/TimelineWidget.php:647 src/edit.js:311
+msgid "Center"
 msgstr ""
 
 #: includes/Elementor/TimelineWidget.php:223
-msgid "Use widget setting"
+#: includes/Elementor/TimelineWidget.php:651
+#: includes/Elementor/TimelineWidget.php:890 src/edit.js:311 src/edit.js:341
+msgid "Right"
 msgstr ""
 
-#: includes/Elementor/TimelineWidget.php:224
-msgid "Vertical"
+#: includes/Elementor/TimelineWidget.php:240 src/item/areas/content.js:573
+#: src/item/edit.js:563
+msgid "Content color"
 msgstr ""
 
-#: includes/Elementor/TimelineWidget.php:225
-msgid "Horizontal"
+#: includes/Elementor/TimelineWidget.php:251
+msgid "Content font size"
 msgstr ""
 
-#: includes/Elementor/TimelineWidget.php:233
+#: includes/Elementor/TimelineWidget.php:263
+msgid "Side content color"
+msgstr ""
+
+#: includes/Elementor/TimelineWidget.php:273
+msgid "Side content font size"
+msgstr ""
+
+#: includes/Elementor/TimelineWidget.php:286
+msgid "Item layout"
+msgstr ""
+
+#: includes/Elementor/TimelineWidget.php:295 src/item/areas/content.js:540
+#: src/item/edit.js:529
+msgid "Use horizontal content layout"
+msgstr ""
+
+#: includes/Elementor/TimelineWidget.php:302
+msgid ""
+"Arrange this item’s media and text side by side. Off by default; independent "
+"of shared item styles."
+msgstr ""
+
+#: includes/Elementor/TimelineWidget.php:309 src/item/areas/content.js:553
+#: src/item/edit.js:542
+msgid "Reverse media and content order"
+msgstr ""
+
+#: includes/Elementor/TimelineWidget.php:316
+msgid ""
+"Swap media and text within this item. Off by default; independent of shared "
+"item styles."
+msgstr ""
+
+#: includes/Elementor/TimelineWidget.php:323
 msgid "Media"
 msgstr ""
 
-#: includes/Elementor/TimelineWidget.php:242
-msgid "Media Type"
+#: includes/Elementor/TimelineWidget.php:332
+msgid "Show media"
 msgstr ""
 
-#: includes/Elementor/TimelineWidget.php:245
-#: includes/Elementor/TimelineWidget.php:255
+#: includes/Elementor/TimelineWidget.php:345
+msgid "Media type"
+msgstr ""
+
+#: includes/Elementor/TimelineWidget.php:348
+#: includes/Elementor/TimelineWidget.php:359
 msgid "Image"
 msgstr ""
 
-#: includes/Elementor/TimelineWidget.php:246
-#: includes/Elementor/TimelineWidget.php:275
+#: includes/Elementor/TimelineWidget.php:349
+#: includes/Elementor/TimelineWidget.php:380
 msgid "Video"
 msgstr ""
 
-#: includes/Elementor/TimelineWidget.php:266
+#: includes/Elementor/TimelineWidget.php:371
 #: src/item/components/MediaSettingsPanel.js:70
 msgid "Image alt text"
 msgstr ""
 
-#: includes/Elementor/TimelineWidget.php:285
-msgid "Poster image"
+#: includes/Elementor/TimelineWidget.php:391
+#: src/item/components/MediaSettingsPanel.js:30
+#: src/item/components/MediaSettingsPanel.js:37
+msgid "Video poster"
 msgstr ""
 
-#: includes/Elementor/TimelineWidget.php:305 src/item/areas/content.js:414
-#: src/item/edit.js:405
+#: includes/Elementor/TimelineWidget.php:412
+#: src/item/components/MediaSettingsPanel.js:20
+msgid "Width of media"
+msgstr ""
+
+#: includes/Elementor/TimelineWidget.php:425
+msgid "Unit"
+msgstr ""
+
+#: includes/Elementor/TimelineWidget.php:445 src/item/areas/content.js:447
+#: src/item/edit.js:414
 msgid "Media link"
 msgstr ""
 
-#: includes/Elementor/TimelineWidget.php:315
+#: includes/Elementor/TimelineWidget.php:455
 msgid "Wrap media in link"
 msgstr ""
 
-#: includes/Elementor/TimelineWidget.php:324
-msgid "If enabled, the image or video will be clickable and wrapped in a link."
-msgstr ""
-
-#: includes/Elementor/TimelineWidget.php:331
-#: includes/Elementor/TimelineWidget.php:484 src/item/areas/content.js:520
-#: src/item/edit.js:531
-msgid "Reverse media and content order"
-msgstr ""
-
-#: includes/Elementor/TimelineWidget.php:343
-#: includes/Elementor/TimelineWidget.php:373
-#: includes/Elementor/TimelineWidget.php:599
+#: includes/Elementor/TimelineWidget.php:471
+#: includes/Elementor/TimelineWidget.php:500
+#: includes/Elementor/TimelineWidget.php:687
 msgid "Content"
 msgstr ""
 
-#: includes/Elementor/TimelineWidget.php:352
-#: includes/Elementor/TimelineWidget.php:498
+#: includes/Elementor/TimelineWidget.php:480
+#: includes/Elementor/TimelineWidget.php:586
 msgid "Title"
 msgstr ""
 
-#: includes/Elementor/TimelineWidget.php:354
+#: includes/Elementor/TimelineWidget.php:482
 msgid "Timeline Title"
 msgstr ""
 
-#: includes/Elementor/TimelineWidget.php:362
+#: includes/Elementor/TimelineWidget.php:490
 msgid "Title link"
 msgstr ""
 
-#: includes/Elementor/TimelineWidget.php:366
-msgid "Used only when the Title HTML Tag is set to \"a\"."
-msgstr ""
-
-#: includes/Elementor/TimelineWidget.php:375
+#: includes/Elementor/TimelineWidget.php:502
 msgid "Timeline content here..."
 msgstr ""
 
-#: includes/Elementor/TimelineWidget.php:382
-msgid "Side Content"
+#: includes/Elementor/TimelineWidget.php:509
+msgid "Side content"
 msgstr ""
 
-#: includes/Elementor/TimelineWidget.php:391
+#: includes/Elementor/TimelineWidget.php:518
 msgid "Marker"
 msgstr ""
 
-#: includes/Elementor/TimelineWidget.php:400
+#: includes/Elementor/TimelineWidget.php:527
 msgid "Custom marker image"
 msgstr ""
 
-#: includes/Elementor/TimelineWidget.php:409
+#: includes/Elementor/TimelineWidget.php:536
 msgid "Marker image alt text"
 msgstr ""
 
-#: includes/Elementor/TimelineWidget.php:420
+#: includes/Elementor/TimelineWidget.php:547
 msgid ""
 "Note: this image is used only when “Use custom marker image” is enabled. "
 "Recommended width: 50px or less."
 msgstr ""
 
-#: includes/Elementor/TimelineWidget.php:434
+#: includes/Elementor/TimelineWidget.php:561
 msgid "Timeline Item #1"
 msgstr ""
 
-#: includes/Elementor/TimelineWidget.php:435
+#: includes/Elementor/TimelineWidget.php:562
 msgid "Content for item #1"
 msgstr ""
 
-#: includes/Elementor/TimelineWidget.php:438
+#: includes/Elementor/TimelineWidget.php:567
 msgid "Timeline Item #2"
 msgstr ""
 
-#: includes/Elementor/TimelineWidget.php:439
+#: includes/Elementor/TimelineWidget.php:568
 msgid "Content for item #2"
 msgstr ""
 
-#: includes/Elementor/TimelineWidget.php:455
-msgid "Shared Item Styles"
+#: includes/Elementor/TimelineWidget.php:594
+msgid "Title HTML Tag"
 msgstr ""
 
-#: includes/Elementor/TimelineWidget.php:464
-msgid ""
-"These styles apply to timeline items while “Use shared item styles” is "
-"enabled. Disable that switch inside an item only when it needs unique "
-"styling."
+#: includes/Elementor/TimelineWidget.php:608
+msgid "Typography"
 msgstr ""
 
-#: includes/Elementor/TimelineWidget.php:489
-#: includes/Elementor/TimelineWidget.php:541
-#: includes/Elementor/TimelineWidget.php:572
-#: includes/Elementor/TimelineWidget.php:610
+#: includes/Elementor/TimelineWidget.php:627
+msgid "Shared title color"
+msgstr ""
+
+#: includes/Elementor/TimelineWidget.php:629
+#: includes/Elementor/TimelineWidget.php:660
+#: includes/Elementor/TimelineWidget.php:698
 msgid ""
 "Applies to items that use shared item styles. Unique items can override this "
 "setting."
 msgstr ""
 
-#: includes/Elementor/TimelineWidget.php:506
-msgid "Title HTML Tag"
-msgstr ""
-
-#: includes/Elementor/TimelineWidget.php:520
-msgid "Typography"
-msgstr ""
-
-#: includes/Elementor/TimelineWidget.php:539
-msgid "Shared title color"
-msgstr ""
-
-#: includes/Elementor/TimelineWidget.php:567
+#: includes/Elementor/TimelineWidget.php:655
 msgid "Justified"
 msgstr ""
 
-#: includes/Elementor/TimelineWidget.php:584
+#: includes/Elementor/TimelineWidget.php:672
 msgid "Margin"
 msgstr ""
 
-#: includes/Elementor/TimelineWidget.php:607
+#: includes/Elementor/TimelineWidget.php:695
 msgid "Shared content color"
 msgstr ""
 
-#: includes/Elementor/TimelineWidget.php:621
+#: includes/Elementor/TimelineWidget.php:709
 msgid "Content Typography"
 msgstr ""
 
-#: includes/Elementor/TimelineWidget.php:647
+#: includes/Elementor/TimelineWidget.php:735
 msgid "Side Content Typography"
 msgstr ""
 
-#: includes/Elementor/TimelineWidget.php:674 src/edit.js:302
+#: includes/Elementor/TimelineWidget.php:762 src/edit.js:318
 msgid "Timeline Settings"
 msgstr ""
 
-#: includes/Elementor/TimelineWidget.php:682 src/edit.js:404
+#: includes/Elementor/TimelineWidget.php:770 src/edit.js:420
 msgid "Line Width"
 msgstr ""
 
-#: includes/Elementor/TimelineWidget.php:705 src/edit.js:459
+#: includes/Elementor/TimelineWidget.php:793 src/edit.js:475
 msgid "Line Color"
 msgstr ""
 
-#: includes/Elementor/TimelineWidget.php:717 src/edit.js:471
+#: includes/Elementor/TimelineWidget.php:805 src/edit.js:487
 msgid "Marker Color"
 msgstr ""
 
-#: includes/Elementor/TimelineWidget.php:733
+#: includes/Elementor/TimelineWidget.php:821
 msgid "Active Line Color"
 msgstr ""
 
-#: includes/Elementor/TimelineWidget.php:748
+#: includes/Elementor/TimelineWidget.php:836
 msgid "Active Marker Color"
 msgstr ""
 
-#: includes/Elementor/TimelineWidget.php:766 src/edit.js:426
+#: includes/Elementor/TimelineWidget.php:854 src/edit.js:442
 msgid "Marker Size"
 msgstr ""
 
-#: includes/Elementor/TimelineWidget.php:791
+#: includes/Elementor/TimelineWidget.php:879
 msgid "Layout"
 msgstr ""
 
-#: includes/Elementor/TimelineWidget.php:799 src/edit.js:321
+#: includes/Elementor/TimelineWidget.php:887 src/edit.js:337
 msgid "Timeline Direction"
 msgstr ""
 
-#: includes/Elementor/TimelineWidget.php:810 src/edit.js:333
+#: includes/Elementor/TimelineWidget.php:898 src/edit.js:349
 msgid "Single Side Layout"
 msgstr ""
 
-#: includes/Elementor/TimelineWidget.php:821
+#: includes/Elementor/TimelineWidget.php:909
 msgid "Display opposite side content"
 msgstr ""
 
-#: includes/Elementor/TimelineWidget.php:833 src/item/areas/content.js:507
-#: src/item/edit.js:518
-msgid "Use horizontal content layout"
-msgstr ""
-
-#: includes/Elementor/TimelineWidget.php:838
-msgid "Applies as a widget-wide default. Each repeater item can override it."
-msgstr ""
-
-#: includes/Elementor/TimelineWidget.php:845 src/edit.js:555
+#: includes/Elementor/TimelineWidget.php:922 src/edit.js:571
 msgid "Show step numbers"
 msgstr ""
 
-#: includes/Elementor/TimelineWidget.php:858
+#: includes/Elementor/TimelineWidget.php:935
 msgid "Behavior"
 msgstr ""
 
-#: includes/Elementor/TimelineWidget.php:866
+#: includes/Elementor/TimelineWidget.php:943
 msgid "Animate timeline line"
 msgstr ""
 
-#: includes/Elementor/TimelineWidget.php:878
+#: includes/Elementor/TimelineWidget.php:955
 msgid "Show timeline marker"
 msgstr ""
 
-#: includes/Elementor/TimelineWidget.php:890
+#: includes/Elementor/TimelineWidget.php:967
 msgid "Animate timeline markers"
 msgstr ""
 
-#: includes/Elementor/TimelineWidget.php:905 src/edit.js:381
+#: includes/Elementor/TimelineWidget.php:982 src/edit.js:397
 msgid "Sticky Side Content"
 msgstr ""
 
-#: includes/Elementor/TimelineWidget.php:917
+#: includes/Elementor/TimelineWidget.php:994
 msgid "Use custom marker image"
 msgstr ""
 
-#: includes/Elementor/TimelineWidget.php:1151
-#: includes/Elementor/TimelineWidget.php:1430
+#: includes/Elementor/TimelineWidget.php:1300
+#: includes/Elementor/TimelineWidget.php:1640 src/item/areas/content.js:240
 msgid "Video placeholder"
 msgstr ""
 
-#: includes/Elementor/TimelineWidget.php:1163
-#: includes/Elementor/TimelineWidget.php:1426 src/item/areas/content.js:210
+#: includes/Elementor/TimelineWidget.php:1312
+#: includes/Elementor/TimelineWidget.php:1636 src/item/areas/content.js:224
 msgid "Your browser does not support the video tag."
 msgstr ""
 
-#: includes/Elementor/TimelineWidget.php:1196
+#: includes/Elementor/TimelineWidget.php:1366
 #, php-format
 msgid "Open media for \"%s\""
 msgstr ""
 
-#: includes/Elementor/TimelineWidget.php:1198
+#: includes/Elementor/TimelineWidget.php:1368
 msgid "Open media link"
 msgstr ""
 
+#: src/edit.js:284
+msgid "Timeline background"
+msgstr ""
+
+#: src/edit.js:286 src/edit.js:290
+msgid "Background color"
+msgstr ""
+
+#: src/edit.js:297
+msgid "Replace background image"
+msgstr ""
+
+#: src/edit.js:297
+msgid "Background image"
+msgstr ""
+
+#: src/edit.js:300
+msgid "Remove background image"
+msgstr ""
+
+#: src/edit.js:303
+msgid "Background size"
+msgstr ""
+
+#: src/edit.js:305
+msgid "Cover"
+msgstr ""
+
+#: src/edit.js:305
+msgid "Contain"
+msgstr ""
+
+#: src/edit.js:305
+msgid "Auto"
+msgstr ""
+
 #: src/edit.js:309
+msgid "Background position"
+msgstr ""
+
+#: src/edit.js:311
+msgid "Top"
+msgstr ""
+
+#: src/edit.js:311
+msgid "Bottom"
+msgstr ""
+
+#: src/edit.js:325
 msgid "Show Media"
 msgstr ""
 
-#: src/edit.js:313
+#: src/edit.js:329
 msgid "On"
 msgstr ""
 
-#: src/edit.js:314
+#: src/edit.js:330
 msgid "Off"
 msgstr ""
 
-#: src/edit.js:345
+#: src/edit.js:361
 msgid "Display Opposite Side"
 msgstr ""
 
-#: src/edit.js:357
+#: src/edit.js:373
 msgid "Animate Timeline Line"
 msgstr ""
 
-#: src/edit.js:369
+#: src/edit.js:385
 msgid "Show Timeline Marker"
 msgstr ""
 
-#: src/edit.js:406
+#: src/edit.js:422
 msgid "Minimum value is 1px."
 msgstr ""
 
-#: src/edit.js:430
+#: src/edit.js:446
 msgid "Minimum value is 2px."
 msgstr ""
 
-#: src/edit.js:450
+#: src/edit.js:466
 msgid "Timeline Colors"
 msgstr ""
 
-#: src/edit.js:482
+#: src/edit.js:498
 msgid "Timeline Animation Colors"
 msgstr ""
 
-#: src/edit.js:493
+#: src/edit.js:509
 msgid "Animation Line Color"
 msgstr ""
 
-#: src/edit.js:508
+#: src/edit.js:524
 msgid "Animation Marker Color"
 msgstr ""
 
-#: src/edit.js:520
+#: src/edit.js:536
 msgid "Marker Settings"
 msgstr ""
 
-#: src/edit.js:527
+#: src/edit.js:543
 msgid "Sticky timeline markers"
 msgstr ""
 
-#: src/edit.js:541
+#: src/edit.js:557
 msgid "Use custom marker"
 msgstr ""
 
-#: src/item/areas/config.js:7 src/item/index.js:152 src/item/title/index.js:164
+#: src/item/areas/config.js:7 src/item/index.js:154 src/item/title/index.js:164
 msgid "Timeline Item"
 msgstr ""
 
@@ -493,40 +562,48 @@ msgstr ""
 msgid "Add side content"
 msgstr ""
 
-#: src/item/areas/content.js:240
+#: src/item/areas/content.js:254
 msgid "Linked media preview"
 msgstr ""
 
-#: src/item/areas/content.js:384 src/item/edit.js:375
+#: src/item/areas/content.js:416 src/item/edit.js:383
 msgid "Replace Media File"
 msgstr ""
 
-#: src/item/areas/content.js:409 src/item/edit.js:400
+#: src/item/areas/content.js:442 src/item/edit.js:409
 msgid "Remove Media File"
 msgstr ""
 
-#: src/item/areas/content.js:423 src/item/edit.js:414
+#: src/item/areas/content.js:456 src/item/edit.js:423
 msgid "Remove media link"
 msgstr ""
 
-#: src/item/areas/content.js:466 src/item/edit.js:458
+#: src/item/areas/content.js:499 src/item/edit.js:467
 #: src/item/title/index.js:110
 msgid "Open in new tab"
 msgstr ""
 
-#: src/item/areas/content.js:502 src/item/edit.js:513
+#: src/item/areas/content.js:535 src/item/edit.js:524
 msgid "Block Settings"
 msgstr ""
 
-#: src/item/areas/content.js:532 src/item/edit.js:543
+#: src/item/areas/content.js:565 src/item/edit.js:554
 msgid "Color Settings"
 msgstr ""
 
-#: src/item/areas/content.js:814
+#: src/item/areas/content.js:593
+msgid "Remove card background image"
+msgstr ""
+
+#: src/item/areas/content.js:643
+msgid "Add image or video"
+msgstr ""
+
+#: src/item/areas/content.js:868
 msgid "Timeline main content"
 msgstr ""
 
-#: src/item/areas/content.js:816
+#: src/item/areas/content.js:870
 msgid ""
 "Container for blocks displayed in the main content area of a timeline item."
 msgstr ""
@@ -546,15 +623,6 @@ msgstr ""
 #: src/item/components/FontFamilySelect.js:13
 #: src/item/components/TitleTypographyPanel.js:89
 msgid "Default"
-msgstr ""
-
-#: src/item/components/MediaSettingsPanel.js:20
-msgid "Width of media"
-msgstr ""
-
-#: src/item/components/MediaSettingsPanel.js:30
-#: src/item/components/MediaSettingsPanel.js:37
-msgid "Video poster"
 msgstr ""
 
 #: src/item/components/MediaSettingsPanel.js:42
@@ -615,16 +683,16 @@ msgstr ""
 msgid "Title margins"
 msgstr ""
 
-#: src/item/edit.js:324
+#: src/item/edit.js:326
 #, javascript-format
 msgid "Copied item styles to %d other Timeline Item(s)."
 msgstr ""
 
-#: src/item/edit.js:498
+#: src/item/edit.js:508
 msgid "Apply item styles to other items"
 msgstr ""
 
-#: src/item/index.js:153
+#: src/item/index.js:155
 msgid "Timeline item description"
 msgstr ""
 
@@ -638,16 +706,4 @@ msgstr ""
 
 #: src/item/title/index.js:139
 msgid "Edit link"
-msgstr ""
-
-#: includes/Elementor/TimelineWidget.php
-msgid "Item layout"
-msgstr ""
-
-#: includes/Elementor/TimelineWidget.php
-msgid "Arrange this item’s media and text side by side. Off by default; independent of shared item styles."
-msgstr ""
-
-#: includes/Elementor/TimelineWidget.php
-msgid "Swap media and text within this item. Off by default; independent of shared item styles."
 msgstr ""

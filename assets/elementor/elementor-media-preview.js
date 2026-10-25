@@ -1,90 +1,33 @@
+/* Timeline Elementor repeater media controls. Do not override Elementor's media frame:
+ * imported placeholder images must be replaceable with native media selections. */
 (function ($) {
-    function patchFrame(frame) {
-        if (!frame || frame._zaPatched) {
-            return;
-        }
-        frame._zaPatched = true;
-        try {
-            frame.on('open', function () {
-                try {
-                    if (frame.options && frame.options.library) {
-                        frame.options.library.type = '';
-                    }
-                    const state = frame.state && frame.state();
-                    if (
-                        state &&
-                        state.props &&
-                        typeof state.props.set === 'function'
-                    ) {
-                        state.props.set('filter', 'all');
-                        if (state.props.get('library') !== undefined) {
-                            state.props.set('library', '');
-                        }
-                    }
-                } catch (e) {
-                }
-            });
-        } catch (e) {
-        }
+    'use strict';
+
+    function refreshRow(row) {
+        if (!row || !row.length) return;
+        const field = row.find('.elementor-control-media_type select').first();
+        if (!field.length) return;
+        const type = field.val() === 'video' ? 'video' : 'image';
+        row.find('.elementor-control-media_image, .elementor-control-media_image_alt').toggle(type === 'image');
+        row.find('.elementor-control-media_video, .elementor-control-posterURL').toggle(type === 'video');
+        // Width applies to both image and video; never hide it on switching.
     }
 
-    $(document).on(
-        'click',
-        '.elementor-control-media .elementor-control-field, .elementor-control-media .elementor-control-media__thumbnail',
-        function () {
-            setTimeout(function () {
-                try {
-                    const frame = elementor.media && elementor.media.frame;
-                    if (frame) {
-                        patchFrame(frame);
-                    }
-                } catch (e) {
-                }
-            }, 50);
-        }
-    );
-    $(window).on('elementor:init', function () {
-        try {
-            if (
-                elementor &&
-                elementor.media &&
-                typeof elementor.media.create === 'function'
-            ) {
-                const origCreate = elementor.media.create;
-                elementor.media.create = function () {
-                    const f = origCreate.apply(this, arguments);
-                    try {
-                        patchFrame(f);
-                    } catch (e) {
-                    }
-                    return f;
-                };
-            }
-        } catch (e) {
-        }
-    });
-
-    /* Side Content TinyMCE styles */
-    if (window.tinymce) {
-        tinymce.on('AddEditor', function (e) {
-            e.editor.on('init', function () {
-                const control = e.editor.getContainer()?.closest('.elementor-control-side_content');
-                if (control) {
-                    e.editor.dom.addStyle(
-                        'body#tinymce ul, body#tinymce ol  { margin-left: 10px; }'
-                    );
-                }
-            });
+    function refreshVisibleRows() {
+        $('.elementor-repeater-row-controls:visible').each(function () {
+            refreshRow($(this));
         });
     }
 
-    $(function () {
-        if (
-            window.elementor &&
-            window.elementor.media &&
-            window.elementor.media.frame
-        ) {
-            patchFrame(window.elementor.media.frame);
-        }
+    // Elementor handles the underlying settings/model and media selection.
+    // Only keep the visible controls aligned with a changed repeater type.
+    $(document).on('change', '.elementor-control-media_type select', function () {
+        refreshRow($(this).closest('.elementor-repeater-row-controls'));
     });
+    $(document).on('click', '.elementor-repeater-row-tool, .elementor-repeater-tool-duplicate', function () {
+        setTimeout(refreshVisibleRows, 80);
+    });
+    // Elementor may rebuild the repeater after imported settings are applied.
+    $(window).on('elementor:init', refreshVisibleRows);
+    $(refreshVisibleRows);
 })(jQuery);

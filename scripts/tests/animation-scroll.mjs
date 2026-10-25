@@ -9,10 +9,10 @@ const source = readFileSync(resolve(root, 'assets/js/core/animation.js'), 'utf8'
 const bundle = readFileSync(resolve(root, 'build/index.js'), 'utf8');
 const { initTimelineAnimation } = await import(`data:text/javascript;base64,${Buffer.from(source).toString('base64')}`);
 
-assert(bundle.includes('zaGeometryTimer'), 'Compiled Gutenberg editor must check geometry even without scroll events');
-assert(bundle.includes('zaIsEditor'), 'Compiled watchdog must be scoped to Gutenberg canvas');
-assert(bundle.includes('window.clearInterval(zaGeometryTimer)'), 'React unmount removes compiled geometry watcher');
-assert(bundle.includes('},[b]);const O='), 'React effect must not restart when Timeline Item list changes');
+assert(bundle.includes('geometryWatcher'), 'Compiled Gutenberg editor checks geometry even without scroll events');
+assert(bundle.includes('isGutenbergCanvas'), 'Compiled watchdog scoped to Gutenberg canvas');
+assert(bundle.includes('clearInterval(geometryWatcher)'), 'React unmount removes compiled geometry watcher');
+assert(bundle.includes('}, [animationTimeline]'), 'React effect does not restart when item list changes');
 
 function fakeElement(rectFn, parent=null, classNames=[]) {
   const listeners = new Map();
@@ -29,7 +29,7 @@ function fakeElement(rectFn, parent=null, classNames=[]) {
   };
 }
 function rect(top,height=800) { return {top,bottom:top+height,left:0,right:800,width:800,height}; }
-function setup(parentScroller, editor=false) {
+function setup(parentScroller, editor=false, delayedOverflow=false) {
   const queued = new Map(); let id=0;
   const intervals = new Map(); let intervalId = 0;
   globalThis.requestAnimationFrame = cb => {queued.set(++id,cb);return id;};
@@ -37,9 +37,9 @@ function setup(parentScroller, editor=false) {
   globalThis.IntersectionObserver = class { observe(){} disconnect(){} };
   globalThis.MutationObserver = class { observe(){} disconnect(){} };
   const localRoot = parentScroller ? null : fakeElement(()=>rect(70,430));
-  if(localRoot){localRoot.scrollHeight=1800;localRoot.clientHeight=430;}
+  if(localRoot){localRoot.scrollHeight=delayedOverflow?430:1800;localRoot.clientHeight=430;}
   const parentRoot = parentScroller ? fakeElement(()=>rect(90,500)) : null;
-  if(parentRoot){parentRoot.scrollHeight=1500;parentRoot.clientHeight=500;}
+  if(parentRoot){parentRoot.scrollHeight=delayedOverflow?500:1500;parentRoot.clientHeight=500;}
   const parentWin = {innerHeight:850,document:{},addEventListener:()=>{},removeEventListener:()=>{},getComputedStyle:e=>({overflowY:e===parentRoot?'auto':'visible'})};
   const iframeAncestor=parentScroller?fakeElement(()=>rect(0,500),parentRoot):null;
   const iframe = parentScroller ? fakeElement(()=>rect(240-amount,600),iframeAncestor):fakeElement(()=>rect(170,600));
@@ -76,6 +76,21 @@ function setup(parentScroller, editor=false) {
  assert.equal(env.item.classList.contains('is-stuck'),true, 'Marker follows actual line progress');
  destroy();assert.equal(env.localRoot.listenerCount('scroll'),0, 'Clean up local scroll handlers');
 }
+// Regression from v3.1.1 -> v4.0.0: the scroll root can exist before
+// Gutenberg adds enough content for it to overflow. Scroll event targets are
+// fixed during animation initialization, so it must be detected regardless of
+// the initial scrollHeight.
+{
+ const env=setup(false,true,true);
+ const destroy=initTimelineAnimation(env.wrapper);env.frames(100);
+ assert.equal(env.localRoot.listenerCount('scroll'),1,'Editor scroller is observed before content grows');
+ const initial=env.getProgress();
+ env.localRoot.scrollHeight=1900;
+ env.scroll(520);env.frames(100);
+ assert(env.getProgress()>initial+0.15,'Scrolling works after deferred Gutenberg layout growth');
+ destroy();
+ assert.equal(env.localRoot.listenerCount('scroll'),0);
+}
 // Gutenberg may scroll the iframe node inside an editor container.
 {
  const env=setup(true);const destroy=initTimelineAnimation(env.wrapper);env.frames();
@@ -85,6 +100,19 @@ function setup(parentScroller, editor=false) {
  assert(env.getProgress()>0.25, 'Parent Gutenberg scroll should advance line');
  assert.equal(env.item.classList.contains('is-stuck'),true);
  destroy();assert.equal(env.parentRoot.listenerCount('scroll'),0, 'Clean up parent scroll handlers');
+}
+// The parent editor scroll container can also overflow only AFTER the canvas
+// was initialized. It must receive its listener before that transition.
+{
+ const env=setup(true,true,true);
+ const destroy=initTimelineAnimation(env.wrapper);
+ assert.equal(env.parentRoot.listenerCount('scroll'),1,'Parent scroll root observed before overflow');
+ env.frames(100);
+ const initial=env.getProgress();
+ env.parentRoot.scrollHeight=1900;
+ env.scroll(480);env.frames(100);
+ assert(env.getProgress()>initial+0.2,'Parent scroll activation survives deferred overflow');
+ destroy();assert.equal(env.parentRoot.listenerCount('scroll'),0);
 }
 // A Gutenberg editor may change iframe or canvas geometry without dispatching
 // any scroll event to a callback in this JS realm. The watchdog must recover.
@@ -108,3 +136,29 @@ function setup(parentScroller, editor=false) {
  destroy();assert.equal(env.intervalCount(),0);
 }
 console.log('PASS: local/parent scroll, no-event editor geometry watchdog, idempotent init, cleanup.');
+
+// Each Timeline on the same Gutenberg page must have its own listener and progress.
+{
+ const env=setup(false,true);
+ let movement=0;
+ const second=fakeElement(()=>rect(920-movement,700),env.localRoot,['timeline-wrapper']);
+ second.isConnected=true;
+ second.closest=selector=>selector==='.wp-block-za-timeline-full-widget'?{}:null;
+ const line2=fakeElement(()=>rect(0,0));
+ const mark2=fakeElement(()=>rect(1050-movement,30));
+ const item2=fakeElement(()=>rect(920-movement,600),second,['timeline-item']);
+ item2.querySelector=()=>mark2;
+ second.querySelector=selector=>selector==='.timeline-line-animation'?line2:null;
+ second.querySelectorAll=()=>[item2];
+ const d1=initTimelineAnimation(env.wrapper),d2=initTimelineAnimation(second);
+ assert.notEqual(d1,d2,'Two Timeline blocks have independent destroy functions');
+ assert.equal(env.localRoot.listenerCount('scroll'),2,'Both wrappers observe scrolling');
+ env.frames(50);
+ const first=env.getProgress();
+ movement=800;env.scroll(800);env.frames(100);
+ assert(env.getProgress()>first,'First Timeline advances on scroll');
+ assert.match(line2.style.transform,/scaleY\(/,'Second Timeline updates independent line');
+ d1();assert.equal(env.localRoot.listenerCount('scroll'),1,'Removing first block does not stop second watcher');
+ d2();assert.equal(env.localRoot.listenerCount('scroll'),0,'All listeners removed on teardown');
+}
+console.log('PASS: multiple independent Gutenberg Timeline animation controllers');

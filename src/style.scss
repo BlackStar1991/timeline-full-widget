@@ -26,10 +26,6 @@
   box-sizing: border-box;
 }
 
-.wp-block-za-timeline-full-widget {
-  width: 100%;
-}
-
 .wp-block-za-timeline-full-widget .timeline-wrapper {
   position: relative;
   width: 100%;
@@ -70,4 +66,22 @@
   .wp-theme-kadence .timeline:before {
     left: calc(50% + 15px);
   }
+}
+
+// Custom markers are always limited by the Timeline marker diameter.
+.wp-block-za-timeline-full-widget .tl-mark > img {
+  width: var(--marker-size, 30px) !important;
+  height: var(--marker-size, 30px) !important;
+  max-width: var(--marker-size, 30px) !important;
+  max-height: var(--marker-size, 30px) !important;
+  object-fit: contain;
+}
+
+// Astra's Page Builder Template resets all direct entry-content children to
+// max-width: none, even .alignwide. Respect Astra's own configurable wide width
+// for Timeline only, without changing Full width or other themes.
+.ast-page-builder-template .entry-content[data-ast-blocks-layout] > .wp-block-za-timeline-full-widget.alignwide {
+  width: 100%;
+  max-width: var(--wp--custom--ast-wide-width-size, var(--wp--style--global--wide-size, 100%));
+  margin-inline: auto;
 }

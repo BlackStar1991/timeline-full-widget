@@ -1,32 +1,31 @@
 <?php
-/** Static validation of both Playground entrypoints and portable demo fixtures. */
+/** Validate the self-contained WordPress.org Playground demo (no Elementor bundle). */
 declare(strict_types=1);
 $root = dirname(__DIR__);
-$basic = json_decode((string)file_get_contents($root . '/assets/blueprints/blueprint.json'), true, 512, JSON_THROW_ON_ERROR);
-$bundle = json_decode((string)file_get_contents($root . '/assets/blueprints/blueprint-bundle.json'), true, 512, JSON_THROW_ON_ERROR);
+$path = $root . '/assets/blueprints/blueprint.json';
+$blueprint = json_decode((string) file_get_contents($path), true, 512, JSON_THROW_ON_ERROR);
 $errors = [];
-$check = static function ($test, $message) use (&$errors) { if (!$test) {$errors[] = $message;} };
-foreach ([$basic, $bundle] as $blueprint) {
-    $check(($blueprint['$schema'] ?? '') === 'https://playground.wordpress.net/blueprint-schema.json', 'Blueprint schema missing');
-    $check(($blueprint['preferredVersions']['php'] ?? '') === '8.3', 'Blueprint PHP runtime changed');
-    $check(str_contains(json_encode($blueprint, JSON_UNESCAPED_SLASHES), 'za/timeline-full-widget'), 'Blueprint Gutenberg demo block missing');
-    $check(count(array_filter($blueprint['steps'] ?? [], static fn($step) => ($step['step'] ?? '') === 'installPlugin')) > 0, 'Blueprint plugin install missing');
-}
-$check(($basic['steps'][0]['pluginData']['resource'] ?? '') === 'wordpress.org/plugins', 'Published blueprint must use WordPress.org distribution');
-$check(($bundle['steps'][1]['pluginData']['resource'] ?? '') === 'bundled', 'Bundle must install the local artifact');
-$package = json_decode((string)file_get_contents($root . '/package.json'), true, 512, JSON_THROW_ON_ERROR);
-$check(($bundle['steps'][1]['pluginData']['path'] ?? '') === '/timeline-full-widget-' . $package['version'] . '.zip', 'Bundle filename mismatch');
-$check(count(array_filter($bundle['steps'], static fn($step) => ($step['step'] ?? '') === 'writeFile')) === 2, 'Both sample imports must be provided');
-foreach (['elementor','gutenberg'] as $source) {
-    $path = $root . '/assets/blueprints/samples/timeline-' . $source . '-demo.tfw.json';
-    $file = json_decode((string)file_get_contents($path), true, 512, JSON_THROW_ON_ERROR);
-    $check(($file['format'] ?? '') === 'timeline-full-widget', "{$source}: invalid transfer format");
-    $check(($file['schemaVersion'] ?? 0) === 1 && ($file['origin'] ?? '') === $source, "{$source}: invalid schema/origin");
-    $check(($file['mediaPolicy'] ?? '') === 'placeholder-only', "{$source}: privacy contract invalid");
-    $check(!str_contains(json_encode($file), 'demo.test'), "{$source}: origin media leaked");
-}
+$check = static function (bool $test, string $message) use (&$errors): void {
+    if (!$test) {$errors[] = $message;}
+};
+$check(($blueprint['$schema'] ?? '') === 'https://playground.wordpress.net/blueprint-schema.json', 'Blueprint schema missing');
+$install = array_values(array_filter($blueprint['steps'] ?? [], static fn($step) => ($step['step'] ?? '') === 'installPlugin'));
+$check(count($install) === 1, 'Expected exactly one plugin installation');
+$check(($install[0]['pluginData']['resource'] ?? '') === 'wordpress.org/plugins', 'Install from WordPress.org');
+$check(($install[0]['pluginData']['slug'] ?? '') === 'timeline-full-widget', 'Wrong plugin slug');
+$check(($install[0]['options']['activate'] ?? false) === true, 'Plugin not activated');
+$check(!str_contains(json_encode($blueprint, JSON_UNESCAPED_SLASHES), '"resource":"bundled"'), 'Public preview must be self-contained');
+$check(!str_contains(strtolower(json_encode($blueprint)), '"slug":"elementor"'), 'Public preview must not install Elementor');
+$php = array_filter($blueprint['steps'] ?? [], static fn($step) => ($step['step'] ?? '') === 'runPHP');
+$check(count($php) >= 1, 'Missing Gutenberg demo initializer');
+$payload = implode("
+", array_column($php, 'code'));
+$check(str_contains($payload, 'za/timeline-full-widget'), 'Missing Gutenberg Timeline demo');
+$check(str_contains($payload, 'wp_insert_post'), 'Demo must create WordPress pages');
 if ($errors) {
-    foreach ($errors as $err) {fwrite(STDERR, 'FAIL: ' . $err . "\n");}
+    foreach ($errors as $error) {fwrite(STDERR, 'FAIL: ' . $error . "
+");}
     exit(1);
 }
-echo "PASS: WP.org blueprint, exact-version bundled blueprint, 2 safe cross-site import fixtures.\n";
+echo "PASS: standalone WordPress.org Playground demo, Gutenberg blocks, no bundled resources or Elementor.
+";

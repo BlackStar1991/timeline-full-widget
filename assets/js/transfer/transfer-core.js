@@ -52,6 +52,16 @@ export const WP_CORE_PALETTE = Object.freeze( {
 
 const SAFE_COLOR = /^(?:#[0-9a-f]{3,8}|rgba?\(\s*[0-9.%\s,]+\s*\)|hsla?\(\s*[0-9.%\s,]+\s*\))$/i;
 const SAFE_SLUG = /^[a-z0-9][a-z0-9-]{0,100}$/i;
+/** Only CSS lengths supported by both Timeline editors, never expressions. */
+export function normalizeMediaWidth( value ) {
+    const text = String( value ?? '' ).trim();
+    const match = /^(\d+(?:\.\d+)?)(px|%)$/i.exec( text );
+    if ( !match ) return '';
+    const number = Number( match[ 1 ] );
+    return Number.isFinite( number ) && number > 0 && number <= ( match[ 2 ] === '%' ? 100 : 5000 )
+        ? match[ 1 ] + match[ 2 ].toLowerCase() : '';
+}
+
 
 /** Convert block color slugs and WP preset variables to portable CSS colors. */
 export function resolveGutenbergColor( value, palette = {} ) {
@@ -93,10 +103,10 @@ const CLASSES = /^(className|_css_classes|css_classes|additionalClasses)$/i;
 const CUSTOM = /^(custom_css|_custom_css|_elementor_custom_css|customCss|cssCode)$/i;
 const ANIMATION = /(^|_)(animation|motion|transition|sticky|entrance)(_|$)/i;
 const LINK = /^(linkUrl|linkTarget|rel|mediaLinkUrl|mediaLinkTarget|mediaLinkRel|isMediaWrapToLink|media_link_url|media_link_enabled|title_link_url)$/i;
-const IMAGE_KEYS = /^(media_image|marker_image|posterURL|background_image|background_overlay_image|background_image_mobile|background_image_tablet|background_overlay_image_mobile|background_overlay_image_tablet)$/i;
+const IMAGE_KEYS = /^(media_image|marker_image|posterURL|background_image|background_overlay_image|background_image_mobile|background_image_tablet|background_overlay_image_mobile|background_overlay_image_tablet|card_background_image)$/i;
 const VIDEO_KEYS = /^(media_video)$/i;
 const BACKGROUND_VIDEO_URL = /^(?:_)?background_video_(?:link|url)$/i;
-const GUTENBERG_IMAGE_KEYS = /^(mediaUrl|markerUrl|videoPoster|poster|backgroundUrl)$/i;
+const GUTENBERG_IMAGE_KEYS = /^(mediaUrl|markerUrl|videoPoster|poster|backgroundUrl|timelineBackgroundImage|cardBackgroundImage)$/i;
 const MEDIA_ATTRIBUTE_IDS = /^(mediaId|markerId|media_id|marker_id)$/i;
 
 export function jsonClone( value, depth = 0 ) {
@@ -160,6 +170,9 @@ function scrubValue( value, key, source, placeholder, parent = '' ) {
         return value;
     }
     if ( typeof value !== 'object' ) return value;
+    if ( source === 'gutenberg' && key === 'backgroundImage' && typeof value.url === 'string' ) {
+        return value.url ? { ...value, url: placeholder, id: 0, source: 'file' } : { ...value, url: '', id: 0 };
+    }
     if ( source === 'elementor' ) {
         if ( VIDEO_KEYS.test( key ) ) return { ...value, id: 0, url: '' };
         if ( IMAGE_KEYS.test( key ) || ( value.url && ( typeof value.id === 'number' || typeof value.id === 'string' ) && !/link|title_link/i.test( key ) ) ) {
@@ -225,6 +238,16 @@ export function normalizeElementorItemLayouts( settings ) {
             if ( !Object.prototype.hasOwnProperty.call( entry, 'tl_card_change_direction' ) ) {
                 entry.tl_card_change_direction = inheritedReverse ? 'yes' : '';
             }
+            // Normalize old combined widths at the boundary, not in native
+            // editor controls. Clear the legacy value so clearing the new
+            // numeric input doesn't unexpectedly reactivate the old width.
+            const oldWidth = normalizeMediaWidth( entry.media_width );
+            if ( oldWidth && ( entry.media_width_value === '' || entry.media_width_value === undefined || entry.media_width_value === null ) ) {
+                const parts = /^(\d+(?:\.\d+)?)(px|%)$/.exec( oldWidth );
+                entry.media_width_value = Number( parts[1] );
+                entry.media_width_unit = parts[2];
+            }
+            if ( oldWidth ) entry.media_width = '';
             return entry;
         } );
     }
@@ -257,7 +280,7 @@ export function createTransfer( source, data, metadata = {} ) {
  */
 const DANGEROUS_HTML = /<\s*\/?\s*(?:script|iframe|object|embed|svg|math|form|input|button|link|meta|base|style|template)\b/i;
 const ACTIVE_CSS = /(?:@import\b|expression\s*\(|-moz-binding\s*:|behavior\s*:|<\s*\/\s*style\b)/i;
-const URL_FIELD = /^(?:url|href|src|source|poster|linkUrl|linkTarget|mediaUrl|markerUrl|videoPoster|backgroundUrl|.*_url|.*_link|.*_src)$/i;
+const URL_FIELD = /^(?:url|href|src|source|poster|linkUrl|linkTarget|mediaUrl|markerUrl|videoPoster|cardBackgroundImage|backgroundUrl|.*_url|.*_link|.*_src)$/i;
 const HTML_FIELD = /^(?:content|caption|citation|value|list_content|side_content|otherSiteTitle|title_field|list_title|text|label|html)$/i;
 const CONTENT_FIELD = /^(?:content|caption|citation|value|list_content|side_content|otherSiteTitle|title_field|list_title|text|label|alt|imageAlt|markerAlt|title|placeholder)$/i;
 const SAFE_BLOCKS = new Set( [
@@ -487,7 +510,41 @@ export function gutenbergToElementor( block, palette = {} ) {
     }
     if ( !Object.prototype.hasOwnProperty.call( attributes, 'markerUnique' ) &&
         block.innerBlocks.some( ( item ) => item.attributes?.markerUnique ) ) mapped.tl_is_marker_unique = 'yes';
-    if ( typeof attributes.direction === 'boolean' ) mapped.tl_change_direction = attributes.direction ? 'left' : '';
+    // Saved per-item position is the DOM's effective layout. Older blocks may
+    // retain a stale parent `direction` value after a layout change, so honor
+    // the first item's actual position when deriving Elementor's global switch.
+    const firstPosition = block.innerBlocks.find( ( part ) => part.name === 'za/timeline-item' )?.attributes?.position;
+    if ( firstPosition === 'timeline-inverted' || firstPosition === 'timeline-left' ) {
+        mapped.tl_change_direction = attributes.onTheOneSide
+            ? ( firstPosition === 'timeline-inverted' ? 'right' : 'left' )
+            : ( firstPosition === 'timeline-inverted' ? 'left' : 'right' );
+    } else if ( typeof attributes.direction === 'boolean' ) {
+        mapped.tl_change_direction = attributes.onTheOneSide
+            ? ( attributes.direction ? 'right' : 'left' )
+            : ( attributes.direction ? 'left' : 'right' );
+    }
+    // Gutenberg root Timeline background maps to Elementor Advanced > Background.
+    // Source images have already been replaced by portable placeholders.
+    const rootColor = resolveGutenbergColor(
+        attributes.style?.color?.background || attributes.backgroundColor || attributes.timelineBackgroundColor || '', palette
+    );
+    const rootImage = attributes.style?.background?.backgroundImage?.url || attributes.timelineBackgroundImage || '';
+    const rootSize = attributes.style?.background?.backgroundSize || attributes.timelineBackgroundSize || 'cover';
+    const nativePosition = attributes.style?.background?.backgroundPosition || attributes.timelineBackgroundPosition || '';
+    const rootPosition = {
+        '50% 50%': 'center center', '50% 0%': 'center top',
+        '50% 100%': 'center bottom', '0% 50%': 'left center',
+        '100% 50%': 'right center',
+    }[ nativePosition ] || nativePosition || 'center center';
+    if ( rootColor || rootImage ) {
+        mapped._background_background = 'classic';
+        if ( rootColor ) mapped._background_color = rootColor;
+        if ( rootImage ) {
+            mapped._background_image = { url: rootImage, id: 0 };
+            mapped._background_size = [ 'cover', 'contain', 'auto' ].includes( rootSize ) ? rootSize : 'cover';
+            mapped._background_position = /^(?:center center|center top|center bottom|left center|right center)$/.test( rootPosition ) ? rootPosition : 'center center';
+        }
+    }
     if ( typeof attributes.anchor === 'string' ) mapped._element_id = attributes.anchor;
     if ( typeof attributes.className === 'string' ) mapped._css_classes = attributes.className;
     const spacing = attributes.style?.spacing || {};
@@ -549,13 +606,27 @@ export function gutenbergToElementor( block, palette = {} ) {
             media_type: cardAttrs.mediaType === 'video' ? 'video' : 'image',
             media_image: { id: 0, url: cardAttrs.mediaType === 'video' ? '' : ( cardAttrs.mediaUrl || '' ) },
             media_video: { id: 0, url: '' },
-            posterURL: { id: 0, url: cardAttrs.mediaType === 'video' && cardAttrs.mediaUrl ? ( cardAttrs.videoPoster || PLACEHOLDER_TOKEN ) : '' },
+            posterURL: { id: 0, url: cardAttrs.mediaType === 'video' && cardAttrs.showMedia !== false && ( cardAttrs.mediaUrl || cardAttrs.videoPoster ) ? ( cardAttrs.videoPoster || PLACEHOLDER_TOKEN ) : '' },
+            show_media: flag( cardAttrs.showMedia !== false && !!( cardAttrs.mediaUrl || cardAttrs.videoPoster ) ),
+            media_width: normalizeMediaWidth( cardAttrs.mediaWidth || a.mediaWidth ),
+            media_width_value: '',
+            media_width_unit: 'px',
             media_image_alt: cardAttrs.imageAlt || '',
             marker_image: { id: 0, url: a.markerUrl || '',
                 ...( Number.isFinite( Number( a.markerSize ) ) && Number( a.markerSize ) > 0
                     ? { width: Number( a.markerSize ), height: Number( a.markerSize ) } : {} ) },
             marker_image_alt: a.markerAlt || '',
         };
+        if ( itemSettings.media_width ) {
+            const widthParts = /^(\d+(?:\.\d+)?)(px|%)$/.exec(itemSettings.media_width);
+            if ( widthParts ) {
+                itemSettings.media_width_value = Number(widthParts[1]);
+                itemSettings.media_width_unit = widthParts[2];
+            }
+        }
+        // Newly imported Elementor items rely on the numeric controls only.
+        // Avoid resurrecting a hidden legacy value when input is cleared.
+        itemSettings.media_width = '';
         if ( a.mediaLinkUrl || cardAttrs.mediaLinkUrl ) {
             itemSettings.media_link_url = {
                 url: cardAttrs.mediaLinkUrl || a.mediaLinkUrl,
@@ -569,6 +640,13 @@ export function gutenbergToElementor( block, palette = {} ) {
         const reverse = effectiveItemFlag( item, card, 'reverseMediaContent' );
         const horizontal = effectiveItemFlag( item, card, 'horizontalContentLayout' );
         itemSettings.tl_card_change_direction = flag( reverse );
+        // The native WordPress Background control persists a preset slug in
+        // `backgroundColor` (e.g. vivid-red). It is the SAME item's outer
+        // background as the plugin's explicit color control; do not discard it.
+        itemSettings.item_outer_background_color =
+            resolveGutenbergColor( a.itemOuterBackgroundColor, palette ) ||
+            styleColor( a, 'background' ) || '';
+        itemSettings.card_background_image = { url: cardAttrs.cardBackgroundImage || a.cardBackgroundImage || '', id: 0 };
         itemSettings.item_content_layout = horizontal ? 'horizontal' : 'vertical';
         // Gutenberg uses either literal CSS colors or theme-palette slugs.
         // Elementor's repeater accepts actual CSS colors, not preset slugs.
@@ -580,20 +658,39 @@ export function gutenbergToElementor( block, palette = {} ) {
         const descriptionColor = resolveGutenbergColor( a.descriptionColor, palette ) ||
             styleColor( description?.attributes, 'text' );
         const titleAlignment = title?.attributes?.textAlign || title?.attributes?.style?.typography?.textAlign;
+        // Gutenberg stores typography on each nested block, not on the Timeline parent.
+        // Convert the actual block attributes to Elementor repeater settings so that
+        // the destination uses the donor's sizes even with different global defaults.
+        const sideBlock = ( side?.innerBlocks || [] ).find( ( part ) =>
+            part.name === 'core/paragraph' || part.name === 'core/heading' || part.name === 'core/list' );
+        const sideColor = styleColor( sideBlock?.attributes, 'text' );
+        const fontSize = ( part ) => {
+            const raw = part?.attributes?.style?.typography?.fontSize;
+            if ( typeof raw !== 'string' ) return null;
+            const match = /^(\d+(?:\.\d+)?)(px|em|rem)$/.exec( raw.trim() );
+            if ( !match || Number( match[ 1 ] ) < 1 || Number( match[ 1 ] ) > 300 ) return null;
+            return { size: Number( match[ 1 ] ), unit: match[ 2 ] };
+        };
+        const titleFontSize = fontSize( title );
+        const contentFontSize = fontSize( description );
+        const sideFontSize = fontSize( sideBlock );
         // Layout controls are ALWAYS per-item. Shared visual style inheritance
         // applies to background, typography and colors only.
-        if ( itemBackground || headingColor || descriptionColor ||
+        if ( itemBackground || headingColor || descriptionColor || sideColor ||
+            titleFontSize || contentFontSize || sideFontSize ||
             [ 'left', 'center', 'right' ].includes( titleAlignment ) ) {
             itemSettings.inherit_item_styles = 'no';
             if ( itemBackground ) itemSettings.li_bg_color = itemBackground;
             if ( headingColor ) itemSettings.item_title_color = headingColor;
             if ( descriptionColor ) itemSettings.item_content_color = descriptionColor;
+            if ( sideColor ) itemSettings.item_side_color = sideColor;
+            if ( titleFontSize ) itemSettings.item_title_font_size = titleFontSize;
+            if ( contentFontSize ) itemSettings.item_content_font_size = contentFontSize;
+            if ( sideFontSize ) itemSettings.item_side_font_size = sideFontSize;
             if ( [ 'left', 'center', 'right' ].includes( titleAlignment ) ) itemSettings.item_title_alignment = titleAlignment;
         }
-        // Preserve Gutenberg image dimensions as media metadata, even without
-        // attachment data from the source website.
-        const mediaWidth = /^(\d+)(?:px)?$/.exec( String( cardAttrs.mediaWidth || a.mediaWidth || '' ) );
-        if ( mediaWidth ) itemSettings.media_image.width = Number( mediaWidth[ 1 ] );
+        // A width is a per-item CSS length, not an Elementor image crop size.
+        // Old native files with media_image.width are supported by reverse conversion.
         return itemSettings;
     } );
     return mapped;
@@ -671,8 +768,9 @@ export function elementorToGutenberg( rawSettings ) {
     for ( const [src, dst] of Object.entries( flagPairs ) ) {
         if ( settings[src] !== undefined ) attrs[dst] = elementorFlag( settings[src] );
     }
-    attrs.direction = settings.tl_change_direction === 'left';
-    attrs.position = attrs.direction ? 'timeline-left' : 'timeline-inverted';
+    const useSingleSide = elementorFlag( settings.tl_change_onside );
+    attrs.direction = useSingleSide ? settings.tl_change_direction !== 'left' : settings.tl_change_direction === 'left';
+    attrs.position = attrs.direction ? 'timeline-inverted' : 'timeline-left';
     if ( typeof settings._css_classes === 'string' ) attrs.className = settings._css_classes;
     if ( typeof settings._element_id === 'string' ) attrs.anchor = settings._element_id;
     const spacing = {};
@@ -686,18 +784,28 @@ export function elementorToGutenberg( rawSettings ) {
         }
         if ( Object.keys( sides ).length ) spacing[name] = sides;
     }
-    if ( Object.keys( spacing ).length ) attrs.style = { spacing };
+    if ( Object.keys( spacing ).length ) attrs.style = { ...attrs.style, spacing };
     // Elementor's widget-level background belongs on the Gutenberg root,
     // not on every Timeline Item. Media has already been scrubbed to the
     // destination site's local placeholder in prepareImport().
     if ( settings._background_background === 'classic' ) {
         if ( typeof settings._background_color === 'string' && SAFE_COLOR.test( settings._background_color ) ) {
-            attrs.timelineBackgroundColor = settings._background_color;
+            attrs.style = { ...attrs.style, color: { ...attrs.style?.color, background: settings._background_color } };
         }
         if ( settings._background_image?.url ) {
-            attrs.timelineBackgroundImage = settings._background_image.url;
-            attrs.timelineBackgroundSize = settings._background_size || 'cover';
-            attrs.timelineBackgroundPosition = settings._background_position || 'center center';
+            const backgroundPosition = {
+                'center center': '50% 50%', 'center top': '50% 0%',
+                'center bottom': '50% 100%', 'left center': '0% 50%',
+                'right center': '100% 50%',
+            }[ settings._background_position ] || '50% 50%';
+            attrs.style = {
+                ...attrs.style,
+                background: {
+                    backgroundImage: { url: settings._background_image.url, id: 0, source: 'file' },
+                    backgroundSize: [ 'cover', 'contain', 'auto' ].includes( settings._background_size ) ? settings._background_size : 'cover',
+                    backgroundPosition,
+                },
+            };
         }
     }
 
@@ -726,30 +834,47 @@ export function elementorToGutenberg( rawSettings ) {
     const headingTypography = elementorTypography( 'title_typography' );
     const bodyTypography = elementorTypography( 'list_content_typography' );
     const sideTypography = elementorTypography( 'side_content_typography' );
-    const useSingleSide = elementorFlag( settings.tl_change_onside );
     const startLeft = settings.tl_change_direction === 'left';
     const items = settings.list.map( ( item, index ) => {
         const inherited = item.inherit_item_styles !== 'no';
         const horizontal = item.item_content_layout === 'horizontal';
         const reverse = elementorFlag( item.tl_card_change_direction );
         // Elementor starts on left if direction=left, then alternates.
-        const isLeft = useSingleSide ? startLeft : ( index % 2 === 0 ? startLeft : !startLeft );
+        const isLeft = useSingleSide ? startLeft : ( index % 2 === 0 ? !startLeft : startLeft );
         const position = isLeft ? 'timeline-left' : 'timeline-inverted';
-        const background = inherited ? settings.shared_item_background_color : item.li_bg_color;
+        const background = item.li_bg_color || settings.shared_item_background_color || '';
+        const outerBackground = item.item_outer_background_color || '';
         const image = item.media_image || {};
         const video = item.media_video || {};
         const poster = item.posterURL || {};
         const mediaIsVideo = item.media_type === 'video';
         const mediaUrl = mediaIsVideo ? ( poster.url || video.url || '' ) : ( image.url || '' );
-        const hasMedia = !!mediaUrl;
+        const hasMedia = item.show_media !== 'no' && !!mediaUrl;
         const size = item.thumbnail_custom_dimension || {};
-        const width = elementorLength( size.width || image.width, 0 );
+        const width = normalizeMediaWidth( item.media_width_value !== undefined && item.media_width_value !== '' && item.media_width_value !== null
+            ? String(item.media_width_value) + (item.media_width_unit === '%' ? '%' : 'px') : item.media_width ) ||
+            ( elementorLength( size.width || image.width, 0 ) ? `${elementorLength( size.width || image.width, 0 )}px` : '' );
         const marker = item.marker_image || {};
         const markerUrl = marker.url || '';
         const sideAttrs = { showOtherSide: attrs.showOtherSide !== false,
             sideTextAlign: 'left' };
         const sideBlocks = richHtmlBlocks( item.side_content || '' );
-        if ( Object.keys( sideTypography ).length ) for ( const part of sideBlocks ) part.attributes.style = { ...( part.attributes.style || {} ), typography: { ...sideTypography } };
+        const importedFontSize = ( input ) => {
+            const size = Number( input?.size );
+            const unit = input?.unit || 'px';
+            return Number.isFinite( size ) && size >= 1 && size <= 300 && [ 'px', 'em', 'rem' ].includes( unit )
+                ? `${size}${unit}` : '';
+        };
+        const sideSize = importedFontSize( item.item_side_font_size );
+        const titleSize = importedFontSize( item.item_title_font_size );
+        const bodySize = importedFontSize( item.item_content_font_size );
+        const sideColor = inherited ? '' : item.item_side_color || '';
+        for ( const part of sideBlocks ) {
+            part.attributes.style = { ...( part.attributes.style || {} ),
+                ...( sideColor ? { color: { ...( part.attributes.style?.color || {} ), text: sideColor } } : {} ),
+                typography: { ...sideTypography, ...( sideSize ? { fontSize: sideSize } : {} ) },
+            };
+        }
         const originalTitle = String( item.list_title || '' );
         // Elementor's title hyperlink is separate from list_content links.
         // Embed it as RichText inside the target heading if its URL survived
@@ -762,26 +887,27 @@ export function elementorToGutenberg( rawSettings ) {
             level: /^h[1-6]$/.test( settings.header_tag || '' ) ? Number( settings.header_tag[1] ) : 3 };
         const titleColor = inherited ? settings.title_color : ( item.item_title_color || settings.title_color );
         const descColor = inherited ? settings.blocks_color : ( item.item_content_color || settings.blocks_color );
-        if ( titleColor || Object.keys( headingTypography ).length ) titleAttrs.style = {
+        if ( titleColor || Object.keys( headingTypography ).length || titleSize ) titleAttrs.style = {
             ...( titleColor ? { color: { text: titleColor } } : {} ),
-            ...( Object.keys( headingTypography ).length ? { typography: { ...headingTypography } } : {} ),
+            typography: { ...headingTypography, ...( titleSize ? { fontSize: titleSize } : {} ) },
         };
         const itemTitleAlign = inherited ? settings.title_alignment : ( item.item_title_alignment || settings.title_alignment );
         if ( [ 'left', 'center', 'right' ].includes( itemTitleAlign ) ) titleAttrs.textAlign = itemTitleAlign;
         const bodyBlocks = richHtmlBlocks( item.list_content || '' );
-        for ( const part of bodyBlocks ) if ( descColor || Object.keys( bodyTypography ).length ) {
+        for ( const part of bodyBlocks ) if ( descColor || Object.keys( bodyTypography ).length || bodySize ) {
             part.attributes.style = { ...( part.attributes.style || {} ),
                 ...( descColor ? { color: { text: descColor } } : {} ),
-                ...( Object.keys( bodyTypography ).length ? { typography: { ...bodyTypography } } : {} ),
+                typography: { ...bodyTypography, ...( bodySize ? { fontSize: bodySize } : {} ) },
             };
         }
         const mainAttrs = {
-            showMedia: hasMedia, mediaUrl, mediaId: 0, mediaType: mediaIsVideo ? 'video' : 'image',
+            showMedia: hasMedia, mediaUrl: hasMedia ? mediaUrl : '', mediaId: 0, mediaType: mediaIsVideo ? 'video' : 'image',
             mediaMime: mediaIsVideo ? 'video/mp4' : 'image/svg+xml',
             imageAlt: item.media_image_alt || image.alt || '',
-            videoPoster: mediaIsVideo ? ( poster.url || '' ) : '',
-            mediaWidth: width ? `${width}px` : '',
+            videoPoster: hasMedia && mediaIsVideo ? ( poster.url || '' ) : '',
+            mediaWidth: width,
             horizontalContentLayout: horizontal, reverseMediaContent: reverse,
+            cardBackgroundImage: item.card_background_image?.url || '',
             mediaLinkUrl: item.media_link_url?.url || '',
             mediaLinkTarget: item.media_link_url?.is_external ? '_blank' : '',
             mediaLinkRel: item.media_link_url?.nofollow ? 'nofollow' : '',
@@ -792,7 +918,8 @@ export function elementorToGutenberg( rawSettings ) {
             showMarker: attrs.showMarker !== false, markerUnique: attrs.markerUnique === true,
             markerUrl, markerId: 0, markerAlt: item.marker_image_alt || marker.alt || '',
             horizontalContentLayout: horizontal, reverseMediaContent: reverse,
-            itemBackgroundColor: background || '', descriptionColor: descColor || '',
+            itemBackgroundColor: background || '', itemOuterBackgroundColor: outerBackground,
+            cardBackgroundImage: item.card_background_image?.url || '', descriptionColor: descColor || '',
             ...mainAttrs, otherSiteTitle: '',
         };
         if ( background ) itemAttrs.style = { color: { background } };
@@ -806,6 +933,40 @@ export function elementorToGutenberg( rawSettings ) {
     return transferBlock( BLOCK_NAME, attrs, items );
 }
 
+/** Convert legacy root background fields to WordPress-native block supports on import.
+ * Existing saved posts retain the old fields for backward compatibility; new
+ * imports use the standard Background UI without duplicating controls.
+ */
+export function normalizeGutenbergRootBackground( block ) {
+    if ( block?.name !== BLOCK_NAME ) return block;
+    const attrs = { ...( block.attributes || {} ) };
+    const style = { ...( attrs.style || {} ) };
+    const legacyColor = attrs.timelineBackgroundColor;
+    if ( legacyColor && !attrs.backgroundColor && !style.color?.background ) {
+        style.color = { ...style.color, background: legacyColor };
+    }
+    const oldImage = attrs.timelineBackgroundImage;
+    if ( oldImage && !style.background?.backgroundImage?.url ) {
+        const position = {
+            'center center': '50% 50%', 'center top': '50% 0%',
+            'center bottom': '50% 100%', 'left center': '0% 50%',
+            'right center': '100% 50%',
+        }[ attrs.timelineBackgroundPosition ] || '50% 50%';
+        style.background = {
+            ...style.background,
+            backgroundImage: { url: oldImage, id: 0, source: 'file' },
+            backgroundSize: [ 'cover', 'contain', 'auto' ].includes( attrs.timelineBackgroundSize )
+                ? attrs.timelineBackgroundSize : 'cover',
+            backgroundPosition: position,
+        };
+    }
+    for ( const key of [ 'timelineBackgroundColor', 'timelineBackgroundImage', 'timelineBackgroundSize', 'timelineBackgroundPosition' ] ) {
+        delete attrs[ key ];
+    }
+    if ( Object.keys( style ).length ) attrs.style = style;
+    return { ...block, attributes: attrs };
+}
+
 export function prepareImport( file, destination, selected = {}, placeholderUrl = PLACEHOLDER_TOKEN, currentData = null ) {
     const parsed = parseTransfer( file, destination );
     const options = { ...IMPORT_OPTIONS, ...selected };
@@ -813,7 +974,7 @@ export function prepareImport( file, destination, selected = {}, placeholderUrl 
     const native = parsed.origin === 'gutenberg' && destination === 'elementor'
         ? gutenbergToElementor( safe, parsed.palette )
         : parsed.origin === 'elementor' && destination === 'gutenberg'
-            ? elementorToGutenberg( safe ) : parsed.origin === 'elementor' ? normalizeElementorItemLayouts( safe ) : safe;
+            ? elementorToGutenberg( safe ) : parsed.origin === 'elementor' ? normalizeElementorItemLayouts( safe ) : normalizeGutenbergRootBackground( safe );
     const filtered = filterOptions( native, options );
     const merged = options.content ? filtered : preserveDestinationContent( filtered, currentData, destination );
     if ( !safeUrl( placeholderUrl ) ) throw new Error( 'Invalid local media placeholder.' );

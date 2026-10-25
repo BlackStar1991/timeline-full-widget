@@ -27,21 +27,13 @@ final class ElementorIntegration {
      *
      * @param mixed $widgets_manager Elementor widgets manager.
      */
-    public function registerWidget( $widgets_manager = null ): void {
+    public function registerWidget( $widgets_manager ): void {
         if ( $this->registered ) {
             return;
         }
 
         if ( ! defined( 'ELEMENTOR_PATH' ) || ! class_exists( '\\Elementor\\Widget_Base' ) ) {
             return;
-        }
-
-        if ( ! $widgets_manager && class_exists( '\\Elementor\\Plugin' ) ) {
-            try {
-                $widgets_manager = \Elementor\Plugin::instance()->widgets_manager;
-            } catch ( \Throwable $e ) {
-                $widgets_manager = null;
-            }
         }
 
         if ( ! $widgets_manager || ! method_exists( $widgets_manager, 'register' ) ) {

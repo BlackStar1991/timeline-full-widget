@@ -10,7 +10,7 @@ import { MediaPlaceholder, MediaReplaceFlow } from '@wordpress/block-editor';
 import { isBlobURL } from '@wordpress/blob';
 import { __ } from '@wordpress/i18n';
 
-const MEDIA_WIDTH_UNITS = [ { value: '%', label: '%' } ];
+const MEDIA_WIDTH_UNITS = [ { value: 'px', label: 'px' }, { value: '%', label: '%' } ];
 
 function WidthOfMedia( { value, onChange } ) {
 	return (
@@ -161,7 +161,6 @@ function UniqueMarkerPanel( {
 }
 
 export default function MediaSettingsPanel( {
-	showMedia,
 	mediaUrl,
 	mediaMime,
 	videoPoster,
@@ -173,11 +172,11 @@ export default function MediaSettingsPanel( {
 	markerId,
 	markerAlt,
 } ) {
-	if ( ! showMedia && ! markerUnique ) {
+	const hasMedia = Boolean( mediaUrl && ! isBlobURL( mediaUrl ) );
+
+	if ( ! hasMedia && ! markerUnique ) {
 		return null;
 	}
-
-	const hasMedia = showMedia && mediaUrl && ! isBlobURL( mediaUrl );
 
 	const isVideo =
 		( typeof mediaMime === 'string' &&
@@ -186,12 +185,12 @@ export default function MediaSettingsPanel( {
 			/\.(mp4|webm|ogv|ogg)(?:[\?#]|$)/i.test( mediaUrl ) );
 
 	return (
-		<PanelBody
-			title={ __( 'Media Settings', 'timeline-full-widget' ) }
-			initialOpen={ false }
-		>
+		<>
 			{ hasMedia && (
-				<>
+				<PanelBody
+					title={ __( 'Media Settings', 'timeline-full-widget' ) }
+					initialOpen={ false }
+				>
 					{ isVideo ? (
 						<VideoPosterControl
 							videoPoster={ videoPoster }
@@ -201,18 +200,15 @@ export default function MediaSettingsPanel( {
 						<ImageAltControl
 							imageAlt={ imageAlt }
 							setAttributes={ setAttributes }
-						/>
 					) }
-
 					<WidthOfMedia
 						value={ mediaWidth }
 						onChange={ ( val ) =>
 							setAttributes( { mediaWidth: val } )
 						}
 					/>
-				</>
+				</PanelBody>
 			) }
-
 			{ markerUnique && (
 				<UniqueMarkerPanel
 					markerUrl={ markerUrl }
@@ -221,6 +217,6 @@ export default function MediaSettingsPanel( {
 					setAttributes={ setAttributes }
 				/>
 			) }
-		</PanelBody>
+		</>
 	);
 }

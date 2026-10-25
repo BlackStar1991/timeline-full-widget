@@ -1,6 +1,6 @@
 {
 	"name": "timeline-full-widget",
-	"version": "4.0.0",
+	"version": "4.1.0",
 	"description": "A versatile Timeline plugin for Elementor and Gutenberg WordPress themes — add beautiful Timelines anywhere!",
 	"license": "GPL-2.0-or-later",
 	"author": "BlackStar1991",
@@ -24,13 +24,16 @@
 		"test:php": "php scripts/tests/php-runtime.php",
 		"test:release": "php scripts/check-release.php",
 		"test:psr4": "php scripts/check-psr4.php",
-		"test": "npm run test:js && npm run test:animation && npm run test:transfer && npm run test:ui && npm run test:php && npm run test:release && npm run test:blueprint && npm run test:psr4",
+		"test": "npm run test:js && npm run test:animation && npm run test:transfer && npm run test:ui && npm run test:php && npm run test:release && npm run test:blueprint && npm run test:psr4 && npm run test:editor-ui && npm run test:align && npm run test:cleanup",
 		"check": "npm run lint:js && npm run lint:css",
 		"fix": "npm run fix:js && npm run fix:css",
 		"test:transfer": "node scripts/tests/transfer.mjs",
 		"test:blueprint": "php scripts/check-blueprint.php",
 		"test:ui": "node scripts/tests/transfer-ui.mjs",
-		"test:animation": "node scripts/tests/animation-scroll.mjs"
+		"test:animation": "node scripts/tests/animation-scroll.mjs",
+		"test:editor-ui": "node scripts/tests/editor-media-color.mjs && node scripts/tests/elementor-media-controls.mjs && node scripts/tests/gutenberg-media-settings.mjs",
+		"test:align": "node scripts/tests/alignment-width.mjs",
+		"test:cleanup": "node scripts/tests/refactor-no-legacy.mjs"
 	},
 	"devDependencies": {
 		"@wordpress/blob": "^4.57.0",

@@ -33,13 +33,6 @@ final class Plugin {
     }
 
     /**
-     * Backward-friendly alias for code that expects an instance method name.
-     */
-    public static function instance(): Plugin {
-        return self::get_instance();
-    }
-
-    /**
      * Register all plugin integrations.
      */
     public function init(): void {

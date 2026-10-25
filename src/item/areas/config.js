@@ -52,6 +52,7 @@ export const SIDE_AREA_ATTRIBUTE_NAMES = [ 'showOtherSide', 'sideTextAlign' ];
 export const CONTENT_AREA_ATTRIBUTE_NAMES = [
 	'descriptionColor',
 	'itemBackgroundColor',
+	'cardBackgroundImage',
 	'linkUrl',
 	'linkTarget',
 	'rel',

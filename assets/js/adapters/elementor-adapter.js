@@ -10,10 +10,7 @@ import { initTimelineAnimation, initAllWidgets } from '../core/animation.js';
  */
 
 const DEBUG = false;
-const adapterUrl =
-	typeof import.meta !== 'undefined' && import.meta.url
-		? import.meta.url
-		: ( document.currentScript && document.currentScript.src ) || null;
+const adapterUrl = import.meta.url;
 
 // selectors to find preview iframe (try several variations)
 const IFRAME_SELECTORS = [
@@ -21,8 +18,6 @@ const IFRAME_SELECTORS = [
 	'iframe#elementor-preview-iframe',
 	'iframe.elementor-editor__preview',
 	'iframe.elementor-preview-iframe',
-	'.elementor-editor-active iframe', // fallback
-	'iframe',
 ];
 
 // Keep track of injected/processed iframes to avoid duplicates
@@ -283,7 +278,7 @@ function initInsideIframe() {
 
 /**
  * When running in parent editor window: try to find preview iframe and inject adapter.
- * Observes DOM for iframe addition; falls back to polling if MutationObserver not available.
+ * Observe creation of Elementor's named preview iframe.
  */
 function initParentEditorInjection() {
 	if ( ! isEditorParentWindow() ) {
@@ -303,30 +298,13 @@ function initParentEditorInjection() {
 	// immediate attempt
 	tryInjectOnce();
 
-	// MutationObserver: watch for iframes insertion
-	try {
-		const mo = new MutationObserver( async ( mutations, observer ) => {
-			const ok = await tryInjectOnce();
-			if ( ok ) {
-				observer.disconnect();
-			}
-		} );
-		mo.observe( document.body, { childList: true, subtree: true } );
-	} catch ( e ) {
-		// fallback polling
-		let tries = 0;
-		const maxTries = 20;
-		const interval = setInterval( async () => {
-			tries++;
-			const iframe = queryFirst( IFRAME_SELECTORS, document );
-			if ( iframe ) {
-				await injectAdapterIntoIframe( iframe );
-				clearInterval( interval );
-			} else if ( tries > maxTries ) {
-				clearInterval( interval );
-			}
-		}, 250 );
-	}
+	// Observe the actual Elementor preview instead of polling unrelated frames.
+	const observer = new MutationObserver( async () => {
+		if ( await tryInjectOnce() ) {
+			observer.disconnect();
+		}
+	} );
+	observer.observe( document.body, { childList: true, subtree: true } );
 }
 
 /**

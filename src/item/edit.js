@@ -64,6 +64,7 @@ export function Edit( { clientId, attributes, setAttributes } ) {
 	const {
 		descriptionColor,
 		itemBackgroundColor,
+		itemOuterBackgroundColor,
 		mediaLinkUrl,
 		mediaLinkTarget,
 		mediaLinkRel,
@@ -351,7 +352,10 @@ export function Edit( { clientId, attributes, setAttributes } ) {
 		[ position, computedFallbackPosition ]
 	);
 
-	const blockProps = useBlockProps( { className: editorClassName } );
+	const blockProps = useBlockProps( {
+		className: editorClassName,
+		style: itemOuterBackgroundColor ? { backgroundColor: itemOuterBackgroundColor } : undefined,
+	} );
 
 	const onSelect = useCallback(
 		( media ) =>
@@ -361,6 +365,8 @@ export function Edit( { clientId, attributes, setAttributes } ) {
 				mediaId: media.id,
 				mediaType: media.type,
 				mediaMime: media.mime,
+				showMedia: true,
+				videoPoster: '',
 			} ),
 		[ setAttributes ]
 	);
@@ -386,7 +392,8 @@ export function Edit( { clientId, attributes, setAttributes } ) {
 						onClick={ () =>
 							setAttributes( {
 								mediaId: undefined,
-								mediaUrl: undefined,
+								mediaUrl: '',
+								showMedia: false,
 								imageAlt: '',
 								mediaType: '',
 								mediaMime: '',
@@ -411,7 +418,7 @@ export function Edit( { clientId, attributes, setAttributes } ) {
 						isPressed={ isMediaLinkPickerOpen }
 					/>
 
-					<ToolbarButton
+					{ !! mediaLinkUrl && <ToolbarButton
 						icon={ unlinkIcon }
 						label={ __( 'Remove media link', 'timeline-full-widget' ) }
 						onClick={ () => {
@@ -423,8 +430,7 @@ export function Edit( { clientId, attributes, setAttributes } ) {
 							} );
 							setIsMediaLinkPickerOpen( false );
 						} }
-						isDisabled={ ! mediaLinkUrl }
-					/>
+					/> }
 				</ToolbarGroup>
 			</BlockControls>
 		);
@@ -565,15 +571,16 @@ export function Edit( { clientId, attributes, setAttributes } ) {
 										itemBackgroundColor: color,
 									} ),
 								label: __(
-									'Item background color',
+									'Card background color',
 									'timeline-full-widget'
 								),
+							},
+							{ value: itemOuterBackgroundColor, onChange: ( color ) => setAttributes( { itemOuterBackgroundColor: color } ), label: __( 'Timeline item background color', 'timeline-full-widget' ),
 							},
 						] }
 					/>
 				</PanelBody>
 				<MediaSettingsPanel
-					showMedia={ showMedia }
 					mediaUrl={ mediaUrl }
 					mediaMime={ mediaMime }
 					videoPoster={ videoPoster }

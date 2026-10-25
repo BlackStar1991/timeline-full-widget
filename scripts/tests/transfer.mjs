@@ -4,7 +4,7 @@ import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import {
   createTransfer, parseTransfer, prepareImport, transferFilename, FORMAT,
-  IMPORT_OPTIONS, STYLE_KEYS, PLACEHOLDER_TOKEN, MAX_FILE_BYTES, resolveGutenbergColor,
+  IMPORT_OPTIONS, STYLE_KEYS, PLACEHOLDER_TOKEN, MAX_FILE_BYTES, resolveGutenbergColor, normalizeMediaWidth,
 } from '../../assets/js/transfer/transfer-core.js';
 
 let checks = 0;
@@ -68,10 +68,13 @@ check('Files larger than 5MB are rejected',()=>{assert.throws(()=>parseTransfer(
 check('Gutenberg transfers heading and paragraph text into new block hierarchy',()=>{
  const cloned=prepareImport(gp,'gutenberg',{},local);
  assert.equal(cloned.innerBlocks[0].innerBlocks[0].innerBlocks[1].attributes.content.includes('example.com'),true);
- const sample=JSON.parse(readFileSync('assets/blueprints/samples/timeline-gutenberg-demo.tfw.json','utf8'));
+ const sample=createTransfer('gutenberg',{name:'za/timeline-full-widget',attributes:{},innerBlocks:[
+  {name:'za/timeline-item',attributes:{},innerBlocks:[{name:'za/timeline-item-content',attributes:{},innerBlocks:[{name:'core/heading',attributes:{content:'The First Milestone'},innerBlocks:[]}]}]},
+  {name:'za/timeline-item',attributes:{},innerBlocks:[{name:'za/timeline-item-content',attributes:{},innerBlocks:[{name:'core/heading',attributes:{content:'Second Milestone'},innerBlocks:[]},{name:'core/paragraph',attributes:{content:'Edit this imported timeline and replace the media placeholders.'},innerBlocks:[]}]}]}
+ ]});
  const imported=prepareImport(sample,'gutenberg',{},local);
- assert.equal(imported.innerBlocks[0].innerBlocks[1].innerBlocks[0].attributes.content,'The First Milestone');
- assert.equal(imported.innerBlocks[1].innerBlocks[1].innerBlocks[1].attributes.content,'Edit this imported timeline and replace the media placeholders.');
+ assert.equal(imported.innerBlocks[0].innerBlocks[0].innerBlocks[0].attributes.content,'The First Milestone');
+ assert.equal(imported.innerBlocks[1].innerBlocks[0].innerBlocks[1].attributes.content,'Edit this imported timeline and replace the media placeholders.');
 });
 check('Disabling content preserves target Gutenberg text but imports source styles',()=>{
  const donor=createTransfer('gutenberg',{name:'za/timeline-full-widget',attributes:{lineWidth:11},innerBlocks:[{name:'za/timeline-item',attributes:{markerSize:40},innerBlocks:[{name:'core/paragraph',attributes:{content:'DONOR',textColor:'red'},innerBlocks:[]}]}]});
@@ -272,8 +275,8 @@ check('Elementor -> Gutenberg retains separate title, linked rich content and re
     side_content:'<p>Opposite side text</p>',inherit_item_styles:'yes'}]
  });
  const out=prepareImport(source,'gutenberg',{},local);
- assert.equal(out.attributes.timelineBackgroundColor,'#aabbcc');
- assert.equal(out.attributes.timelineBackgroundImage,local);
+ assert.equal(out.attributes.style.color.background,'#aabbcc');
+ assert.equal(out.attributes.style.background.backgroundImage.url,local);
  const item=out.innerBlocks[0];
  const content=item.innerBlocks.find(i=>i.name==='za/timeline-item-content');
  assert.equal(content.innerBlocks[0].name,'core/heading');
@@ -358,3 +361,223 @@ check('Old widget-wide layout JSON is normalized only at the transfer boundary',
 });
 
 console.log("PASS: updated transfer assertions completed.");
+
+check('Elementor Single Side Layout retains left/right alignment in Gutenberg', () => {
+ for(const dir of ['left','right']) {
+  const source=createTransfer('elementor', {tl_change_onside:'yes',tl_change_direction:dir,list:[{list_title:'A'},{list_title:'B'}]});
+  const gutenberg=prepareImport(source,'gutenberg',{},local);
+  const expected=dir==='left'?'timeline-left':'timeline-inverted';
+  assert.equal(gutenberg.innerBlocks[0].attributes.position,expected);
+  assert.equal(gutenberg.innerBlocks[1].attributes.position,expected);
+  assert.equal(gutenberg.innerBlocks[0].attributes.onTheOneSide,true);
+  const back=prepareImport(createTransfer('gutenberg',gutenberg),'elementor',{},local);
+  assert.equal(back.tl_change_direction,dir);
+  assert.equal(back.tl_change_onside,'yes');
+ }
+});
+check('Card and full-item backgrounds transfer both directions with media privacy', () => {
+ const donor=createTransfer('elementor',{tl_change_onside:'yes',tl_change_direction:'right',list:[{
+  list_title:'Styled',item_outer_background_color:'#123456',li_bg_color:'#abcdef',
+  card_background_image:{url:'https://source.test/card.jpg',id:1024,width:1200,height:600},
+  inherit_item_styles:'yes',
+ }]});
+ assert(!JSON.stringify(donor).includes('source.test'));
+ const gutenberg=prepareImport(donor,'gutenberg',{},local);
+ const item=gutenberg.innerBlocks[0],card=item.innerBlocks.find(block=>block.name==='za/timeline-item-content');
+ assert.equal(item.attributes.itemOuterBackgroundColor,'#123456');
+ assert.equal(item.attributes.itemBackgroundColor,'#abcdef');
+ assert.equal(card.attributes.cardBackgroundImage,local);
+ const returned=prepareImport(createTransfer('gutenberg',gutenberg),'elementor',{},local);
+ assert.equal(returned.list[0].item_outer_background_color,'#123456');
+ assert.equal(returned.list[0].li_bg_color,'#abcdef');
+ assert.equal(returned.list[0].card_background_image.url,local);
+ assert.equal(returned.list[0].card_background_image.id,0);
+});
+check('Selective background import removes item and card colors and images', () => {
+ const donor=createTransfer('elementor',{list:[{item_outer_background_color:'#123456',li_bg_color:'#abcdef',card_background_image:{url:'https://source.test/a.jpg',id:1}}]});
+ const elem=prepareImport(donor,'elementor',{background:false},local);
+ assert.equal('item_outer_background_color' in elem.list[0],false);
+ assert.equal('li_bg_color' in elem.list[0],false);
+ assert.equal('card_background_image' in elem.list[0],false);
+ const block=prepareImport(donor,'gutenberg',{background:false},local).innerBlocks[0];
+ assert(!('itemOuterBackgroundColor' in block.attributes));
+ assert(!('itemBackgroundColor' in block.attributes));
+ assert(!('cardBackgroundImage' in block.attributes));
+});
+
+// Real-world v1 schema regression: Gutenberg carries both the portable plugin
+// card color and a WordPress-core preset for the outer item's background.
+check('WordPress preset backgrounds and physical Single Side positions survive Gutenberg -> Elementor', () => {
+ const source = createTransfer('gutenberg', {
+  name:'za/timeline-full-widget',
+  attributes:{onTheOneSide:true,direction:false}, // stale parent direction
+  innerBlocks:[
+   {name:'za/timeline-item',attributes:{position:'timeline-inverted',onTheOneSide:true,
+    itemBackgroundColor:'#C57AFC',backgroundColor:'ast-global-color-1'},innerBlocks:[
+    {name:'za/timeline-item-content',attributes:{showMedia:true,mediaType:'image',mediaUrl:'https://source.test/image.jpg'},innerBlocks:[]}]},
+   {name:'za/timeline-item',attributes:{position:'timeline-inverted',onTheOneSide:true,
+    itemBackgroundColor:'#C57AFC',backgroundColor:'vivid-red'},innerBlocks:[
+    {name:'za/timeline-item-content',attributes:{showMedia:true,mediaType:'video',mediaUrl:'https://source.test/movie.mp4'},innerBlocks:[]}]}
+  ]
+ }, {palette:{'ast-global-color-1':'#045cb4','vivid-red':'#cf2e2e'}});
+ const out = prepareImport(source,'elementor',{},local);
+ assert.equal(out.tl_change_onside,'yes');
+ assert.equal(out.tl_change_direction,'right','effective item position wins over stale parent direction');
+ assert.deepEqual(out.list.map(i=>i.item_outer_background_color),['#045cb4','#cf2e2e']);
+ assert.deepEqual(out.list.map(i=>i.li_bg_color),['#C57AFC','#C57AFC']);
+ const back=prepareImport(createTransfer('elementor',out),'gutenberg',{},local);
+ assert.deepEqual(back.innerBlocks.map(i=>i.attributes.position),['timeline-inverted','timeline-inverted']);
+ assert.deepEqual(back.innerBlocks.map(i=>i.attributes.itemOuterBackgroundColor),['#045cb4','#cf2e2e']);
+});
+check('Imported media can be explicitly hidden without leaving a poster or media wrapper',()=>{
+ const doc=createTransfer('elementor',{list:[{list_title:'Video',media_type:'video',media_video:{url:'https://source.test/video.mp4'},posterURL:{url:'https://source.test/poster.jpg'},show_media:'no'}]});
+ const converted=prepareImport(doc,'gutenberg',{},local);
+ assert.equal(converted.innerBlocks[0].attributes.showMedia,false);
+ assert.equal(converted.innerBlocks[0].attributes.mediaUrl,'');
+ assert.equal(converted.innerBlocks[0].innerBlocks[1].attributes.videoPoster,'');
+ const roundTrip=prepareImport(createTransfer('gutenberg',converted),'elementor',{},local);
+ assert.equal(roundTrip.list[0].show_media,'no');
+ assert.equal(roundTrip.list[0].posterURL.url,'');
+});
+
+check('Actual two-item Gutenberg export preserves per-item side colors, sizes, title and body font sizes', () => {
+ const sample = {
+  name:'za/timeline-full-widget',attributes:{onTheOneSide:true,direction:true},innerBlocks:[
+   ...[
+    {color:'white',sideSize:'28px',background:'ast-global-color-1'},
+    {color:'vivid-purple',sideSize:'42px',background:'vivid-red'},
+   ].map((detail,index)=>({
+    name:'za/timeline-item',attributes:{itemBackgroundColor:'#C57AFC',backgroundColor:detail.background,descriptionColor:'#EE1212'},
+    innerBlocks:[
+     {name:'za/timeline-item-side',attributes:{},innerBlocks:[
+      {name:'core/paragraph',attributes:{content:'Side '+index,textColor:detail.color,style:{typography:{fontSize:detail.sideSize}}},innerBlocks:[]}
+     ]},
+     {name:'za/timeline-item-content',attributes:{},innerBlocks:[
+      {name:'core/heading',attributes:{content:'Title '+index,level:3,style:{typography:{fontSize:'24px'}}},innerBlocks:[]},
+      {name:'core/paragraph',attributes:{content:'Body '+index,style:{typography:{fontSize:'20px'},color:{text:'#EE1212'}}},innerBlocks:[]}
+     ]}
+    ]
+   }))
+  ]
+ };
+ const file=createTransfer('gutenberg',sample,{palette:{'ast-global-color-1':'#045cb4','vivid-red':'#cf2e2e',white:'#ffffff','vivid-purple':'#9b51e0'}});
+ const out=prepareImport(file,'elementor',{},local);
+ assert.deepEqual(out.list.map(i=>i.item_outer_background_color),['#045cb4','#cf2e2e']);
+ assert.deepEqual(out.list.map(i=>i.item_side_color),['#ffffff','#9b51e0']);
+ assert.deepEqual(out.list.map(i=>i.item_side_font_size.size),[28,42]);
+ assert.deepEqual(out.list.map(i=>i.item_title_font_size.size),[24,24]);
+ assert.deepEqual(out.list.map(i=>i.item_content_font_size.size),[20,20]);
+ assert.deepEqual(out.list.map(i=>i.item_content_color),['#EE1212','#EE1212']);
+ assert.deepEqual(out.list.map(i=>i.inherit_item_styles),['no','no']);
+ const back=prepareImport(createTransfer('elementor',out),'gutenberg',{},local);
+ assert.deepEqual(back.innerBlocks.map(i=>i.innerBlocks[0].innerBlocks[0].attributes.style.typography.fontSize),['28px','42px']);
+ assert.deepEqual(back.innerBlocks.map(i=>i.innerBlocks[0].innerBlocks[0].attributes.style.color.text),['#ffffff','#9b51e0']);
+ assert.deepEqual(back.innerBlocks.map(i=>i.innerBlocks[1].innerBlocks[0].attributes.style.typography.fontSize),['24px','24px']);
+ assert.deepEqual(back.innerBlocks.map(i=>i.innerBlocks[1].innerBlocks[1].attributes.style.typography.fontSize),['20px','20px']);
+});
+
+// Media widths must remain optional, strict and independent of image cropping.
+check('Media widths support pixels and percentages and reject unsafe CSS', () => {
+  assert.equal(normalizeMediaWidth('260px'), '260px');
+  assert.equal(normalizeMediaWidth('45%'), '45%');
+  assert.equal(normalizeMediaWidth(''), '');
+  assert.equal(normalizeMediaWidth('calc(100% - 1px)'), '');
+  assert.equal(normalizeMediaWidth('url(javascript:alert(1))'), '');
+  assert.equal(normalizeMediaWidth('101%'), '');
+});
+check('Gutenberg to Elementor preserves width in px and percent', () => {
+  const makeG = (width) => ({name:'za/timeline-full-widget',attributes:{},innerBlocks:[
+    {name:'za/timeline-item',attributes:{mediaWidth:width,showMedia:true,mediaType:'image',mediaUrl:PLACEHOLDER_TOKEN},innerBlocks:[
+      {name:'za/timeline-item-content',attributes:{mediaWidth:width,showMedia:true,mediaType:'image',mediaUrl:PLACEHOLDER_TOKEN},innerBlocks:[
+        {name:'core/heading',attributes:{content:'Width'},innerBlocks:[]}]}]}]});
+  for (const width of ['260px','45%']) {
+    const imported=prepareImport(createTransfer('gutenberg',makeG(width)),'elementor',{},local);
+    assert.equal(imported.list[0].media_width,'');
+    assert.equal(imported.list[0].media_width_value,Number.parseFloat(width));
+    assert.equal(imported.list[0].media_width_unit,width.endsWith('%') ? '%' : 'px');
+    assert.equal(imported.list[0].media_image.width,undefined);
+    const back=prepareImport(createTransfer('elementor',imported),'gutenberg',{},local);
+    assert.equal(back.innerBlocks[0].innerBlocks[1].attributes.mediaWidth,width);
+  }
+});
+check('Legacy native Elementor image metadata still imports as pixel width',()=>{
+  const src={list:[{media_type:'image',media_image:{id:0,url:local,width:320},list_title:'Old image'}]};
+  const dest=prepareImport(createTransfer('elementor',src),'gutenberg',{},local);
+  assert.equal(dest.innerBlocks[0].innerBlocks[1].attributes.mediaWidth,'320px');
+});
+
+check('Older Elementor combined width is migrated to the number/unit fields and resettable', () => {
+  const source={list:[{media_width:'100%',media_type:'image',media_image:{url:PLACEHOLDER_TOKEN,id:0},list_title:'Original'}]};
+  const result=prepareImport(createTransfer('elementor',source),'elementor',{},local);
+  assert.equal(result.list[0].media_width_value,100);
+  assert.equal(result.list[0].media_width_unit,'%');
+  assert.equal(result.list[0].media_width,'');
+  // Clearing the number should not revive the old 100% width.
+  result.list[0].media_width_value='';
+  assert.equal(result.list[0].media_width,'');
+});
+check('Elementor numeric percent and pixel sizes survive export to Gutenberg', () => {
+  for (const unit of ['px','%']) {
+    const source={list:[{media_width:'',media_width_value:unit==='%'?100:260,media_width_unit:unit,media_type:'image',media_image:{url:PLACEHOLDER_TOKEN,id:0},list_title:'Size'}]};
+    const output=prepareImport(createTransfer('elementor',source),'gutenberg',{},local);
+    assert.equal(output.innerBlocks[0].innerBlocks[1].attributes.mediaWidth,unit==='%'?'100%':'260px');
+  }
+});
+
+check('Timeline root background color and media move from Gutenberg to Elementor and back without donor URLs', () => {
+  const donor=createTransfer('gutenberg',{
+    name:'za/timeline-full-widget',
+    attributes:{timelineBackgroundColor:'#123abc',timelineBackgroundImage:'https://donor.test/cover.jpg',timelineBackgroundSize:'contain',timelineBackgroundPosition:'left center'},
+    innerBlocks:[]
+  });
+  assert.equal(donor.data.attributes.timelineBackgroundImage,PLACEHOLDER_TOKEN);
+  const elementor=prepareImport(donor,'elementor',{},local);
+  assert.equal(elementor._background_background,'classic');
+  assert.equal(elementor._background_color,'#123abc');
+  assert.equal(elementor._background_image.url,local);
+  assert.equal(elementor._background_size,'contain');
+  const back=prepareImport(createTransfer('elementor',elementor),'gutenberg',{},local);
+  assert.equal(back.attributes.style.color.background,'#123abc');
+  assert.equal(back.attributes.style.background.backgroundImage.url,local);
+  assert.equal(back.attributes.style.background.backgroundSize,'contain');
+  assert.equal(back.attributes.style.background.backgroundPosition,'0% 50%');
+});
+check('Actual October Elementor transfer migrates percent width without custom thumbnail dependence', () => {
+  const file=createTransfer('elementor',{list:[{media_width:'100%',media_type:'image',thumbnail_size:'medium',media_image:{url:local,id:0}}]});
+  const imported=prepareImport(file,'elementor',{},local);
+  assert.equal(imported.list[0].media_width_value,100);
+  assert.equal(imported.list[0].media_width_unit,'%');
+  assert.equal(imported.list[0].media_width,'');
+  assert.equal(imported.list[0].thumbnail_size,'medium');
+});
+
+
+check('Native WordPress root Background styles map to Elementor and back with local media', () => {
+ const donor = createTransfer('gutenberg', { name: 'za/timeline-full-widget', attributes: {
+   backgroundColor: 'vivid-red',
+   style: { color: { background: '#123abc' }, background: {
+      backgroundImage: { url:'https://donor.test/photo.png', source:'file' }, backgroundSize:'contain',backgroundPosition:'50% 0%'
+   } }
+ },innerBlocks:[] });
+ assert.equal(donor.data.attributes.style.background.backgroundImage.url, PLACEHOLDER_TOKEN);
+ const elem = prepareImport(donor,'elementor',{},local);
+ assert.equal(elem._background_background,'classic');
+ assert.equal(elem._background_color,'#123abc');
+ assert.equal(elem._background_image.url,local);
+ assert.equal(elem._background_position,'center top');
+ const back = prepareImport(createTransfer('elementor',elem),'gutenberg',{},local);
+ assert.equal(back.attributes.style.color.background,'#123abc');
+ assert.equal(back.attributes.style.background.backgroundImage.url,local);
+ assert.equal(back.attributes.style.background.backgroundPosition,'50% 0%');
+ const excluded = prepareImport(donor,'elementor',{background:false},local);
+ assert.equal('_background_color' in excluded,false);
+ assert.equal('_background_image' in excluded,false);
+});
+check('Legacy Gutenberg root backgrounds normalize to native block supports without modifying saved posts', () => {
+ const old = createTransfer('gutenberg',{name:'za/timeline-full-widget',attributes:{timelineBackgroundColor:'#123abc',timelineBackgroundImage:'https://donor.test/cover.png',timelineBackgroundSize:'cover',timelineBackgroundPosition:'right center'},innerBlocks:[]});
+ const modern = prepareImport(old,'gutenberg',{},local);
+ assert.equal(modern.attributes.style.color.background,'#123abc');
+ assert.equal(modern.attributes.style.background.backgroundImage.url,local);
+ assert.equal(modern.attributes.style.background.backgroundPosition,'100% 50%');
+ assert.equal(modern.attributes.timelineBackgroundColor,undefined);
+});

@@ -29,7 +29,7 @@ final class AssetManager {
         add_action( 'wp_enqueue_scripts', [ $this, 'maybeEnqueueFrontendAssets' ] );
         add_action( 'elementor/editor/after_enqueue_scripts', [ $this, 'enqueueElementorEditorAssets' ] );
         add_action( 'enqueue_block_editor_assets', [ $this, 'enqueueGutenbergTransferAssets' ] );
-        add_action( 'elementor/editor/after_enqueue_styles', [ $this, 'enqueueCoreStyleEverywhere' ] );
+        add_action( 'elementor/editor/after_enqueue_styles', [ $this, 'enqueueCoreEditorStyles' ] );
         add_action( 'admin_enqueue_scripts', [ $this, 'enqueueClassicEditorStyles' ] );
         add_filter( 'script_loader_tag', [ $this, 'addModuleTypeAttribute' ], 100, 3 );
     }
@@ -39,7 +39,7 @@ final class AssetManager {
      * Elementor frontend loads this handle through get_style_depends() only if
      * the Timeline widget is present; Gutenberg loads its compiled copy.
      */
-    public function enqueueCoreStyleEverywhere(): void {
+    public function enqueueCoreEditorStyles(): void {
         if ( wp_style_is( 'timeline-core-style', 'registered' ) ) {
             wp_enqueue_style( 'timeline-core-style' );
         }
@@ -70,7 +70,7 @@ final class AssetManager {
             return;
         }
 
-        $this->enqueueCoreStyleEverywhere();
+        $this->enqueueCoreEditorStyles();
     }
 
     /**
@@ -302,8 +302,11 @@ final class AssetManager {
      * @param string $path Asset file path.
      */
     private function getAssetVersion( string $path ): string {
-        return ( defined( 'WP_DEBUG' ) && WP_DEBUG && file_exists( $path ) )
-            ? (string) filemtime( $path )
+        // Editor bundles can change while the plugin retains the same release
+        // number. Content hashing prevents WordPress and proxy caches from
+        // serving stale JS/CSS after an in-place plugin update.
+        return is_readable( $path )
+            ? substr( (string) md5_file( $path ), 0, 12 )
             : TIMELINE_FULL_WIDGET_VERSION;
     }
 }

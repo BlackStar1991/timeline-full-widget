@@ -27,8 +27,7 @@ export default function Save( { attributes } ) {
 					<div className="timeline-line-animation"></div>
 				) }
 
-				<ul
-					className={ [
+				<ul className={ [
 						'timeline',
 						hasAnimatedMarkers && 'timeline-animation-marker',
 						animationOtherSideSticky && 'timeline-animation-other-side-sticky',

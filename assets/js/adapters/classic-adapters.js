@@ -1,42 +1,10 @@
 ( function () {
 	'use strict';
 
-	/* CONFIG */
-
-	// TinyMCE runs in an iframe. Prefer the same config as the Classic Editor
-	// parent; module scripts do not reliably expose document.currentScript.
-	const cfg = ( function () {
-		if ( window.zaTimelineConfig ) {
-			return window.zaTimelineConfig;
-		}
-		try {
-			return window.parent?.zaTimelineConfig || {};
-		} catch ( error ) {
-			return {};
-		}
-	} )();
-
 	const __ = ( text ) =>
 		window.parent?.wp?.i18n?.__( text, 'timeline-full-widget' ) || text;
 
-	/* URL RESOLVE */
-
-	function resolveAnimationUrl() {
-		if ( cfg.animationUrl ) {
-			return new URL( cfg.animationUrl, location.href ).href;
-		}
-
-		if ( cfg.baseJsUrl ) {
-			return (
-				new URL( cfg.baseJsUrl, location.href ).href.replace(
-					/\/$/,
-					''
-				) + '/core/animation.js'
-			);
-		}
-
-		return new URL( '../core/animation.js', import.meta.url ).href;
-	}
+	const animationUrl = new URL( '../core/animation.js', import.meta.url ).href;
 
 	/* TIMELINE LOADER */
 
@@ -61,11 +29,10 @@
 		const script = doc.createElement( 'script' );
 		script.type = 'module';
 		script.textContent = `
-			import('${ resolveAnimationUrl() }')
+			import(${ JSON.stringify( animationUrl ) })
 				.then(m => {
 					window.zaTimelineModule = m;
-					m.initAllWidgets?.(document);
-					m.default?.(document);
+					m.initAllWidgets(document);
 				})
 				.catch(e => console.error('[ZA Timeline]', e))
 				.finally(() => {

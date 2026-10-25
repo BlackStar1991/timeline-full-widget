@@ -17,7 +17,11 @@ export function initTimelineAnimation( scopeEl ) {
 		return null;
 	}
 	if ( el.__zaTimelineDestroy ) {
-		return el.__zaTimelineDestroy;
+		const currentLine = el.querySelector( '.timeline-line-animation' );
+		if ( el.__zaTimelineLine === currentLine && currentLine?.isConnected !== false ) {
+			return el.__zaTimelineDestroy;
+		}
+		el.__zaTimelineDestroy();
 	}
 
 	// ---- helpers ----
@@ -50,10 +54,10 @@ export function initTimelineAnimation( scopeEl ) {
 			try {
 				const style = window.getComputedStyle( p );
 				const y = style.overflowY;
-				if (
-					( y === 'auto' || y === 'scroll' || y === 'overlay' ) &&
-					p.scrollHeight > p.clientHeight + 1
-				) {
+				// Match v3.1.1: the scroll container exists before the
+				// editor's InnerBlocks make it overflow. Do not require
+				// scrollHeight > clientHeight at mount time.
+				if ( y === 'auto' || y === 'scroll' || y === 'overlay' ) {
 					return p;
 				}
 			} catch ( e ) {
@@ -146,8 +150,9 @@ export function initTimelineAnimation( scopeEl ) {
 		let ancestor = window.frameElement.parentElement;
 		while ( ancestor ) {
 			const css = parentWindow.getComputedStyle( ancestor );
-			if ( /^(auto|scroll|overlay)$/.test( css.overflowY ) &&
-				ancestor.scrollHeight > ancestor.clientHeight + 1 ) {
+			// Gutenberg can create the outer scroll area before it overflows.
+			// Listen from mount rather than depending on the initial height.
+			if ( /^(auto|scroll|overlay)$/.test( css.overflowY ) ) {
 				parentScrollElement = ancestor;
 				break;
 			}
@@ -607,12 +612,14 @@ export function initTimelineAnimation( scopeEl ) {
 		items.forEach( ( item ) => item.el.classList.remove( 'is-stuck' ) );
 
 		try {
+			delete el.__zaTimelineLine;
 			delete el.__zaTimelineDestroy;
 		} catch ( e ) {
 			el.__zaTimelineDestroy = undefined;
 		}
 	}
 
+	el.__zaTimelineLine = line;
 	el.__zaTimelineDestroy = destroy;
 	return destroy;
 }

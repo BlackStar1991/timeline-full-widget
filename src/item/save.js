@@ -10,6 +10,7 @@ export default function Save( { attributes } ) {
 		markerAlt,
 		markerUrl,
 		markerId,
+		itemOuterBackgroundColor,
 	} = attributes;
 
 	const classes = [ 'timeline-item', position ];
@@ -19,6 +20,7 @@ export default function Save( { attributes } ) {
 
 	const blockProps = useBlockProps.save( {
 		className: Array.from( new Set( classes ) ).join( ' ' ),
+		style: itemOuterBackgroundColor ? { backgroundColor: itemOuterBackgroundColor } : undefined,
 	} );
 
 	return (

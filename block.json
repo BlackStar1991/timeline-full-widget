@@ -109,6 +109,14 @@
 		"anchor": true,
 		"spacing": {
 			"margin": true
+		},
+		"color": {
+			"background": true,
+			"text": false
+		},
+		"background": {
+			"backgroundImage": true,
+			"backgroundSize": true
 		}
 	},
 	"example": {
