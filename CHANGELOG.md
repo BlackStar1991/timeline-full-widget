@@ -4,6 +4,7 @@
 - Hide Gutenberg Timeline Item Media Settings until an image or video has been selected, and hide it again when removed.
 - Show custom marker controls independently of the main item media, preserving marker setup without an image or video.
 - Keep saved block markup and Elementor widget behavior unchanged.
+- Development-only: clarify CLI-only lint findings, restrict test utilities to CLI requests, and exclude `scripts/` from optional local Plugin Check scans. No frontend or saved-content changes.
 
 ## 4.0.0 (October 2026)
 - Removed unused pre-PSR-4 PHP aliases and obsolete Elementor shim; streamlined Classic Editor module resolution and Elementor preview iframe discovery. Retained saved-block migrations and cross-editor compatibility at data boundaries.

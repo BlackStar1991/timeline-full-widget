@@ -1,6 +1,13 @@
 <?php
 /** Validate the self-contained WordPress.org Playground demo (no Elementor bundle). */
 declare(strict_types=1);
+
+// This development utility is meant to run from the command line only.
+if ( PHP_SAPI !== 'cli' ) {
+    http_response_code( 403 );
+    exit;
+}
+
 $root = dirname(__DIR__);
 $path = $root . '/assets/blueprints/blueprint.json';
 $blueprint = json_decode((string) file_get_contents($path), true, 512, JSON_THROW_ON_ERROR);

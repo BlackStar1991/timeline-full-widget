@@ -13,6 +13,13 @@
 
 declare(strict_types=1);
 
+// This development utility is meant to run from the command line only.
+if ( PHP_SAPI !== 'cli' ) {
+    http_response_code( 403 );
+    exit;
+}
+
+
 $root     = dirname(__DIR__);
 $includes = $root . '/includes';
 $prefix   = 'TimelineFullWidget\\';

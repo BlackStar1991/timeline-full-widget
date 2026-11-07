@@ -1,0 +1,11 @@
+AGENTS.md
+.distignore
+.gitignore
+.svnignore
+.stylelintrc.json
+.stylelintignore
+.gitattributes
+.eslintrc
+
+# Developer-only CLI scripts and WordPress API test doubles; not shipped to WordPress.org.
+scripts/

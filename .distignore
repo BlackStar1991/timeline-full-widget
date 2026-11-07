@@ -8,6 +8,7 @@ src/
 /.git
 /.github
 .distignore
+.pcpignore
 .gitattributes
 .gitignore
 composer.json
@@ -18,6 +19,7 @@ AGENTS.md
 scripts/
 AUDIT-*.md
 
+
 # Local audit output
 TEST-RESULTS.log
 
@@ -25,3 +27,6 @@ TEST-RESULTS.log
 *.log
 *.tmp
 *.bak
+
+# Local backup, never part of a plugin release
+package-lock.backup.json

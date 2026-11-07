@@ -2,6 +2,13 @@
 /** Standalone distribution/metadata consistency gate. */
 declare(strict_types=1);
 
+// This development utility is meant to run from the command line only.
+if ( PHP_SAPI !== 'cli' ) {
+    http_response_code( 403 );
+    exit;
+}
+
+
 $root = dirname(__DIR__);
 $failures = [];
 $plugin = file_get_contents($root . '/timeline-full-widget.php');
@@ -43,4 +50,5 @@ if ($failures) {
     foreach ($failures as $failure) {fwrite(STDERR, "FAIL: {$failure}\n");}
     exit(1);
 }
+// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Version summary is printed to CLI stdout, not a browser/HTML response.
 echo "PASS: {$version} version alignment, localization, build artifacts, compatibility, and distribution metadata.\n";

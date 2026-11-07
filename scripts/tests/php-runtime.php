@@ -2,6 +2,14 @@
 /** Standalone integration-style test doubles; no WordPress bootstrap required. */
 declare(strict_types=1);
 
+// These WordPress/Elementor doubles are only valid in the standalone CLI test.
+namespace {
+    if ( PHP_SAPI !== 'cli' ) {
+        http_response_code( 403 );
+        exit;
+    }
+}
+
 namespace Elementor {
     class Widget_Base {
         protected array $mock_settings = [];
@@ -91,6 +99,7 @@ namespace {
         global $passes;
         if (!$condition) {fwrite(STDERR, "FAIL: {$message}\n");exit(1);}
         $passes++;
+        // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Standalone CLI test output is plain text, not HTML.
         echo "PASS: {$message}\n";
     }
     require $root . '/timeline-full-widget.php';
@@ -356,5 +365,6 @@ namespace {
         'Reject invalid imported font sizes and units when rendering inline CSS');
     $meta = json_decode(file_get_contents($root . '/block.json'), true);
     check($meta['textdomain'] === 'timeline-full-widget', 'Block metadata uses the canonical text domain');
-    printf("PASS: %d PHP runtime assertions.\n", $passes);
+    // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Numeric assertion count is printed to the CLI, not an HTML response.
+    printf("PASS: %d PHP runtime assertions.\n", (int) $passes);
 }
